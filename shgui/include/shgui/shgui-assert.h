@@ -1,5 +1,5 @@
-#ifndef SH_GUI_ASSERT_H
-#define SH_GUI_ASSERT_H
+#ifndef SH_GUI_CHECK_H
+#define SH_GUI_CHECK_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,22 +42,20 @@ static const char* SH_GUI_CALL shGuiTranslateVkResult(const VkResult result) {
 	return "unknown vkresult";
 }
 
-static void SH_GUI_CALL shGuiAssert(int condition, const char* error_msg) {
-	if (!condition) {
-		printf("shgui error: %s\n", error_msg);
+#define shGuiError(condition, error_msg, failure_expression)\
+	if ((int)(condition)) {\
+		printf("shgui error: %s\n", (const char*)(error_msg));\
+		failure_expression;\
 	}
-	assert(condition && error_msg);
-}
-static void SH_GUI_CALL shGuiAssertVkResult(VkResult result, const char* error_msg) {
-	if (result != VK_SUCCESS) {
-		printf("shgui error: %s %s\n", error_msg, shGuiTranslateVkResult(result));
-	}
-	assert(result == VK_SUCCESS && error_msg);
-}
 
+#define shGuiVkResultError(result, error_msg, failure_expression)\
+	if ((VkResult)(result) != VK_SUCCESS) {\
+		printf("shgui vulkan error: %s, %s\n", error_msg, shTranslateVkResult((VkResult)(result)));\
+		exit(-1);\
+	}
 
 #ifdef __cplusplus
 }
 #endif//__cplusplus
 
-#endif//SH_GUI_ASSERT_H
+#endif//SH_GUI_CHECK_H

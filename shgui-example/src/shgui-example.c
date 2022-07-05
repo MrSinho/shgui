@@ -6,6 +6,7 @@ extern "C" {
 #include <shvulkan/shVkCore.h>
 #include <shvulkan/shVkPipelineData.h>
 #include <shvulkan/shVkMemoryInfo.h>
+#include <shvulkan/shVkDrawLoop.h>
 
 #include <GLFW/glfw3.h>
 
@@ -13,16 +14,13 @@ GLFWwindow* createWindow(const uint32_t width, const uint32_t height, const char
 
 const char* readBinary(const char* path, uint32_t* p_size);
 
-#define THREAD_COUNT 1
-#define VALIDATION_LAYERS_ENABLED 1
-
 int main(void) {
 	
 	const char* application_name = "shvulkan example";
 
 	ShVkCore		core	= { 0 };
-	const uint32_t	width	= 720;
-	const uint32_t	height	= 480;
+	uint32_t		width	= 720;
+	uint32_t		height	= 480;
 	GLFWwindow*		window	= createWindow(width, height, application_name);
 
 	//
@@ -31,24 +29,21 @@ int main(void) {
 	{
 		uint32_t extension_count = 2;
 		const char** extension_names = glfwGetRequiredInstanceExtensions(&extension_count);
-		printf("required instance extensions:\n");
-		for (uint32_t i = 0; i < extension_count; i++) {
-			printf("%s\n", extension_names[i]);
-		}
-		shCreateInstance(&core, application_name, "shvulkan engine", VALIDATION_LAYERS_ENABLED, extension_count, extension_names);
-		shVkAssertResult(
+		shCreateInstance(&core, application_name, "shvulkan engine", 1, extension_count, extension_names);
+		shVkError(
 			glfwCreateWindowSurface(core.instance, window, NULL, &core.surface.surface),
-			"error creating window surface"
+			"error creating window surface",
+			return -1;
 		);
 		core.surface.width = width;
 		core.surface.height = height;
-		shSelectPhysicalDevice(&core, SH_VK_CORE_GRAPHICS);
+		shSelectPhysicalDevice(&core, VK_QUEUE_GRAPHICS_BIT);
 		shSetLogicalDevice(&core);
 		shInitSwapchainData(&core);
 		shInitDepthData(&core);
 		shCreateRenderPass(&core);
 		shSetFramebuffers(&core);
-		shCreateGraphicsCommandBuffers(&core, THREAD_COUNT);
+		shCreateGraphicsCommandBuffers(&core, 1);
 		shSetSyncObjects(&core);
 		shGetGraphicsQueue(&core);
 	}
@@ -59,28 +54,67 @@ int main(void) {
 
 	ShGui gui = { 
 		core.device,									//
+		core.physical_device,							//
 		(ShGuiQueue) {									//vulkan based data
 			core.graphics_queue.queue_family_index,		//
 			core.graphics_queue.queue					//
 		},												//
-		VK_NULL_HANDLE,
-		{ 0 } //use shGuiLinkInputs
+		core.p_graphics_commands[0].cmd_buffer,			//
+		core.p_graphics_commands[0].fence,				//
+		core.surface.surface,							//
 	};
 
 	double cursor_pos_x, cursor_pos_y = 0.0;
 	glfwGetCursorPos(window, &cursor_pos_x, &cursor_pos_y);
 
-	shGuiLinkInputs(&width, height, (float*)cursor_pos_x, (float*)cursor_pos_y, , &gui);
+	ShGuiKeyParameters key_parameters = {
+		0
+	};
 
-	for (;glfwWindowShouldClose(window);) {
+	shGuiLinkInputs(&width, &height, (float*)&cursor_pos_x, (float*)&cursor_pos_y, key_parameters, &gui);
+
+	shGuiBuildPipeline(&gui, core.render_pass, 256);
+
+	uint32_t frame_idx;
+	for (;!glfwWindowShouldClose(window);) {
+		
+		shGuiWriteMemory(&gui, 1);
+
+		{//GLFW BASED CODE
+			glfwPollEvents();
+		}//GLFW BASED CODE
+
+		{//SHVULKAN CODE
+			shFrameReset(&core, 0);
+			shFrameBegin(&core, 0, &frame_idx);
+		}//SHVULKAN CODE
+
+		shGuiWindow(&gui, 60.0f, 30.0f, 0.0f, 0.0f, "my window");
+
+		shGuiRender(&gui);
+
+		{//SHVULKAN CODE
+			shFrameEnd(&core, 0, frame_idx);
+		}//SHVULKAN CODE
 
 	}
+
+	shGuiRelease(&gui);
+
+	{//GLFW CODE
+		glfwTerminate();
+	}//GLFW CODE
+
+	{//SHVULKAN CODE
+		shVulkanRelease(&core);
+	}//SHVULKAN CODE
+
 	return 0;
 }
 
 GLFWwindow* createWindow(const uint32_t width, const uint32_t height, const char* title) {
-	assert(glfwInit());
-	assert(glfwVulkanSupported() != GLFW_FALSE);
+	shVkError(!glfwInit(), "error initializing glfw", return NULL);
+	shVkError(glfwVulkanSupported() == GLFW_FALSE, "vulkan not supported by glfw", return NULL);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	return glfwCreateWindow(width, height, title, NULL, NULL);
