@@ -21,9 +21,10 @@ typedef struct ShVkQueue ShGuiQueue;
 
 
 
-#define SH_KEY_LAST 348
-typedef int8_t ShGuiKeyParameters[SH_KEY_LAST + 1];
-
+#define SH_GUI_KEY_LAST 348
+typedef int8_t ShGuiKeyEvents[SH_GUI_KEY_LAST + 1];
+#define SH_GUI_MOUSE_LAST 1
+typedef int8_t ShGuiMouseEvents[SH_GUI_MOUSE_LAST + 1];
 
 
 typedef struct ShGuiInputs {
@@ -31,7 +32,9 @@ typedef struct ShGuiInputs {
 	uint32_t*			p_window_height;
 	float*				p_cursor_pos_x;
 	float*				p_cursor_pos_y;
-	int8_t*				p_key_parameters;
+	int8_t*				p_key_events;
+	int8_t*				p_mouse_events;
+	float*				p_delta_time;
 } ShGuiInputs;
 
 
@@ -56,7 +59,8 @@ typedef struct ShGui {
 	VkBuffer					staging_buffer;
 	VkDeviceMemory				staging_buffer_memory;
 	uint32_t					items_data_size;
-	void*						p_items_data;
+	ShGuiItem*					p_items_data;
+	uint8_t*					p_items_overwritten_data;
 
 	uint32_t					item_count;
 
@@ -70,18 +74,22 @@ typedef struct ShGui {
 
 
 
-static uint8_t SH_GUI_CALL shGuiLinkInputs(uint32_t* p_window_width, uint32_t* p_window_height, float* p_cursor_pos_x, float* p_cursor_pos_y, ShGuiKeyParameters key_parameters, ShGui* p_gui) {
+static uint8_t SH_GUI_CALL shGuiLinkInputs(uint32_t* p_window_width, uint32_t* p_window_height, float* p_cursor_pos_x, float* p_cursor_pos_y, ShGuiKeyEvents key_events, ShGuiMouseEvents mouse_events, float* p_delta_time, ShGui* p_gui) {
 	shGuiError(
-		(p_window_width && p_window_height && p_cursor_pos_x && p_cursor_pos_y && key_parameters && p_gui) == 0,
+		(p_window_width && p_window_height && p_cursor_pos_x && p_cursor_pos_y && key_events && mouse_events && p_gui) == 0,
 		"invalid arguments",
 		return 0;
 	);
-	p_gui->inputs.p_window_width	= p_window_width;
-	p_gui->inputs.p_window_height	= p_window_height;
-	p_gui->inputs.p_cursor_pos_x	= p_cursor_pos_x;
-	p_gui->inputs.p_cursor_pos_y	= p_cursor_pos_y;
-	p_gui->inputs.p_key_parameters	= (int8_t*)key_parameters;
-
+	ShGuiInputs inputs = {
+		p_window_width,
+		p_window_height,
+		p_cursor_pos_x,
+		p_cursor_pos_y,
+		(int8_t*)key_events,
+		(int8_t*)mouse_events,
+		p_delta_time
+	};
+	p_gui->inputs = inputs;
 	return 1;
 }
 

@@ -6,7 +6,7 @@ extern "C" {
 
 #include <shvulkan/shVkPipelineData.h>
 #include <shvulkan/shVkMemoryInfo.h>
-	
+#include <shvulkan/shVkDrawLoop.h>
 
 #ifdef _MSC_VER
 #pragma warning (disable: 4996)
@@ -50,12 +50,12 @@ uint8_t SH_GUI_CALL shGuiBuildPipeline(ShGui* p_gui, VkRenderPass render_pass, c
 	);
 
 	{//PUSH CONSTANT
-		//shSetPushConstants(
-		//	VK_SHADER_STAGE_VERTEX_BIT, 
-		//	0, 
-		//	128, 
-		//	//
-		//);
+		shSetPushConstants(
+			VK_SHADER_STAGE_VERTEX_BIT,
+			0,
+			80,
+			&p_gui->graphics_pipeline.push_constant_range
+		);
 	}//PUSH CONSTANT
 
 
@@ -115,7 +115,9 @@ uint8_t SH_GUI_CALL shGuiBuildPipeline(ShGui* p_gui, VkRenderPass render_pass, c
 			uint32_t max_items_size = max_gui_items * sizeof(ShGuiItem);
 			p_gui->items_data_size = available_gpu_heap >= max_items_size ? max_items_size : available_gpu_heap;
 		}
-		
+		p_gui->p_items_data = calloc(1, p_gui->items_data_size);
+		p_gui->p_items_overwritten_data = calloc(1, p_gui->items_data_size / sizeof(ShGuiItem));
+
 		shPipelineCreateDescriptorBuffer(
 			p_gui->device, 
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 
@@ -177,8 +179,6 @@ uint8_t SH_GUI_CALL shGuiBuildPipeline(ShGui* p_gui, VkRenderPass render_pass, c
 uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
-	p_gui->p_items_data = calloc(1, p_gui->items_data_size);
-
 	shWriteMemory(
 		p_gui->device,
 		p_gui->staging_buffer_memory,
@@ -211,6 +211,18 @@ uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui) {
 
 	shBindPipeline(p_gui->cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, &p_gui->graphics_pipeline);
 
+	float push_constant_data[32] = {
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+
+		(float)p_gui->fixed_states.scissor.extent.width, (float)p_gui->fixed_states.scissor.extent.height
+	};
+	shPipelinePushConstants(p_gui->cmd_buffer, push_constant_data, &p_gui->graphics_pipeline);
+
+	shPipelineUpdateDescriptorSets(p_gui->device, &p_gui->graphics_pipeline);
+
 	shPipelineBindDescriptorSets(
 		p_gui->cmd_buffer, 
 		0, 
@@ -221,7 +233,49 @@ uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui) {
 
 	shEndPipeline(&p_gui->graphics_pipeline);
 
+	shDraw(p_gui->cmd_buffer, p_gui->item_count * 6);
+
 	p_gui->item_count = 0;
+
+	return 1;
+}
+
+uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+
+	float cursor_x = *p_gui->inputs.p_cursor_pos_x;
+	float cursor_y = *p_gui->inputs.p_cursor_pos_y;
+	
+	for (uint32_t item_idx = 0; item_idx < p_gui->item_count; item_idx++) {
+		ShGuiItem* p_item	= &p_gui->p_items_data[item_idx];
+		float item_size_x	= p_item->size_position[0];
+		float item_size_y	= p_item->size_position[1];
+		float item_pos_x	= p_item->size_position[2];
+		float item_pos_y	= p_item->size_position[3];
+		
+		printf("item pos: %f %f\n", item_pos_x, item_pos_y);
+		if (
+			(cursor_x >= item_pos_x - (item_size_x / 2.0f)) && 
+			(cursor_x <= item_pos_x + (item_size_x / 2.0f)) &&
+			(cursor_y >= item_pos_y - (item_size_y / 2.0f)) &&
+			(cursor_y <= item_pos_y + (item_size_y / 2.0f))
+			) {
+
+			if (p_gui->inputs.p_mouse_events[0] == 1) {
+				p_item->size_position[2] = cursor_x;
+				p_item->size_position[3] = cursor_y;
+				p_gui->p_items_overwritten_data[item_idx] = 1;
+			}
+
+		}
+
+		//if ((cursor_x >= item_pos_x && cursor_y >= item_pos_y) ||
+		//	(cursor_x <= item_pos_x && cursor_y <= item_pos_y)
+		//	) {
+		//	printf("in\n");
+		//}
+
+	}
 
 	return 1;
 }
@@ -229,11 +283,17 @@ uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui) {
 uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0)
 
-	ShGuiItem item = {
-		{ width, height, pos_x, pos_y }
-	};
+	if (!p_gui->p_items_overwritten_data[p_gui->item_count]) {
+		float window_size_x = (float)p_gui->fixed_states.scissor.extent.width;
+		float window_size_y = (float)p_gui->fixed_states.scissor.extent.height;
 
-	memcpy(&((char*)p_gui->p_items_data)[p_gui->item_count * sizeof(ShGuiItem)], &item, sizeof(ShGuiItem));
+		ShGuiItem item = {
+			{ width, height, pos_x, -pos_y }
+		};
+
+		memcpy(&p_gui->p_items_data[p_gui->item_count], &item, sizeof(ShGuiItem));
+	}
+	
 
 	p_gui->item_count++;
 

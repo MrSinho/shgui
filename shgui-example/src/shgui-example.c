@@ -14,14 +14,15 @@ GLFWwindow* createWindow(const uint32_t width, const uint32_t height, const char
 
 const char* readBinary(const char* path, uint32_t* p_size);
 
+#define WINDOW_WIDTH 720
+#define WINDOW_HEIGHT 480
+
 int main(void) {
 	
 	const char* application_name = "shvulkan example";
 
 	ShVkCore		core	= { 0 };
-	uint32_t		width	= 720;
-	uint32_t		height	= 480;
-	GLFWwindow*		window	= createWindow(width, height, application_name);
+	GLFWwindow*		window	= createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, application_name);
 
 	//
 	//SHVULKAN BASED CODE
@@ -35,8 +36,8 @@ int main(void) {
 			"error creating window surface",
 			return -1;
 		);
-		core.surface.width = width;
-		core.surface.height = height;
+		core.surface.width = WINDOW_WIDTH;
+		core.surface.height = WINDOW_HEIGHT;
 		shSelectPhysicalDevice(&core, VK_QUEUE_GRAPHICS_BIT);
 		shSetLogicalDevice(&core);
 		shInitSwapchainData(&core);
@@ -64,24 +65,48 @@ int main(void) {
 		core.surface.surface,							//
 	};
 
-	double cursor_pos_x, cursor_pos_y = 0.0;
-	glfwGetCursorPos(window, &cursor_pos_x, &cursor_pos_y);
-
-	ShGuiKeyParameters key_parameters = {
+	uint32_t width = WINDOW_WIDTH;
+	uint32_t height = WINDOW_HEIGHT;
+	float cursor_pos_x, cursor_pos_y = 0.0;// update in realtime
+	ShGuiKeyEvents key_events = {// update in realtime
 		0
 	};
+	ShGuiMouseEvents mouse_events = {// update in realtime
+		0
+	};
+	float delta_time = 0.0f;
 
-	shGuiLinkInputs(&width, &height, (float*)&cursor_pos_x, (float*)&cursor_pos_y, key_parameters, &gui);
+	shGuiLinkInputs(
+		&width, 
+		&height, 
+		&cursor_pos_x, 
+		&cursor_pos_y, 
+		key_events, 
+		mouse_events, 
+		&delta_time,
+		&gui
+	);
 
 	shGuiBuildPipeline(&gui, core.render_pass, 256);
 
 	uint32_t frame_idx;
+	float last_time = (float)glfwGetTime();
 	for (;!glfwWindowShouldClose(window);) {
 		
 		shGuiWriteMemory(&gui, 1);
 
 		{//GLFW BASED CODE
 			glfwPollEvents();
+			//LINK INPUTS
+			for (uint32_t key_idx = 0; key_idx < SH_GUI_KEY_LAST + 1; key_idx++) {
+				key_events[key_idx] = glfwGetKey(window, key_idx);
+			}
+			for (uint32_t mouse_button_idx = 0; mouse_button_idx < SH_GUI_MOUSE_LAST + 1; mouse_button_idx++) {
+				mouse_events[mouse_button_idx] = glfwGetMouseButton(window, mouse_button_idx);
+			}
+			float now = (float)glfwGetTime();
+			delta_time = now - last_time;
+			last_time = now;
 		}//GLFW BASED CODE
 
 		{//SHVULKAN CODE
@@ -89,8 +114,23 @@ int main(void) {
 			shFrameBegin(&core, 0, &frame_idx);
 		}//SHVULKAN CODE
 
-		shGuiWindow(&gui, 60.0f, 30.0f, 0.0f, 0.0f, "my window");
 
+		shGuiWindow(
+			&gui, 
+			200.0f, 100.0f, 
+			-100.0f, 100.0f, 
+			"my window"
+		);
+
+		double d_cursor_pos_x, d_cursor_pos_y = 0.0;
+		glfwGetCursorPos(window, &d_cursor_pos_x, &d_cursor_pos_y);
+
+		cursor_pos_x = (float)d_cursor_pos_x - (720.0f / 2.0f);
+		cursor_pos_y = (float)d_cursor_pos_y - (480.0f / 2.0f);
+
+		//printf("cur %f %f\n", cursor_pos_x, cursor_pos_y);
+
+		shGuiGetEvents(&gui);
 		shGuiRender(&gui);
 
 		{//SHVULKAN CODE
