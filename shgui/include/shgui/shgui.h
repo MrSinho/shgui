@@ -39,11 +39,19 @@ typedef struct ShGuiInputs {
 
 
 
-typedef struct ShGuiItem {
+typedef struct ShGuiRegion {
 	alignas(16) float size_position[4];
-} ShGuiItem;
+} ShGuiRegion;
 
+typedef struct ShGuiText {
+	float* p_vertices;
+	uint32_t		vertex_count;
+	uint32_t*		p_indices;
+	uint32_t		index_count;
+	VkBuffer		vertex_buffer;
+	VkDeviceMemory	vertex_buffer_memory;
 
+} ShGuiText;
 
 typedef struct ShGui {
 	VkDevice					device;
@@ -53,16 +61,32 @@ typedef struct ShGui {
 	VkFence						fence;
 	VkSurfaceKHR				surface;
 	ShGuiInputs					inputs;
-	ShVkPipeline				graphics_pipeline;
-	ShVkFixedStates				fixed_states;
-	
-	VkBuffer					staging_buffer;
-	VkDeviceMemory				staging_buffer_memory;
-	uint32_t					items_data_size;
-	ShGuiItem*					p_items_data;
-	uint8_t*					p_items_overwritten_data;
 
-	uint32_t					item_count;
+	struct {
+		VkBuffer				staging_buffer;
+		VkDeviceMemory			staging_buffer_memory;
+		uint32_t				regions_data_size;
+
+		ShGuiRegion*			p_regions_data;
+		uint8_t*				p_regions_overwritten_data;
+		uint32_t				region_count;
+
+		ShVkPipeline			graphics_pipeline;
+		ShVkFixedStates			fixed_states;
+	} region_infos;
+	
+	struct {
+		VkBuffer				staging_buffer;
+		VkDeviceMemory			staging_buffer_memory;
+		uint32_t				text_data_size;
+
+		ShGuiText*				p_text_data;
+		uint32_t				text_count;
+
+		ShVkPipeline			graphics_pipeline;
+		ShVkFixedStates			fixed_states;
+	} text_infos;
+
 
 } ShGui;
 
@@ -100,7 +124,9 @@ static uint8_t SH_GUI_CALL shGuiSetGraphicsQueue(const uint32_t graphics_queue_f
 
 
 
-extern uint8_t SH_GUI_CALL shGuiBuildPipeline(ShGui* p_gui, VkRenderPass render_pass, const uint32_t max_gui_items);
+extern uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_pass, const uint32_t max_gui_items);
+
+extern uint8_t SH_GUI_CALL shGuiBuilTextPipeline(ShGui* p_gui, VkRenderPass render_pass, const uint32_t max_gui_items);
 
 extern uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record);
 
@@ -108,7 +134,7 @@ extern uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name);
 
-extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui);
+extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const char* text, const float scale, const float pos_x, const float pos_y);
 
 extern uint8_t SH_GUI_CALL shGuiButton(ShGui* p_gui);
 

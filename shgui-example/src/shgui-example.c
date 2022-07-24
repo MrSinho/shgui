@@ -25,7 +25,7 @@ int main(void) {
 	GLFWwindow*		window	= createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, application_name);
 
 	//
-	//SHVULKAN BASED CODE
+	//SHVULKAN BASED CODE, write your own
 	//
 	{
 		uint32_t extension_count = 2;
@@ -65,6 +65,7 @@ int main(void) {
 		core.surface.surface,							//
 	};
 
+
 	uint32_t width = WINDOW_WIDTH;
 	uint32_t height = WINDOW_HEIGHT;
 	float cursor_pos_x, cursor_pos_y = 0.0;// update in realtime
@@ -75,7 +76,6 @@ int main(void) {
 		0
 	};
 	float delta_time = 0.0f;
-
 	shGuiLinkInputs(
 		&width, 
 		&height, 
@@ -87,7 +87,7 @@ int main(void) {
 		&gui
 	);
 
-	shGuiBuildPipeline(&gui, core.render_pass, 256);
+	shGuiBuildRegionPipeline(&gui, core.render_pass, 256);
 
 	uint32_t frame_idx;
 	float last_time = (float)glfwGetTime();
@@ -109,10 +109,10 @@ int main(void) {
 			last_time = now;
 		}//GLFW BASED CODE
 
-		{//SHVULKAN CODE
+		{//SHVULKAN CODE, write your own
 			shFrameReset(&core, 0);
 			shFrameBegin(&core, 0, &frame_idx);
-		}//SHVULKAN CODE
+		}//SHVULKAN CODE, write your own
 
 
 		shGuiWindow(
