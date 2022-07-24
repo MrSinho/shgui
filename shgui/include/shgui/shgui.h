@@ -43,15 +43,28 @@ typedef struct ShGuiRegion {
 	alignas(16) float size_position[4];
 } ShGuiRegion;
 
-typedef struct ShGuiText {
-	float* p_vertices;
+
+
+typedef struct ShGuiChar {
+	float*			p_vertices;
 	uint32_t		vertex_count;
 	uint32_t*		p_indices;
 	uint32_t		index_count;
-	VkBuffer		vertex_buffer;
-	VkDeviceMemory	vertex_buffer_memory;
+} ShGuiChar;
 
+
+typedef struct ShGuiText {
+	char*		text;
+	ShGuiChar*	p_chars;
 } ShGuiText;
+
+
+typedef struct ShGuiItem {
+	ShGuiRegion region;
+	ShGuiChar	text;
+} ShGuiItem;
+
+
 
 typedef struct ShGui {
 	VkDevice					device;
@@ -62,6 +75,7 @@ typedef struct ShGui {
 	VkSurfaceKHR				surface;
 	ShGuiInputs					inputs;
 
+	uint32_t					active_item_idx;
 	struct {
 		VkBuffer				staging_buffer;
 		VkDeviceMemory			staging_buffer_memory;
@@ -76,9 +90,17 @@ typedef struct ShGui {
 	} region_infos;
 	
 	struct {
-		VkBuffer				staging_buffer;
-		VkDeviceMemory			staging_buffer_memory;
-		uint32_t				text_data_size;
+		VkBuffer				vertex_staging_buffer;
+		VkDeviceMemory			vertex_staging_buffer_memory;
+		uint32_t				vertex_text_data_size;
+		VkBuffer				vertex_buffer;
+		VkDeviceMemory			vertex_buffer_memory;
+
+		VkBuffer				index_staging_buffer;
+		VkDeviceMemory			index_staging_buffer_memory;
+		uint32_t				index_text_data_size;
+		VkBuffer				index_buffer;
+		VkDeviceMemory			index_buffer_memory;
 
 		ShGuiText*				p_text_data;
 		uint32_t				text_count;

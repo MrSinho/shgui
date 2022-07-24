@@ -17,6 +17,8 @@ const char* readBinary(const char* path, uint32_t* p_size);
 #define WINDOW_WIDTH 720
 #define WINDOW_HEIGHT 480
 
+#define MAX_GUI_ITEMS 256
+
 int main(void) {
 	
 	const char* application_name = "shvulkan example";
@@ -87,7 +89,8 @@ int main(void) {
 		&gui
 	);
 
-	shGuiBuildRegionPipeline(&gui, core.render_pass, 256);
+	shGuiBuildRegionPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
+	shGuiBuilTextPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
 
 	uint32_t frame_idx;
 	float last_time = (float)glfwGetTime();
@@ -118,9 +121,18 @@ int main(void) {
 		shGuiWindow(
 			&gui, 
 			200.0f, 100.0f, 
-			-100.0f, 100.0f, 
+			-150.0f, 100.0f, 
 			"my window"
 		);
+
+		shGuiWindow(
+			&gui,
+			200.0f, 100.0f,
+			150.0f, 100.0f,
+			"my window"
+		);
+
+		shGuiText(&gui, "LMAO", 1.0f, 0.0f, 0.0f);
 
 		double d_cursor_pos_x, d_cursor_pos_y = 0.0;
 		glfwGetCursorPos(window, &d_cursor_pos_x, &d_cursor_pos_y);
