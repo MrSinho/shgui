@@ -14,9 +14,9 @@ add_library(shgui
 )
 target_include_directories(shgui PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/shgui/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/fonts/include
 )
 target_link_libraries(shgui PUBLIC shvulkan)
-
 set_target_properties(shgui shvulkan PROPERTIES 
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 )
