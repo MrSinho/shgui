@@ -15,7 +15,7 @@ extern "C" {
 
 #include <shvulkan/shVkCore.h>
 #include <shvulkan/shVkPipelineData.h>
-
+#include <shvulkan/shVkDescriptorStructureMap.h>
 
 typedef struct ShVkQueue ShGuiQueue;
 
@@ -45,18 +45,35 @@ typedef struct ShGuiRegion {
 
 
 
+typedef struct ShGuiCharInfo {
+	alignas(16) float position_scale[4];
+} ShGuiCharInfo;
+
+SH_VULKAN_GENERATE_DESCRIPTOR_STRUCTURE_MAP(ShGuiCharInfo)
+
+
+
 typedef struct ShGuiChar {
 	float*			p_vertices;
 	uint32_t		vertex_count;
-	uint32_t*		p_indices;
-	uint32_t		index_count;
 } ShGuiChar;
 
 
+
+#ifndef SH_GUI_MAX_CHAR_VERTEX_SIZE 
+#define SH_GUI_MAX_CHAR_VERTEX_SIZE 49 * 3
+#endif//SH_GUI_MAX_CHAR_VERTEX_SIZE
+
+
+
+#define SH_GUI_TEXT_MAX_CHAR_COUNT	1024
+#define SH_GUI_CHAR_OFFSET_UNIT		0.5f
+
 typedef struct ShGuiText {
-	char*		text;
-	ShGuiChar*	p_chars;
+	char		text[SH_GUI_TEXT_MAX_CHAR_COUNT];
+	ShGuiChar	chars[SH_GUI_TEXT_MAX_CHAR_COUNT];
 } ShGuiText;
+
 
 
 typedef struct ShGuiItem {
@@ -78,7 +95,7 @@ typedef struct ShGui {
 	uint32_t					active_item_idx;
 	struct {
 		VkBuffer				staging_buffer;
-		VkDeviceMemory			staging_buffer_memory;
+		VkDeviceMemory			staging_memory;
 		uint32_t				regions_data_size;
 
 		ShGuiRegion*			p_regions_data;
@@ -90,23 +107,28 @@ typedef struct ShGui {
 	} region_infos;
 	
 	struct {
-		VkBuffer				vertex_staging_buffer;
-		VkDeviceMemory			vertex_staging_buffer_memory;
-		uint32_t				vertex_text_data_size;
-		VkBuffer				vertex_buffer;
-		VkDeviceMemory			vertex_buffer_memory;
+		VkBuffer							text_descriptor_staging_buffer;
+		VkDeviceMemory						text_descriptor_staging_memory;
 
-		VkBuffer				index_staging_buffer;
-		VkDeviceMemory			index_staging_buffer_memory;
-		uint32_t				index_text_data_size;
-		VkBuffer				index_buffer;
-		VkDeviceMemory			index_buffer_memory;
+		ShGuiCharInfoDescriptorStructureMap	char_info_map;
 
-		ShGuiText*				p_text_data;
-		uint32_t				text_count;
 
-		ShVkPipeline			graphics_pipeline;
-		ShVkFixedStates			fixed_states;
+
+		VkBuffer							vertex_staging_buffer;
+		VkDeviceMemory						vertex_staging_memory;
+
+		uint32_t							vertex_text_data_size;
+
+		VkBuffer							vertex_buffer;
+		VkDeviceMemory						vertex_memory;
+		uint32_t							vertex_count;
+
+
+		ShGuiText*							p_text_data;
+		uint32_t							text_count;
+
+		ShVkPipeline						graphics_pipeline;
+		ShVkFixedStates						fixed_states;
 	} text_infos;
 
 
