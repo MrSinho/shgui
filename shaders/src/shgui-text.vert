@@ -13,19 +13,19 @@ layout (push_constant) uniform pushConstant {
 
 
 
-#define TEXT_SCALE_MULTIPLIER 2.8
+#define TEXT_SCALE_MULTIPLIER 85
 
 
-layout (set = 0, binding = 0) uniform textUniform {
+layout (std140, set = 0, binding = 0) uniform textUniform {// dynamic uniform
 	vec4 position_scale;
 } utext;
 
 
 
 void main() {
-	gl_PointSize = utext.position_scale.z * TEXT_SCALE_MULTIPLIER;
+	gl_PointSize = utext.position_scale.z * TEXT_SCALE_MULTIPLIER / length(pconst.window_size);
 	gl_Position = pconst.projection * vec4(
-		utext.position_scale.xy + vertex_position.xy * utext.position_scale.z, 
+		(utext.position_scale.xy + vertex_position.xy * utext.position_scale.z) / pconst.window_size, 
 		0.0f, 1.0f
 		);
 	//gl_Position = pconst.projection * vec4(

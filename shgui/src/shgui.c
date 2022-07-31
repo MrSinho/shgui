@@ -189,6 +189,34 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 				);
 			}
 		}
+
+		{
+			shPipelineCreateDescriptorBuffer(
+				p_gui->device,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+				1,
+				16,
+				&p_gui->region_infos.graphics_pipeline
+			);
+			shPipelineAllocateDescriptorBufferMemory(
+				p_gui->device,
+				p_gui->physical_device,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				1,
+				&p_gui->region_infos.graphics_pipeline
+			);
+			shPipelineBindDescriptorBufferMemory(p_gui->device, 1, 0, &p_gui->region_infos.graphics_pipeline);
+			shPipelineDescriptorSetLayout(
+				p_gui->device, 
+				1, 
+				0, 
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
+				VK_SHADER_STAGE_FRAGMENT_BIT, 
+				&p_gui->region_infos.graphics_pipeline
+			);
+			shPipelineCreateDescriptorPool(p_gui->device, 1, &p_gui->region_infos.graphics_pipeline);
+			shPipelineAllocateDescriptorSet(p_gui->device, 1, &p_gui->region_infos.graphics_pipeline);
+		}
 	}
 	//DESCRIPTORS
 
@@ -199,7 +227,7 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiBuilTextPipeline(ShGui* p_gui, VkRenderPass render_pass, const uint32_t max_gui_items) {
+uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, const uint32_t max_gui_items) {
 	shGuiError(
 		p_gui == NULL,
 		"invalid gui memory",
@@ -263,39 +291,19 @@ uint8_t SH_GUI_CALL shGuiBuilTextPipeline(ShGui* p_gui, VkRenderPass render_pass
 			);
 		}
 
-		shCreateBuffer(
+		shPipelineCreateDynamicDescriptorBuffer(
 			p_gui->device,
-			p_gui->text_infos.char_info_map.structure_count * p_gui->text_infos.char_info_map.structure_size,
-			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			&p_gui->text_infos.text_descriptor_staging_buffer
-		);
-		shAllocateMemory(
-			p_gui->device,
-			p_gui->physical_device,
-			p_gui->text_infos.text_descriptor_staging_buffer,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&p_gui->text_infos.text_descriptor_staging_memory
-		);
-		shBindMemory(
-			p_gui->device,
-			p_gui->text_infos.text_descriptor_staging_buffer,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,// | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			0,
-			p_gui->text_infos.text_descriptor_staging_memory
-		);
-
-
-		shPipelineCreateDescriptorBuffer(
-			p_gui->device,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			0,
-			p_gui->text_infos.char_info_map.structure_count * p_gui->text_infos.char_info_map.structure_size,
+			p_gui->text_infos.char_info_map.structure_size,
+			p_gui->text_infos.char_info_map.structure_count,
 			&p_gui->text_infos.graphics_pipeline
 		);
 
 		shPipelineAllocateDescriptorBufferMemory(
 			p_gui->device,
 			p_gui->physical_device,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			0,
 			&p_gui->text_infos.graphics_pipeline
 		);
@@ -328,6 +336,33 @@ uint8_t SH_GUI_CALL shGuiBuilTextPipeline(ShGui* p_gui, VkRenderPass render_pass
 			&p_gui->text_infos.graphics_pipeline
 		);
 
+
+		shPipelineCreateDescriptorBuffer(
+			p_gui->device,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			1,
+			16,
+			&p_gui->text_infos.graphics_pipeline
+		);
+		shPipelineAllocateDescriptorBufferMemory(
+			p_gui->device,
+			p_gui->physical_device,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			1,
+			&p_gui->text_infos.graphics_pipeline
+		);
+		shPipelineBindDescriptorBufferMemory(p_gui->device, 1, 0, &p_gui->text_infos.graphics_pipeline);
+		shPipelineDescriptorSetLayout(
+			p_gui->device,
+			1,
+			1,
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+			&p_gui->text_infos.graphics_pipeline
+		);
+		shPipelineCreateDescriptorPool(p_gui->device, 1, &p_gui->text_infos.graphics_pipeline);
+		shPipelineAllocateDescriptorSet(p_gui->device, 1, &p_gui->text_infos.graphics_pipeline);
+
 	}//DESCRIPTORS
 
 	{//GRAPHICS PIPELINE
@@ -339,6 +374,27 @@ uint8_t SH_GUI_CALL shGuiBuilTextPipeline(ShGui* p_gui, VkRenderPass render_pass
 
 	{//VERTEX BUFFER
 		shCreateBuffer(
+			p_gui->device,
+			SH_GUI_MAX_CHAR_VERTEX_SIZE * max_gui_items,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			&p_gui->text_infos.vertex_staging_buffer
+		);
+		shAllocateMemory(
+			p_gui->device,
+			p_gui->physical_device,
+			p_gui->text_infos.vertex_staging_buffer,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			&p_gui->text_infos.vertex_staging_memory
+		);
+		shBindMemory(
+			p_gui->device,
+			p_gui->text_infos.vertex_staging_buffer,
+			0,
+			p_gui->text_infos.vertex_staging_memory
+		);
+
+
+		shCreateBuffer(
 			p_gui->device, 
 			SH_GUI_MAX_CHAR_VERTEX_SIZE * max_gui_items, 
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -348,11 +404,98 @@ uint8_t SH_GUI_CALL shGuiBuilTextPipeline(ShGui* p_gui, VkRenderPass render_pass
 			p_gui->device,
 			p_gui->physical_device,
 			p_gui->text_infos.vertex_buffer,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			&p_gui->text_infos.vertex_memory
 		);
 		shBindVertexBufferMemory(p_gui->device, p_gui->text_infos.vertex_buffer, 0, p_gui->text_infos.vertex_memory);
 	}//VERTEX BUFFER
+
+	p_gui->text_infos.char_distance_offset = 1.5f;
+
+	return 1;
+}
+
+uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiTheme theme) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+	shGuiError(theme >= SH_GUI_THEME_MAX_ENUM, "invalid gui theme", return 0)
+
+	VkDevice			device			= p_gui->device;
+	VkCommandBuffer		cmd_buffer		= p_gui->cmd_buffer;
+	VkFence				fence			= p_gui->fence;
+
+	VkBuffer			staging_buffer	= NULL;
+	VkDeviceMemory		staging_memory	= NULL;
+
+	float staging_data[8] = { 0 };
+
+	shCreateBuffer(
+		device,
+		sizeof(staging_data),
+		VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		&staging_buffer
+	);
+	shAllocateMemory(
+		device,
+		p_gui->physical_device,
+		staging_buffer,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		&staging_memory
+	);
+	shBindMemory(
+		device,
+		staging_buffer,
+		0,
+		staging_memory
+	);
+
+	switch(theme) {
+	case SH_GUI_THEME_DARK:
+		staging_data[0] = 0.05f;//WINDOWS
+		staging_data[1] = 0.05f;
+		staging_data[2] = 0.05f;
+
+		staging_data[4] = 1.0f;//TEXT
+		staging_data[5] = 1.0f;
+		staging_data[6] = 1.0f;
+		break;
+	case SH_GUI_THEME_LIGHT:
+		staging_data[0] = 0.8f;//WINDOWS
+		staging_data[1] = 0.8f;
+		staging_data[2] = 0.8f;
+
+		staging_data[4] = 0.0f;//TEXT
+		staging_data[5] = 0.0f;
+		staging_data[6] = 0.0f;
+		break;
+	}
+
+	shWriteMemory(device, staging_memory, 0, sizeof(staging_data), staging_data);
+
+	shWaitForFence(device, &fence);
+	shResetFence(device, &fence);
+	shBeginCommandBuffer(cmd_buffer);
+	
+	shCopyBuffer(
+		cmd_buffer,
+		staging_buffer,
+		0,
+		0,
+		16,
+		p_gui->region_infos.graphics_pipeline.descriptor_buffers[1]
+	);
+
+	shCopyBuffer(
+		cmd_buffer,
+		staging_buffer,
+		16,
+		0,
+		16,
+		p_gui->text_infos.graphics_pipeline.descriptor_buffers[1]
+	);
+
+	shEndCommandBuffer(cmd_buffer);
+	shQueueSubmit(1, &cmd_buffer, p_gui->graphics_queue.queue, fence);
+	shWaitForFence(device, &fence);
 
 	return 1;
 }
@@ -377,32 +520,26 @@ uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record) {
 	//WRITE TEXT DATA
 	//
 	//
+	//shVkMapShGuiCharInfoDecriptorStructures(&p_gui->text_infos.char_info_map);
+	//ShGuiCharInfo* p0 = shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, 0, 1);
+	//ShGuiCharInfo* p1 = shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, 1, 1);
+	//ShGuiCharInfo* p2 = shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, 2, 1);
+	
+
 	for (uint32_t text_idx = 0; text_idx < p_gui->text_infos.text_count; text_idx++) {
-		uint32_t char_count = (uint32_t)strlen(p_gui->text_infos.p_text_data[text_idx].text);
-		for (uint32_t char_idx = 0; char_idx < char_count; char_idx++) {
-			uint32_t vertex_size = p_gui->text_infos.p_text_data[text_idx].chars[char_idx].vertex_count * 4;
+		uint32_t text_char_count = (uint32_t)strlen(p_gui->text_infos.p_text_data[text_idx].text);
+		for (uint32_t char_idx = 0; char_idx < text_char_count; char_idx++) {
+			uint32_t vertex_count = p_gui->text_infos.p_text_data[text_idx].chars[char_idx].vertex_count;
 			shWriteMemory(
 				device,
-				p_gui->text_infos.vertex_memory,
-				p_gui->text_infos.vertex_text_data_size,
-				vertex_size,
+				p_gui->text_infos.vertex_staging_memory,
+				p_gui->text_infos.vertex_count * 4,//total
+				vertex_count * 4,//local
 				p_gui->text_infos.p_text_data[text_idx].chars[char_idx].p_vertices
 			);
-			p_gui->text_infos.vertex_text_data_size += vertex_size;
-
-			p_gui->text_infos.vertex_count += p_gui->text_infos.p_text_data[text_idx].chars[char_idx].vertex_count;
+			p_gui->text_infos.vertex_count += vertex_count;
 		}
 	}
-	p_gui->text_infos.vertex_text_data_size = 0;
-	shVkMapShGuiCharInfoDecriptorStructures(&p_gui->text_infos.char_info_map);
-	shWriteMemory(
-		p_gui->device,
-		p_gui->text_infos.text_descriptor_staging_memory,
-		0,
-		p_gui->text_infos.char_info_map.structure_size,
-		p_gui->text_infos.char_info_map.p_ShGuiCharInfo_map
-	);
-
 	
 	//COPY BUFFERS
 	//
@@ -425,12 +562,21 @@ uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record) {
 
 		shCopyBuffer(
 			cmd_buffer,
-			p_gui->text_infos.text_descriptor_staging_buffer,
+			p_gui->text_infos.vertex_staging_buffer,
 			0,
 			0,
-			p_gui->text_infos.char_info_map.structure_size,
-			p_gui->text_infos.graphics_pipeline.descriptor_buffers[0]
+			p_gui->text_infos.vertex_count * 4,
+			p_gui->text_infos.vertex_buffer
 		);
+
+		//shCopyBuffer(
+		//	cmd_buffer,
+		//	p_gui->text_infos.text_descriptor_staging_buffer,
+		//	0,
+		//	0,
+		//	p_gui->text_infos.char_info_map.structure_size * p_gui->text_infos.total_char_count,
+		//	p_gui->text_infos.graphics_pipeline.descriptor_buffers[0]
+		//);
 
 		if (record) {
 			shEndCommandBuffer(cmd_buffer);
@@ -491,26 +637,57 @@ uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui) {
 	shPipelinePushConstants(cmd_buffer, push_constant_data, p_text_pipeline);
 
 	shPipelineUpdateDescriptorSets(
-		p_gui->device,
+		device,
 		&p_gui->text_infos.graphics_pipeline
 	);
 
-	shPipelineBindDynamicDescriptorSet(
-		p_gui->cmd_buffer,
-		0,
+	shPipelineBindDescriptorSets(
+		cmd_buffer,
+		1,
+		1,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		&p_gui->text_infos.graphics_pipeline
 	);
 
-	shBindVertexBuffer(cmd_buffer, 0, &p_gui->text_infos.vertex_buffer);
+	//Worst implementation ever seen (comparable to shengine), but i'm in hurry
+	uint32_t total_char_idx = 0;
+	uint32_t total_vertex_idx = 0;
+	for (uint32_t text_idx = 0; text_idx < p_gui->text_infos.text_count; text_idx++) {//to improve: reduce draw calls :(
+		for (uint32_t char_idx = 0; char_idx < strlen(p_gui->text_infos.p_text_data[text_idx].text); char_idx++) {
+			ShGuiCharInfo* p_char = shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, total_char_idx, 0);
+			
+			shPipelineWriteDynamicDescriptorBufferMemory(
+				device,
+				0,
+				(void*)p_char,
+				&p_gui->text_infos.graphics_pipeline
+			);
 
-	if (p_gui->text_infos.vertex_count > 0) {
-		shDraw(cmd_buffer, p_gui->text_infos.vertex_count / 3);
+			shPipelineBindDynamicDescriptorSet(
+				p_gui->cmd_buffer,
+				0,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				&p_gui->text_infos.graphics_pipeline
+			);
+
+			shBindVertexBuffer(cmd_buffer, 0, total_vertex_idx * 4, &p_gui->text_infos.vertex_buffer);
+			total_vertex_idx += p_gui->text_infos.p_text_data[text_idx].chars[char_idx].vertex_count;
+
+			shDraw(cmd_buffer, p_gui->text_infos.p_text_data[text_idx].chars[char_idx].vertex_count / 3);
+			total_char_idx++;
+
+		}
 	}
+
+	//if (p_gui->text_infos.vertex_count > 0) {
+	//	shDraw(cmd_buffer, p_gui->text_infos.vertex_count / 3);
+	//}
 
 	shEndPipeline(p_text_pipeline);
 
 	p_gui->text_infos.text_count = 0;
+	p_gui->text_infos.total_char_count = 0;
+	p_gui->text_infos.vertex_count = 0;
 
 	return 1;
 }
@@ -591,11 +768,13 @@ uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const char* s_text, const float scal
 	ShGuiText* p_text = &p_gui->text_infos.p_text_data[p_gui->text_infos.text_count];
 	strcpy(p_text->text, s_text);
 
+	
 	for (uint32_t char_idx = 0; char_idx < strlen(s_text); char_idx++) {
-		ShGuiCharInfo* p_char_info = shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, char_idx, 0);
-		p_char_info->position_scale[0] = pos_x + SH_GUI_CHAR_OFFSET_UNIT * scale * char_idx;
-		p_char_info->position_scale[1] = pos_y;
+		ShGuiCharInfo* p_char_info = shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, p_gui->text_infos.total_char_count, 0);
+		p_char_info->position_scale[0] = pos_x + p_gui->text_infos.char_distance_offset * scale * char_idx;
+		p_char_info->position_scale[1] = -pos_y;
 		p_char_info->position_scale[2] = scale;
+		p_gui->text_infos.total_char_count++;
 
 		switch (s_text[char_idx]) {
 		case 'Q':

@@ -67,7 +67,6 @@ typedef struct ShGuiChar {
 
 
 #define SH_GUI_TEXT_MAX_CHAR_COUNT	1024
-#define SH_GUI_CHAR_OFFSET_UNIT		0.5f
 
 typedef struct ShGuiText {
 	char		text[SH_GUI_TEXT_MAX_CHAR_COUNT];
@@ -81,6 +80,12 @@ typedef struct ShGuiItem {
 	ShGuiChar	text;
 } ShGuiItem;
 
+
+typedef enum ShGuiTheme {
+	SH_GUI_THEME_DARK	= 0,
+	SH_GUI_THEME_LIGHT,
+	SH_GUI_THEME_MAX_ENUM
+} ShGuiTheme;
 
 
 typedef struct ShGui {
@@ -107,17 +112,13 @@ typedef struct ShGui {
 	} region_infos;
 	
 	struct {
-		VkBuffer							text_descriptor_staging_buffer;
-		VkDeviceMemory						text_descriptor_staging_memory;
-
+		float								char_distance_offset;
 		ShGuiCharInfoDescriptorStructureMap	char_info_map;
-
+		uint32_t							total_char_count;
 
 
 		VkBuffer							vertex_staging_buffer;
 		VkDeviceMemory						vertex_staging_memory;
-
-		uint32_t							vertex_text_data_size;
 
 		VkBuffer							vertex_buffer;
 		VkDeviceMemory						vertex_memory;
@@ -170,7 +171,9 @@ static uint8_t SH_GUI_CALL shGuiSetGraphicsQueue(const uint32_t graphics_queue_f
 
 extern uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_pass, const uint32_t max_gui_items);
 
-extern uint8_t SH_GUI_CALL shGuiBuilTextPipeline(ShGui* p_gui, VkRenderPass render_pass, const uint32_t max_gui_items);
+extern uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, const uint32_t max_gui_items);
+
+extern uint8_t SH_GUI_CALL shGuiSetDefaultValues(ShGui* p_gui, ShGuiTheme theme);
 
 extern uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record);
 

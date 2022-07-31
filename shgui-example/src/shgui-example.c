@@ -24,7 +24,7 @@ int main(void) {
 	uint32_t width = WINDOW_WIDTH;
 	uint32_t height = WINDOW_HEIGHT;
 
-	const char* application_name = "shvulkan example";
+	const char* application_name = "shgui example";
 
 	ShVkCore		core	= { 0 };
 	GLFWwindow*		window	= createWindow(width, height, application_name);
@@ -92,7 +92,9 @@ int main(void) {
 	);
 
 	shGuiBuildRegionPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
-	shGuiBuilTextPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
+	shGuiBuildTextPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
+
+	shGuiSetDefaultValues(&gui, SH_GUI_THEME_DARK);
 
 	uint32_t frame_idx;
 	float last_time = (float)glfwGetTime();
@@ -126,14 +128,21 @@ int main(void) {
 			"my window"
 		);
 
-		shGuiText(&gui, "Q", 5.0f, 0.0f, 0.0f);
+		shGuiText(&gui, "QWERTY", 100.0f, -600.0f, 0.0f);
+		shGuiText(&gui, "UIOP", 10.0f, -600.0f, -300.0f);
 
 		shGuiWriteMemory(&gui, 1);
 
 
 		{//SHVULKAN CODE, write your own
 			shFrameReset(&core, 0);
-			shFrameBegin(&core, 0, &frame_idx);
+			float v = 0.5f;
+			shFrameBegin(
+				&core, 
+				0,
+				(VkClearColorValue){ { v, v, v, 1.0f } },
+				&frame_idx
+			);
 		}//SHVULKAN CODE, write your own
 
 
