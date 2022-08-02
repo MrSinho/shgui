@@ -731,7 +731,7 @@ uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui) {
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name) {
+uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name, ShGuiRegionFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float cursor_x = *p_gui->inputs.p_cursor_pos_x;
@@ -783,7 +783,7 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 	(cursor_y >= p_region->size_position[3] - (item.region.size_position[1] / 2.0f)) &&
 	(cursor_y <= p_region->size_position[3] + (item.region.size_position[1] / 2.0f))
 	) {
-		if (p_gui->inputs.p_mouse_events[1] == 1) {
+		if (p_gui->inputs.p_mouse_events[1] == 1 && (flags & SH_GUI_MOVABLE)) {
 			
 			p_region->size_position[2]		= cursor_x;
 			p_region->size_position[3]		= cursor_y;
@@ -817,6 +817,42 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 	p_gui->region_infos.region_count++;
 
 	return 0;
+}
+
+uint8_t SH_GUI_CALL shGuiBar(ShGui* p_gui, const float extent, const char* title, ShGuiRegionFlags flags) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+
+	float window_width = (float)p_gui->region_infos.fixed_states.scissor.extent.width;
+	float window_height = (float)p_gui->region_infos.fixed_states.scissor.extent.height;
+
+	float region_width = window_width;
+	float region_height = extent;
+	float region_pos_x = 0.0f;
+	float region_pos_y = window_height;
+
+	if (flags & SH_GUI_TOP || flags & SH_GUI_BOTTOM) {
+		region_width = window_width;
+		region_height = extent;
+		region_pos_x = 0.0f;
+		region_pos_y = 100.0f - extent;
+		if (flags & SH_GUI_BOTTOM) {
+			region_pos_y = -100.0f + extent;
+		}
+	}
+	if (flags & SH_GUI_LEFT || flags & SH_GUI_RIGHT) {
+		region_width = extent;
+		region_height = window_height;
+		region_pos_x = -100.0f + extent;
+		region_pos_y = 0.0f;
+		if (flags & SH_GUI_RIGHT) {
+			region_pos_x = 100.0f - extent;
+		}
+	}
+	shGuiRegion(
+		p_gui, region_width, region_height, region_pos_x, region_pos_y, title, flags
+	);
+
+	return 1;
 }
 
 #define SH_GUI_LOAD_CHAR(font, char_name, _char)\

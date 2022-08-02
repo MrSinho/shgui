@@ -95,6 +95,14 @@ typedef enum ShGuiInstructions {
 	SH_GUI_INITIALIZE	= 0b010
 } ShGuiInstructions;
 
+typedef enum ShGuiRegionFlags {
+	SH_GUI_TOP			= 0b00001,
+	SH_GUI_BOTTOM		= 0b00010,
+	SH_GUI_LEFT			= 0b00100,
+	SH_GUI_RIGHT		= 0b01000,
+	SH_GUI_MOVABLE		= 0b10000
+} ShGuiRegionFlags;
+
 
 typedef struct ShGui {
 	VkDevice					device;
@@ -202,7 +210,9 @@ extern uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record);
 
 extern uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui);
 
-extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name);
+extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name, ShGuiRegionFlags flags);
+
+extern uint8_t SH_GUI_CALL shGuiBar(ShGui* p_gui, const float extent, const char* title, ShGuiRegionFlags flags);
 
 extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const char* text, const float scale, const float pos_x, const float pos_y);
 

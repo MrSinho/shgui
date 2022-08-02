@@ -148,13 +148,17 @@ int main(void) {
 		cursor_pos_y = (float)d_cursor_pos_y - ((float)(height) / 2.0f);
 
 
+		shGuiBar(&gui, 5.0f, "POWER", SH_GUI_TOP);
+
 		SH_GUI_REGION_CONDITION(
 			gui,
+
 			shGuiRegion(
 				&gui,
 				30.0f, 20.0f,
 				-50.0f, 20.0f,
-				"QUERTY"
+				"QUERTY",
+				0
 			),
 
 			puts("region clicked!");
@@ -165,11 +169,14 @@ int main(void) {
 				&gui,
 				10.0f, 10.0f,
 				70.0f, 70.0f,
-				"UIOP"
+				NULL,
+				SH_GUI_MOVABLE
 			)) {
 				puts("another region clicked!");
 			}
 		);
+
+
 
 		shGuiText(&gui, "QWERTY", 3.0f, -60.0f, 0.0f);
 		shGuiText(&gui, "UIOP", 3.0f, -60.0f, -30.0f);
