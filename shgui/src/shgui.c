@@ -930,6 +930,8 @@ uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
 		if (p_text_data != NULL) {
 			free(p_gui->text_infos.p_text_data);
 		}
+
+		shVkReleaseShGuiCharInfoDescriptorStructureMap(&p_gui->text_infos.char_info_map);
 	}
 
 	return 1;
