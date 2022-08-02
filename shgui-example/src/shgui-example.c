@@ -148,26 +148,26 @@ int main(void) {
 		cursor_pos_y = (float)d_cursor_pos_y - ((float)(height) / 2.0f);
 
 
-		SH_GUI_WIDGET_CONDITION(
+		SH_GUI_REGION_CONDITION(
 			gui,
-			shGuiWindow(
+			shGuiRegion(
 				&gui,
 				30.0f, 20.0f,
 				-50.0f, 20.0f,
 				"QUERTY"
 			),
 
-			puts("window clicked!");
+			puts("region clicked!");
 			
 			,
 
-			if (shGuiWindow(
+			if (shGuiRegion(
 				&gui,
 				10.0f, 10.0f,
 				70.0f, 70.0f,
 				"UIOP"
 			)) {
-				puts("another window clicked!");
+				puts("another region clicked!");
 			}
 		);
 
