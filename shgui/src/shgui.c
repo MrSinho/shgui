@@ -731,7 +731,7 @@ uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui) {
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name) {
+uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float cursor_x = *p_gui->inputs.p_cursor_pos_x;
@@ -918,6 +918,7 @@ uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
 		ShGuiRegion* p_regions_data = p_gui->region_infos.p_regions_data;
 		uint8_t* p_regions_overwriten_data = p_gui->region_infos.p_regions_overwritten_data;
 		uint8_t* p_regions_clicked = p_gui->region_infos.p_regions_clicked;
+		uint8_t* p_regions_active = p_gui->region_infos.p_regions_active;
 		if (p_regions_data != NULL) {
 			free(p_regions_data);
 		}
@@ -927,7 +928,10 @@ uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
 		if (p_regions_clicked != NULL) {
 			free(p_regions_clicked);
 		}
-		
+		if (p_regions_active != NULL) {
+			free(p_regions_active);
+		}
+
 
 		ShGuiText* p_text_data = p_gui->text_infos.p_text_data;
 		if (p_text_data != NULL) {
