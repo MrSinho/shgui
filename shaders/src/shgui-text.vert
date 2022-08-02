@@ -25,7 +25,7 @@ layout (std140, set = 0, binding = 0) uniform textUniform {// dynamic uniform
 void main() {
 	gl_PointSize = utext.position_scale.z * TEXT_SCALE_MULTIPLIER / length(pconst.window_size);
 	gl_Position = pconst.projection * vec4(
-		(utext.position_scale.xy + vertex_position.xy * utext.position_scale.z) / pconst.window_size, 
+		((vertex_position.xy * utext.position_scale.z) + utext.position_scale.xy * 2.0f) / pconst.window_size, 
 		0.0f, 1.0f
 		);
 	//gl_Position = pconst.projection * vec4(

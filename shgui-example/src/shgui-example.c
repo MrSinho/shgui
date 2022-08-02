@@ -46,7 +46,7 @@ int main(void) {
 		shSelectPhysicalDevice(&core, VK_QUEUE_GRAPHICS_BIT);
 		shSetLogicalDevice(&core);
 		shInitSwapchainData(&core);
-		shInitDepthData(&core);
+		//shInitDepthData(&core);
 		shCreateRenderPass(&core);
 		shSetFramebuffers(&core);
 		shCreateGraphicsCommandBuffers(&core, 1);
@@ -114,18 +114,26 @@ int main(void) {
 			last_time = now;
 		}//GLFW BASED CODE
 
-		shGuiWindow(
-			&gui,
-			200.0f, 100.0f,
-			-150.0f, 100.0f,
-			"my window"
-		);
+
+
+		double d_cursor_pos_x, d_cursor_pos_y = 0.0;
+		glfwGetCursorPos(window, &d_cursor_pos_x, &d_cursor_pos_y);
+
+		cursor_pos_x = (float)d_cursor_pos_x - ((float)(width) / 2.0f);
+		cursor_pos_y = (float)d_cursor_pos_y - ((float)(height) / 2.0f);
 
 		shGuiWindow(
 			&gui,
 			200.0f, 100.0f,
+			-150.0f, 100.0f,
+			"QUERTY"
+		);
+
+		shGuiWindow(
+			&gui,
+			400.0f, 400.0f,
 			150.0f, 100.0f,
-			"my window"
+			"UIOP"
 		);
 
 		shGuiText(&gui, "QWERTY", 100.0f, -600.0f, 0.0f);
@@ -146,18 +154,10 @@ int main(void) {
 		}//SHVULKAN CODE, write your own
 
 
-		
 
-		double d_cursor_pos_x, d_cursor_pos_y = 0.0;
-		glfwGetCursorPos(window, &d_cursor_pos_x, &d_cursor_pos_y);
-
-		cursor_pos_x = (float)d_cursor_pos_x - ((float)(width) / 2.0f);
-		cursor_pos_y = (float)d_cursor_pos_y - ((float)(height) / 2.0f);
-
-		//printf("cur %f %f\n", cursor_pos_x, cursor_pos_y);
-
-		shGuiGetEvents(&gui);
 		shGuiRender(&gui);
+
+
 
 		{//SHVULKAN CODE
 			shFrameEnd(&core, 0, frame_idx);

@@ -77,7 +77,7 @@ typedef struct ShGuiText {
 
 typedef struct ShGuiItem {
 	ShGuiRegion region;
-	ShGuiChar	text;
+	ShGuiText*	p_text;
 } ShGuiItem;
 
 

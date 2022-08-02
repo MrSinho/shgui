@@ -410,7 +410,7 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 		shBindVertexBufferMemory(p_gui->device, p_gui->text_infos.vertex_buffer, 0, p_gui->text_infos.vertex_memory);
 	}//VERTEX BUFFER
 
-	p_gui->text_infos.char_distance_offset = 1.5f;
+	p_gui->text_infos.char_distance_offset = 1.0f;
 
 	return 1;
 }
@@ -698,28 +698,31 @@ uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui) {
 	float cursor_x = *p_gui->inputs.p_cursor_pos_x;
 	float cursor_y = *p_gui->inputs.p_cursor_pos_y;
 	
-	for (uint32_t item_idx = 0; item_idx < p_gui->region_infos.region_count; item_idx++) {
-		ShGuiRegion* p_item	= &p_gui->region_infos.p_regions_data[item_idx];
-		float item_size_x	= p_item->size_position[0];
-		float item_size_y	= p_item->size_position[1];
-		float item_pos_x	= p_item->size_position[2];
-		float item_pos_y	= p_item->size_position[3];
-		
-		if (
-			(cursor_x >= item_pos_x - (item_size_x / 2.0f)) && 
-			(cursor_x <= item_pos_x + (item_size_x / 2.0f)) &&
-			(cursor_y >= item_pos_y - (item_size_y / 2.0f)) &&
-			(cursor_y <= item_pos_y + (item_size_y / 2.0f))
-			) {
-
-			if (p_gui->inputs.p_mouse_events[0] == 1) {
-				p_item->size_position[2] = cursor_x;
-				p_item->size_position[3] = cursor_y;
-				p_gui->region_infos.p_regions_overwritten_data[item_idx] = 1;
-			}
-
-		}
-	}
+	//for (uint32_t item_idx = 0; item_idx < p_gui->region_infos.region_count; item_idx++) {
+	//	ShGuiRegion* p_region = &p_gui->region_infos.p_regions_data[item_idx];
+	//	float item_size_x	= p_region ->size_position[0];
+	//	float item_size_y	= p_region ->size_position[1];
+	//	float item_pos_x	= p_region ->size_position[2];
+	//	float item_pos_y	= p_region ->size_position[3];
+	//	
+	//	if (
+	//		(cursor_x >= item_pos_x - (item_size_x / 2.0f)) && 
+	//		(cursor_x <= item_pos_x + (item_size_x / 2.0f)) &&
+	//		(cursor_y >= item_pos_y - (item_size_y / 2.0f)) &&
+	//		(cursor_y <= item_pos_y + (item_size_y / 2.0f))
+	//		) {
+	//
+	//		if (p_gui->inputs.p_mouse_events[0] == 1) {
+	//			p_region ->size_position[2] = cursor_x;
+	//			p_region ->size_position[3] = cursor_y;
+	//
+	//
+	//
+	//			//p_gui->region_infos.p_regions_overwritten_data[item_idx] = 1;
+	//		}
+	//
+	//	}
+	//}
 
 	return 1;
 }
@@ -727,32 +730,68 @@ uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui) {
 uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
-	if (!p_gui->region_infos.p_regions_overwritten_data[p_gui->region_infos.region_count]) {
-		float window_size_x = (float)p_gui->region_infos.fixed_states.scissor.extent.width;
-		float window_size_y = (float)p_gui->region_infos.fixed_states.scissor.extent.height;
+	float cursor_x = *p_gui->inputs.p_cursor_pos_x;
+	float cursor_y = *p_gui->inputs.p_cursor_pos_y;
 
-		ShGuiItem item = {
+	float window_size_x = (float)p_gui->region_infos.fixed_states.scissor.extent.width;
+	float window_size_y = (float)p_gui->region_infos.fixed_states.scissor.extent.height;
+	
+	ShGuiItem item = {
 			{//region
 				{ width, height, pos_x, -pos_y }
 			},
-			{//text
-				0//load font vertices and indices
-			}
-		};
+			&p_gui->text_infos.p_text_data[p_gui->text_infos.text_count]
+	};
+	
+	
+	uint32_t		region_count	= p_gui->region_infos.region_count;
+	ShGuiRegion*	p_region		= &p_gui->region_infos.p_regions_data[region_count];
+	uint8_t			overwritten		= p_gui->region_infos.p_regions_overwritten_data[p_gui->region_infos.region_count];
 
-		memcpy(&p_gui->region_infos.p_regions_data[p_gui->region_infos.region_count], &item.region, sizeof(ShGuiRegion));
+	if (!overwritten) {
+		memcpy(p_region, &item.region, sizeof(ShGuiRegion));
+	}
+
+	if (name != NULL) {
+		float size = 15.0f;
+		shGuiText(p_gui, name, size, p_region->size_position[2] - p_region->size_position[0] / 2.0f, -p_region->size_position[3] + p_region->size_position[1] / 2.0f - size);
+	}
 		
-		if (name != NULL) {
-			for (uint32_t char_idx = 0; char_idx < strlen(name); char_idx++) {
-				switch (char_idx) {
+	//printf("text pos: %f, %f\n", p_gui->text_infos.char_info_map.pp_ShGuiCharInfo[0]->position_scale[0], p_gui->text_infos.char_info_map.pp_ShGuiCharInfo[0]->position_scale[1]);
+	//printf("window pos: %f, %f\n", p_gui->region_infos.p_regions_data[0].size_position[2], p_gui->region_infos.p_regions_data[0].size_position[3]);
 
-				}
+	if (
+	(cursor_x >= p_region->size_position[2] - (width / 2.0f)) &&
+	(cursor_x <= p_region->size_position[2] + (width / 2.0f)) &&
+	(cursor_y >= p_region->size_position[3] - (height / 2.0f)) &&
+	(cursor_y <= p_region->size_position[3] + (height / 2.0f))
+	) {
+		if (p_gui->inputs.p_mouse_events[0] == 1) {
+			
+			p_region->size_position[2]		= cursor_x;
+			p_region->size_position[3]		= cursor_y;
+			
+			uint32_t text_count				= p_gui->text_infos.text_count;
+			ShGuiText* p_text				= &p_gui->text_infos.p_text_data[p_gui->text_infos.text_count];
+
+			uint32_t		char_count	= (uint32_t)strlen(p_text->text);
+			for (uint32_t	char_idx	= 0; char_idx < char_count; char_idx++) {
+				ShGuiCharInfo* p_char_info = shVkGetShGuiCharInfoDescriptorStructure(
+					p_gui->text_infos.char_info_map, 
+					(p_gui->text_infos.total_char_count) - char_count + char_idx, 
+					0
+				);
+				//p_char_info->position_scale[0] = p_char_info->position_scale[0] = 
+				//	cursor_x + p_gui->text_infos.char_distance_offset * p_char_info->position_scale[2] * char_idx;
+				//p_char_info->position_scale[1] = cursor_y + p_char_info->position_scale[2];
 			}
+
+			p_gui->region_infos.p_regions_overwritten_data[region_count] = 1;
 		}
 	}
 
-
 	p_gui->region_infos.region_count++;
+
 
 	return 1;
 }
