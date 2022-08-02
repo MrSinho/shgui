@@ -911,6 +911,27 @@ uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
 	
 	shGuiDestroyPipelines(p_gui);
 
+	{
+		ShGuiRegion* p_regions_data = p_gui->region_infos.p_regions_data;
+		uint8_t* p_regions_overwriten_data = p_gui->region_infos.p_regions_overwritten_data;
+		uint8_t* p_regions_clicked = p_gui->region_infos.p_regions_clicked;
+		if (p_regions_data != NULL) {
+			free(p_regions_data);
+		}
+		if (p_regions_overwriten_data != NULL) {
+			free(p_regions_overwriten_data);
+		}
+		if (p_regions_clicked != NULL) {
+			free(p_regions_clicked);
+		}
+		
+
+		ShGuiText* p_text_data = p_gui->text_infos.p_text_data;
+		if (p_text_data != NULL) {
+			free(p_gui->text_infos.p_text_data);
+		}
+	}
+
 	return 1;
 }
 
