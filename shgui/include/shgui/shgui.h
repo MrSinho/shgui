@@ -153,7 +153,7 @@ typedef struct ShGui {
 
 
 
-#define SH_GUI_WIDGET_CONDITION(gui, condition, additional, create_widget)\
+#define SH_GUI_REGION_CONDITION(gui, condition, additional, create_widget)\
 	if ((uint8_t)(condition)) {\
 	((gui).region_infos.p_regions_active[gui.region_infos.region_count + 1] = 1 * (gui).region_infos.p_regions_active[gui.region_infos.region_count + 1] == 0); additional; }\
 	 if ((gui).region_infos.p_regions_active[gui.region_infos.region_count + 1]) { create_widget };
@@ -202,11 +202,9 @@ extern uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record);
 
 extern uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui);
 
-extern uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name);
+extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name);
 
 extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const char* text, const float scale, const float pos_x, const float pos_y);
-
-extern uint8_t SH_GUI_CALL shGuiButton(ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiInputField(ShGui* p_gui);
 
