@@ -98,6 +98,9 @@ int main(void) {
 
 	uint32_t frame_idx;
 	float last_time = (float)glfwGetTime();
+	
+	
+	uint8_t window_1_active = 0;
 	for (;!glfwWindowShouldClose(window);) {
 		
 		{//GLFW BASED CODE
@@ -144,23 +147,29 @@ int main(void) {
 		cursor_pos_x = (float)d_cursor_pos_x - ((float)(width) / 2.0f);
 		cursor_pos_y = (float)d_cursor_pos_y - ((float)(height) / 2.0f);
 
-		if (shGuiWindow(
-			&gui,
-			30.0f, 20.0f,
-			-50.0f, 20.0f,
-			"QUERTY"
-		)) {
-			puts("window clicked");
-		}
 
-		if (shGuiWindow(
-			&gui,
-			10.0f, 10.0f,
-			70.0f, 70.0f,
-			"UIOP"
-		)) {
-			puts("another window clicked");
-		}
+		SH_GUI_WIDGET_CONDITION(
+			gui,
+			shGuiWindow(
+				&gui,
+				30.0f, 20.0f,
+				-50.0f, 20.0f,
+				"QUERTY"
+			),
+
+			puts("window clicked!");
+			
+			,
+
+			if (shGuiWindow(
+				&gui,
+				10.0f, 10.0f,
+				70.0f, 70.0f,
+				"UIOP"
+			)) {
+				puts("another window clicked!");
+			}
+		);
 
 		shGuiText(&gui, "QWERTY", 3.0f, -60.0f, 0.0f);
 		shGuiText(&gui, "UIOP", 3.0f, -60.0f, -30.0f);

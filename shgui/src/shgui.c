@@ -126,6 +126,7 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 		p_gui->region_infos.p_regions_data = calloc(1, p_gui->region_infos.regions_data_size);
 		p_gui->region_infos.p_regions_overwritten_data = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
 		p_gui->region_infos.p_regions_clicked = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
+		p_gui->region_infos.p_regions_active = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
 		
 		shPipelineCreateDescriptorBuffer(
 			p_gui->device, 
@@ -782,7 +783,7 @@ uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float hei
 	(cursor_y >= p_region->size_position[3] - (item.region.size_position[1] / 2.0f)) &&
 	(cursor_y <= p_region->size_position[3] + (item.region.size_position[1] / 2.0f))
 	) {
-		if (p_gui->inputs.p_mouse_events[0] == 1) {
+		if (p_gui->inputs.p_mouse_events[1] == 1) {
 			
 			p_region->size_position[2]		= cursor_x;
 			p_region->size_position[3]		= cursor_y;
@@ -801,8 +802,10 @@ uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float hei
 				//	cursor_x + p_gui->text_infos.char_distance_offset * p_char_info->position_scale[2] * char_idx;
 				//p_char_info->position_scale[1] = cursor_y + p_char_info->position_scale[2];
 			}
-
 			p_gui->region_infos.p_regions_overwritten_data[region_count] = 1;
+		}
+
+		if (p_gui->inputs.p_mouse_events[0] == 1) {
 			uint8_t rtrn = (*p_clicked) == 0;
 			(*p_clicked) = 1;
 			p_gui->region_infos.region_count++;

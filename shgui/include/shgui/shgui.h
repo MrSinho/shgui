@@ -69,6 +69,8 @@ typedef struct ShGuiChar {
 #define SH_GUI_TEXT_MAX_CHAR_COUNT	1024
 #endif//SH_GUI_TEXT_MAX_CHAR_COUNT
 
+
+
 typedef struct ShGuiText {
 	char		text[SH_GUI_TEXT_MAX_CHAR_COUNT];
 	ShGuiChar	chars[SH_GUI_TEXT_MAX_CHAR_COUNT];
@@ -109,14 +111,16 @@ typedef struct ShGui {
 	} default_infos;
 
 	uint32_t					active_item_idx;
+
 	struct {
 		VkBuffer				staging_buffer;
 		VkDeviceMemory			staging_memory;
 		uint32_t				regions_data_size;
 
 		ShGuiRegion*			p_regions_data;
-		uint8_t*				p_regions_overwritten_data;
-		uint8_t*				p_regions_clicked;
+		uint8_t*				p_regions_overwritten_data;	//gonna merge
+		uint8_t*				p_regions_clicked;			//gonna merge
+		uint8_t*				p_regions_active;			//gonna merge
 		uint32_t				region_count;
 
 		ShVkPipeline			graphics_pipeline;
@@ -146,6 +150,13 @@ typedef struct ShGui {
 
 
 } ShGui;
+
+
+
+#define SH_GUI_WIDGET_CONDITION(gui, condition, additional, create_widget)\
+	if ((uint8_t)(condition)) {\
+	((gui).region_infos.p_regions_active[gui.region_infos.region_count + 1] = 1 * (gui).region_infos.p_regions_active[gui.region_infos.region_count + 1] == 0); additional; }\
+	 if ((gui).region_infos.p_regions_active[gui.region_infos.region_count + 1]) { create_widget };
 
 
 
