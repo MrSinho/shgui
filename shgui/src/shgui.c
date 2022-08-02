@@ -125,7 +125,8 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 		}
 		p_gui->region_infos.p_regions_data = calloc(1, p_gui->region_infos.regions_data_size);
 		p_gui->region_infos.p_regions_overwritten_data = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
-
+		p_gui->region_infos.p_regions_clicked = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
+		
 		shPipelineCreateDescriptorBuffer(
 			p_gui->device, 
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 
@@ -410,46 +411,45 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 		shBindVertexBufferMemory(p_gui->device, p_gui->text_infos.vertex_buffer, 0, p_gui->text_infos.vertex_memory);
 	}//VERTEX BUFFER
 
-	p_gui->text_infos.char_distance_offset = 1.0f;
+	p_gui->text_infos.char_distance_offset = 5.0f;
 
 	return 1;
 }
 
-uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiTheme theme) {
+uint8_t shGuiSetDefaultValues(ShGui* p_gui, const ShGuiDefaultValues values, const ShGuiInstructions instructions) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
-	shGuiError(theme >= SH_GUI_THEME_MAX_ENUM, "invalid gui theme", return 0)
+	shGuiError(values >= SH_GUI_DEFAULT_VALUES_MAX_ENUM, "invalid gui default values", return 0)
 
 	VkDevice			device			= p_gui->device;
 	VkCommandBuffer		cmd_buffer		= p_gui->cmd_buffer;
 	VkFence				fence			= p_gui->fence;
 
-	VkBuffer			staging_buffer	= NULL;
-	VkDeviceMemory		staging_memory	= NULL;
-
+	
 	float staging_data[8] = { 0 };
 
-	shCreateBuffer(
-		device,
-		sizeof(staging_data),
-		VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		&staging_buffer
-	);
-	shAllocateMemory(
-		device,
-		p_gui->physical_device,
-		staging_buffer,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		&staging_memory
-	);
-	shBindMemory(
-		device,
-		staging_buffer,
-		0,
-		staging_memory
-	);
+	if (instructions & SH_GUI_INITIALIZE) {
+		shCreateBuffer(
+			device,
+			sizeof(staging_data),
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			&p_gui->default_infos.staging_buffer
+		);
+		shAllocateMemory(
+			device,
+			p_gui->physical_device,
+			p_gui->default_infos.staging_buffer,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			&p_gui->default_infos.staging_memory
+		);
+		shBindMemory(
+			device,
+			p_gui->default_infos.staging_buffer,
+			0,
+			p_gui->default_infos.staging_memory
+		);
+	}
 
-	switch(theme) {
-	case SH_GUI_THEME_DARK:
+	if (values & SH_GUI_THEME_DARK) {
 		staging_data[0] = 0.05f;//WINDOWS
 		staging_data[1] = 0.05f;
 		staging_data[2] = 0.05f;
@@ -457,8 +457,8 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiTheme theme) {
 		staging_data[4] = 1.0f;//TEXT
 		staging_data[5] = 1.0f;
 		staging_data[6] = 1.0f;
-		break;
-	case SH_GUI_THEME_LIGHT:
+	}
+	if (values & SH_GUI_THEME_LIGHT) {
 		staging_data[0] = 0.8f;//WINDOWS
 		staging_data[1] = 0.8f;
 		staging_data[2] = 0.8f;
@@ -466,18 +466,19 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiTheme theme) {
 		staging_data[4] = 0.0f;//TEXT
 		staging_data[5] = 0.0f;
 		staging_data[6] = 0.0f;
-		break;
 	}
 
-	shWriteMemory(device, staging_memory, 0, sizeof(staging_data), staging_data);
+	shWriteMemory(device, p_gui->default_infos.staging_memory, 0, sizeof(staging_data), staging_data);
 
-	shWaitForFence(device, &fence);
-	shResetFence(device, &fence);
-	shBeginCommandBuffer(cmd_buffer);
+	if (instructions & SH_GUI_RECORD) {
+		shWaitForFence(device, &fence);
+		shResetFence(device, &fence);
+		shBeginCommandBuffer(cmd_buffer);
+	}
 	
 	shCopyBuffer(
 		cmd_buffer,
-		staging_buffer,
+		p_gui->default_infos.staging_buffer,
 		0,
 		0,
 		16,
@@ -486,16 +487,18 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiTheme theme) {
 
 	shCopyBuffer(
 		cmd_buffer,
-		staging_buffer,
+		p_gui->default_infos.staging_buffer,
 		16,
 		0,
 		16,
 		p_gui->text_infos.graphics_pipeline.descriptor_buffers[1]
 	);
 
-	shEndCommandBuffer(cmd_buffer);
-	shQueueSubmit(1, &cmd_buffer, p_gui->graphics_queue.queue, fence);
-	shWaitForFence(device, &fence);
+	if (instructions & SH_GUI_RECORD) {
+		shEndCommandBuffer(cmd_buffer);
+		shQueueSubmit(1, &cmd_buffer, p_gui->graphics_queue.queue, fence);
+		shWaitForFence(device, &fence);
+	}
 
 	return 1;
 }
@@ -738,7 +741,12 @@ uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float hei
 	
 	ShGuiItem item = {
 			{//region
-				{ width, height, pos_x, -pos_y }
+				{ 
+					width / 100.0f * window_size_x, 
+					height / 100.0f * window_size_y, 
+					pos_x / 100.0f * window_size_x / 2.0f, 
+					-pos_y / 100.0f * window_size_y / 2.0f 
+				}
 			},
 			&p_gui->text_infos.p_text_data[p_gui->text_infos.text_count]
 	};
@@ -753,18 +761,26 @@ uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float hei
 	}
 
 	if (name != NULL) {
-		float size = 15.0f;
-		shGuiText(p_gui, name, size, p_region->size_position[2] - p_region->size_position[0] / 2.0f, -p_region->size_position[3] + p_region->size_position[1] / 2.0f - size);
+		float size = 3.0f;
+		shGuiText(
+			p_gui, 
+			name, 
+			size, 
+			(p_region->size_position[2] - p_region->size_position[0] / 2.0f + 2.0f) * 100.0f / window_size_x * 2.0f,//p_region->size_position[2] - p_region->size_position[0] / 2.0f, 
+			(-p_region->size_position[3] + p_region->size_position[1] / 2.0f) * 100.0f / window_size_y * 2.0f - size - 1.0f //-p_region->size_position[3] + p_region->size_position[1] / 2.0f - size
+		);
 	}
 		
 	//printf("text pos: %f, %f\n", p_gui->text_infos.char_info_map.pp_ShGuiCharInfo[0]->position_scale[0], p_gui->text_infos.char_info_map.pp_ShGuiCharInfo[0]->position_scale[1]);
 	//printf("window pos: %f, %f\n", p_gui->region_infos.p_regions_data[0].size_position[2], p_gui->region_infos.p_regions_data[0].size_position[3]);
 
+	uint8_t* p_clicked = &p_gui->region_infos.p_regions_clicked[p_gui->region_infos.region_count];
+
 	if (
-	(cursor_x >= p_region->size_position[2] - (width / 2.0f)) &&
-	(cursor_x <= p_region->size_position[2] + (width / 2.0f)) &&
-	(cursor_y >= p_region->size_position[3] - (height / 2.0f)) &&
-	(cursor_y <= p_region->size_position[3] + (height / 2.0f))
+	(cursor_x >= p_region->size_position[2] - (item.region.size_position[0] / 2.0f)) &&
+	(cursor_x <= p_region->size_position[2] + (item.region.size_position[0] / 2.0f)) &&
+	(cursor_y >= p_region->size_position[3] - (item.region.size_position[1] / 2.0f)) &&
+	(cursor_y <= p_region->size_position[3] + (item.region.size_position[1] / 2.0f))
 	) {
 		if (p_gui->inputs.p_mouse_events[0] == 1) {
 			
@@ -787,13 +803,17 @@ uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float hei
 			}
 
 			p_gui->region_infos.p_regions_overwritten_data[region_count] = 1;
+			uint8_t rtrn = (*p_clicked) == 0;
+			(*p_clicked) = 1;
+			p_gui->region_infos.region_count++;
+			return rtrn;
 		}
 	}
 
+	(*p_clicked) = 0;
 	p_gui->region_infos.region_count++;
 
-
-	return 1;
+	return 0;
 }
 
 #define SH_GUI_LOAD_CHAR(font, char_name, _char)\
@@ -807,12 +827,20 @@ uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const char* s_text, const float scal
 	ShGuiText* p_text = &p_gui->text_infos.p_text_data[p_gui->text_infos.text_count];
 	strcpy(p_text->text, s_text);
 
-	
+	float window_size_x = (float)p_gui->region_infos.fixed_states.scissor.extent.width;
+	float window_size_y = (float)p_gui->region_infos.fixed_states.scissor.extent.height;
+
 	for (uint32_t char_idx = 0; char_idx < strlen(s_text); char_idx++) {
 		ShGuiCharInfo* p_char_info = shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, p_gui->text_infos.total_char_count, 0);
-		p_char_info->position_scale[0] = pos_x + p_gui->text_infos.char_distance_offset * scale * char_idx;
-		p_char_info->position_scale[1] = -pos_y;
-		p_char_info->position_scale[2] = scale;
+		
+		//width / 100.0f * window_size_x,
+		//	height / 100.0f * window_size_y,
+		//	pos_x / 100.0f * window_size_x / 2.0f,
+		//	-pos_y / 100.0f * window_size_y / 2.0f
+		
+		p_char_info->position_scale[0] = pos_x / 100.0f * window_size_x / 2.0f + p_gui->text_infos.char_distance_offset * scale * char_idx;
+		p_char_info->position_scale[1] = -pos_y / 100.0f * window_size_y / 2.0f;
+		p_char_info->position_scale[2] = scale / 100.0f * window_size_y;
 		p_gui->text_infos.total_char_count++;
 
 		switch (s_text[char_idx]) {
@@ -854,12 +882,35 @@ uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const char* s_text, const float scal
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
-	shClearBufferMemory(p_gui->device, p_gui->region_infos.staging_buffer, p_gui->region_infos.staging_memory);
+uint8_t SH_GUI_CALL shGuiDestroyPipelines(ShGui* p_gui) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+
+	shFixedStatesRelease(&p_gui->region_infos.fixed_states);
 	shPipelineClearDescriptorBufferMemory(p_gui->device, 0, &p_gui->region_infos.graphics_pipeline);
+	shPipelineClearDescriptorBufferMemory(p_gui->device, 1, &p_gui->region_infos.graphics_pipeline);
 	shPipelineRelease(p_gui->device, &p_gui->region_infos.graphics_pipeline);
 	
+
+	shFixedStatesRelease(&p_gui->text_infos.fixed_states);
+	shPipelineClearDescriptorBufferMemory(p_gui->device, 0, &p_gui->text_infos.graphics_pipeline);
+	shPipelineClearDescriptorBufferMemory(p_gui->device, 1, &p_gui->text_infos.graphics_pipeline);
 	shPipelineRelease(p_gui->device, &p_gui->text_infos.graphics_pipeline);
+
+	return 1;
+}
+
+uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+	
+	shClearBufferMemory(p_gui->device, p_gui->default_infos.staging_buffer, p_gui->default_infos.staging_memory);
+
+	shClearBufferMemory(p_gui->device, p_gui->region_infos.staging_buffer, p_gui->region_infos.staging_memory);
+	
+	shClearBufferMemory(p_gui->device, p_gui->text_infos.vertex_staging_buffer, p_gui->text_infos.vertex_staging_memory);
+	shClearBufferMemory(p_gui->device, p_gui->text_infos.vertex_buffer, p_gui->text_infos.vertex_memory);
+	
+	shGuiDestroyPipelines(p_gui);
+
 	return 1;
 }
 

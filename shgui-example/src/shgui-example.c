@@ -94,7 +94,7 @@ int main(void) {
 	shGuiBuildRegionPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
 	shGuiBuildTextPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
 
-	shGuiSetDefaultValues(&gui, SH_GUI_THEME_DARK);
+	shGuiSetDefaultValues(&gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
 
 	uint32_t frame_idx;
 	float last_time = (float)glfwGetTime();
@@ -112,6 +112,28 @@ int main(void) {
 			float now = (float)glfwGetTime();
 			delta_time = now - last_time;
 			last_time = now;
+
+			glfwGetWindowSize(window, &width, &height);
+			//Resize window
+			//if (width != gui.region_infos.fixed_states.scissor.extent.width || height != gui.region_infos.fixed_states.scissor.extent.height) {
+			//	shWaitDeviceIdle(core.device);
+			//	
+			//	shSwapchainRelease(&core);
+			//	shSurfaceRelease(&core);
+			//
+			//	glfwCreateWindowSurface(core.instance, window, NULL, &core.surface.surface);
+			//	core.surface.width = width;
+			//	core.surface.height = height;
+			//	shInitSwapchainData(&core);
+			//	shSetFramebuffers(&core);
+			//
+			//	shGuiDestroyPipelines(&gui);
+			//	shGuiBuildRegionPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
+			//	shGuiBuildTextPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
+			//
+			//	shGuiSetDefaultValues(&gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
+			//}
+
 		}//GLFW BASED CODE
 
 
@@ -122,22 +144,26 @@ int main(void) {
 		cursor_pos_x = (float)d_cursor_pos_x - ((float)(width) / 2.0f);
 		cursor_pos_y = (float)d_cursor_pos_y - ((float)(height) / 2.0f);
 
-		shGuiWindow(
+		if (shGuiWindow(
 			&gui,
-			200.0f, 100.0f,
-			-150.0f, 100.0f,
+			30.0f, 20.0f,
+			-50.0f, 20.0f,
 			"QUERTY"
-		);
+		)) {
+			puts("window clicked");
+		}
 
-		shGuiWindow(
+		if (shGuiWindow(
 			&gui,
-			400.0f, 400.0f,
-			150.0f, 100.0f,
+			10.0f, 10.0f,
+			70.0f, 70.0f,
 			"UIOP"
-		);
+		)) {
+			puts("another window clicked");
+		}
 
-		shGuiText(&gui, "QWERTY", 100.0f, -600.0f, 0.0f);
-		shGuiText(&gui, "UIOP", 10.0f, -600.0f, -300.0f);
+		shGuiText(&gui, "QWERTY", 3.0f, -60.0f, 0.0f);
+		shGuiText(&gui, "UIOP", 3.0f, -60.0f, -30.0f);
 
 		shGuiWriteMemory(&gui, 1);
 

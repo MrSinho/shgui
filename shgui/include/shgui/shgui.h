@@ -81,11 +81,16 @@ typedef struct ShGuiItem {
 } ShGuiItem;
 
 
-typedef enum ShGuiTheme {
-	SH_GUI_THEME_DARK	= 0,
-	SH_GUI_THEME_LIGHT,
-	SH_GUI_THEME_MAX_ENUM
-} ShGuiTheme;
+typedef enum ShGuiDefaultValues{
+	SH_GUI_THEME_DARK	= 0b0001,
+	SH_GUI_THEME_LIGHT	= 0b0010,
+	SH_GUI_DEFAULT_VALUES_MAX_ENUM
+} ShGuiDefaultValues;
+
+typedef enum ShGuiInstructions {
+	SH_GUI_RECORD		= 0b001,
+	SH_GUI_INITIALIZE	= 0b010
+} ShGuiInstructions;
 
 
 typedef struct ShGui {
@@ -97,6 +102,11 @@ typedef struct ShGui {
 	VkSurfaceKHR				surface;
 	ShGuiInputs					inputs;
 
+	struct {
+		VkBuffer			staging_buffer;
+		VkDeviceMemory		staging_memory;
+	} default_infos;
+
 	uint32_t					active_item_idx;
 	struct {
 		VkBuffer				staging_buffer;
@@ -105,6 +115,7 @@ typedef struct ShGui {
 
 		ShGuiRegion*			p_regions_data;
 		uint8_t*				p_regions_overwritten_data;
+		uint8_t*				p_regions_clicked;
 		uint32_t				region_count;
 
 		ShVkPipeline			graphics_pipeline;
@@ -173,7 +184,7 @@ extern uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass r
 
 extern uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, const uint32_t max_gui_items);
 
-extern uint8_t SH_GUI_CALL shGuiSetDefaultValues(ShGui* p_gui, ShGuiTheme theme);
+extern uint8_t SH_GUI_CALL shGuiSetDefaultValues(ShGui* p_gui, const ShGuiDefaultValues values, const ShGuiInstructions instruction);
 
 extern uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record);
 
@@ -188,6 +199,8 @@ extern uint8_t SH_GUI_CALL shGuiButton(ShGui* p_gui);
 extern uint8_t SH_GUI_CALL shGuiInputField(ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui);
+
+extern uint8_t SH_GUI_CALL shGuiDestroyPipelines(ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui);
 
