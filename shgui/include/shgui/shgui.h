@@ -65,8 +65,9 @@ typedef struct ShGuiChar {
 #endif//SH_GUI_MAX_CHAR_VERTEX_SIZE
 
 
-
+#ifndef SH_GUI_TEXT_MAX_CHAR_COUNT
 #define SH_GUI_TEXT_MAX_CHAR_COUNT	1024
+#endif//SH_GUI_TEXT_MAX_CHAR_COUNT
 
 typedef struct ShGuiText {
 	char		text[SH_GUI_TEXT_MAX_CHAR_COUNT];
