@@ -412,7 +412,7 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 		shBindVertexBufferMemory(p_gui->device, p_gui->text_infos.vertex_buffer, 0, p_gui->text_infos.vertex_memory);
 	}//VERTEX BUFFER
 
-	p_gui->text_infos.char_distance_offset = 5.0f;
+	p_gui->text_infos.char_distance_offset = 3.0f;
 
 	return 1;
 }
@@ -831,7 +831,7 @@ uint8_t SH_GUI_CALL shGuiBar(ShGui* p_gui, const float extent, const char* title
 	float region_pos_y = window_height;
 
 	if (flags & SH_GUI_TOP || flags & SH_GUI_BOTTOM) {
-		region_width = window_width;
+		region_width = 100.0f;
 		region_height = extent;
 		region_pos_x = 0.0f;
 		region_pos_y = 100.0f - extent;
@@ -841,13 +841,14 @@ uint8_t SH_GUI_CALL shGuiBar(ShGui* p_gui, const float extent, const char* title
 	}
 	if (flags & SH_GUI_LEFT || flags & SH_GUI_RIGHT) {
 		region_width = extent;
-		region_height = window_height;
+		region_height = 100.0f;
 		region_pos_x = -100.0f + extent;
 		region_pos_y = 0.0f;
 		if (flags & SH_GUI_RIGHT) {
 			region_pos_x = 100.0f - extent;
 		}
 	}
+
 	shGuiRegion(
 		p_gui, region_width, region_height, region_pos_x, region_pos_y, title, flags
 	);
@@ -877,7 +878,7 @@ uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const char* s_text, const float scal
 		//	pos_x / 100.0f * window_size_x / 2.0f,
 		//	-pos_y / 100.0f * window_size_y / 2.0f
 		
-		p_char_info->position_scale[0] = pos_x / 100.0f * window_size_x / 2.0f + p_gui->text_infos.char_distance_offset * scale * char_idx;
+		p_char_info->position_scale[0] = pos_x / 100.0f * window_size_x / 2.0f + p_gui->text_infos.char_distance_offset * scale * 2.0f * char_idx;
 		p_char_info->position_scale[1] = -pos_y / 100.0f * window_size_y / 2.0f;
 		p_char_info->position_scale[2] = scale / 100.0f * window_size_y;
 		p_gui->text_infos.total_char_count++;

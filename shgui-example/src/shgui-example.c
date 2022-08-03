@@ -15,7 +15,7 @@ GLFWwindow* createWindow(const uint32_t width, const uint32_t height, const char
 const char* readBinary(const char* path, uint32_t* p_size);
 
 #define WINDOW_WIDTH 720
-#define WINDOW_HEIGHT 720
+#define WINDOW_HEIGHT 480
 
 #define MAX_GUI_ITEMS 256
 
@@ -147,7 +147,6 @@ int main(void) {
 		cursor_pos_x = (float)d_cursor_pos_x - ((float)(width) / 2.0f);
 		cursor_pos_y = (float)d_cursor_pos_y - ((float)(height) / 2.0f);
 
-
 		shGuiBar(&gui, 5.0f, "POWER", SH_GUI_TOP);
 
 		SH_GUI_REGION_CONDITION(
@@ -177,9 +176,8 @@ int main(void) {
 		);
 
 
-
-		shGuiText(&gui, "QWERTY", 3.0f, -60.0f, 0.0f);
-		shGuiText(&gui, "UIOP", 3.0f, -60.0f, -30.0f);
+		//shGuiText(&gui, "QWERTY", 3.0f, -60.0f, 0.0f);
+		//shGuiText(&gui, "UIOP", 3.0f, -60.0f, -30.0f);
 
 		shGuiWriteMemory(&gui, 1);
 
