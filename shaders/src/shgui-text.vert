@@ -13,7 +13,7 @@ layout (push_constant) uniform pushConstant {
 
 
 
-#define TEXT_SCALE_MULTIPLIER 80
+#define TEXT_SCALE_MULTIPLIER 1.0f
 
 
 layout (std140, set = 0, binding = 0) uniform textUniform {// dynamic uniform
@@ -23,7 +23,7 @@ layout (std140, set = 0, binding = 0) uniform textUniform {// dynamic uniform
 
 
 void main() {
-	gl_PointSize = utext.position_scale.z * TEXT_SCALE_MULTIPLIER / length(pconst.window_size * 3.5f) + 1.0f;
+	gl_PointSize = utext.position_scale.z / 10.0f * TEXT_SCALE_MULTIPLIER;
 	gl_Position = pconst.projection * vec4(
 		((vertex_position.xy * utext.position_scale.z) + utext.position_scale.xy * 2.0f) / pconst.window_size, 
 		0.0f, 1.0f

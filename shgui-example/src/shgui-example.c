@@ -14,8 +14,8 @@ GLFWwindow* createWindow(const uint32_t width, const uint32_t height, const char
 
 const char* readBinary(const char* path, uint32_t* p_size);
 
-#define WINDOW_WIDTH 720
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 800
 
 #define MAX_GUI_ITEMS 256
 
@@ -101,7 +101,7 @@ int main(void) {
 	
 	
 	uint8_t window_1_active = 0;
-	for (;!glfwWindowShouldClose(window);) {
+	while (!glfwWindowShouldClose(window)) {
 		
 		{//GLFW BASED CODE
 			glfwPollEvents();
@@ -155,9 +155,9 @@ int main(void) {
 			shGuiRegion(
 				&gui,
 				30.0f, 20.0f,
-				-50.0f, 20.0f,
+				0.0f, 0.0f,
 				"QUERTY",
-				0
+				SH_GUI_MOVABLE | SH_GUI_RELATIVE
 			),
 
 			puts("region clicked!");
@@ -166,18 +166,20 @@ int main(void) {
 
 			if (shGuiRegion(
 				&gui,
-				10.0f, 10.0f,
-				70.0f, 70.0f,
+				100.0f, 100.0f,
+				200.0f, 100.0f,
 				NULL,
-				SH_GUI_MOVABLE
+				SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_MINIMIZABLE
 			)) {
 				puts("another region clicked!");
 			}
 		);
 
 
-		//shGuiText(&gui, "QWERTY", 3.0f, -60.0f, 0.0f);
-		//shGuiText(&gui, "UIOP", 3.0f, -60.0f, -30.0f);
+		shGuiText(&gui, "QWERTY", 25.0f, 0.0f, 0.0f);
+		shGuiText(&gui, "QWERTY", 50.0f, 0.0f, -50.0f);
+		shGuiText(&gui, "QWERTY", 100.0f, 0.0f, -150.0f);
+		shGuiText(&gui, "QWERTY", 200.0f, 0.0f, -300.0f);
 
 		shGuiWriteMemory(&gui, 1);
 
@@ -188,7 +190,7 @@ int main(void) {
 			shFrameBegin(
 				&core, 
 				0,
-				(VkClearColorValue){ { v, v, v, 1.0f } },
+				(VkClearColorValue){ { 1.0, v, v, 1.0f } },
 				&frame_idx
 			);
 		}//SHVULKAN CODE, write your own
