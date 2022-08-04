@@ -4,11 +4,12 @@ Features:
 * Widgets
     * [x] menu bar
     * [ ] menu popup
+    * [ ] menu items 
     * [x] window
         * [x] highlight edge
-        * [ ] movable
-        * [ ] close
-        * [ ] input conditions
+        * [x] movable
+        * [x] close
+        * [x] input conditions
     * [x] text
 
 
