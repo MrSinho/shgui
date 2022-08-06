@@ -105,6 +105,8 @@ int main(void) {
 	
 	
 	uint8_t window_1_active = 0;
+
+	float hey = 100.0f;
 	while (!glfwWindowShouldClose(window)) {
 		
 		{//GLFW BASED CODE
@@ -163,27 +165,37 @@ int main(void) {
 			SH_GUI_MOVABLE | SH_GUI_RELATIVE | SH_GUI_RESIZABLE
 		)) {
 			puts("region clicked!");
-			p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count] = 1 * (p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count] == 0); 
+			p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count] = 1 * (p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count] == 0);
 		}
 		if (p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count]) {
-			//p_gui->region_infos.p_regions_data[p_gui->region_infos.region_count].size_position[0] = 100.0f;
 			if (shGuiRegion(p_gui, 100.0f, 100.0f, 200.0f, 100.0f, NULL, SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_MINIMIZABLE | SH_GUI_RESIZABLE)) {
 				puts("another region clicked!");
 				p_gui->region_infos.region_count--;
 			}
 		}
-		else {
-			//p_gui->region_infos.p_regions_data[p_gui->region_infos.region_count].size_position[0] = 0.0f;
-		}
 		p_gui->region_infos.region_count++;
 
+
 		shGuiMenuBar(p_gui, 5.0f, "POWER", SH_GUI_TOP);
+
+		
+		ShGuiRegion* p_reg_0 = &p_gui->region_infos.p_regions_data[0];
+		ShGuiRegion* p_reg_1 = &p_gui->region_infos.p_regions_data[1];
+		ShGuiRegion* p_reg_2 = &p_gui->region_infos.p_regions_data[2];
 
 		shGuiText(p_gui, 25.0f, 0.0f, 0.0f, "QWERTY");
 		shGuiText(p_gui, 50.0f, 0.0f, -50.0f, "QWERTY");
 		shGuiText(p_gui, 100.0f, 0.0f, -150.0f, "QWERTY");
 		shGuiText(p_gui, 200.0f, 0.0f, -300.0f, "QWERTY");
 
+
+		shGuiRegion(
+			p_gui,
+			300.0f, 100.0f,
+			-200.0f, -200.0f,
+			"TROYU",
+			SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
+		);
 		shGuiWriteMemory(p_gui, 1);
 
 

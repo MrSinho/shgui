@@ -169,6 +169,13 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 		p_gui->region_infos.p_regions_clicked = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
 		p_gui->region_infos.p_regions_active = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
 		
+		shGuiError(p_gui->region_infos.p_regions_data == NULL, "invalid regions data memory", return 0);
+		shGuiError(p_gui->region_infos.p_regions_overwritten_data == NULL, "invalid regions overwrite memory", return 0);
+		shGuiError(p_gui->region_infos.p_regions_clicked == NULL, "invalid regions clicked memory", return 0);
+		shGuiError(p_gui->region_infos.p_regions_active == NULL, "invalid regions active memory", return 0);
+
+		memset(p_gui->region_infos.p_regions_active, 1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
+
 		shPipelineCreateDescriptorBuffer(
 			p_gui->core.device, 
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 
@@ -554,13 +561,28 @@ uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record) {
 	//WRITE REGIONS DATA
 	//
 	//
-	shWriteMemory(
-		device,
-		p_gui->region_infos.staging_memory,
-		0,
-		p_gui->region_infos.regions_data_size,
-		p_gui->region_infos.p_regions_data
-	);
+	float null_region[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	for (uint32_t region_idx = 0; region_idx < p_gui->region_infos.region_count; region_idx++) {
+		uint8_t active = p_gui->region_infos.p_regions_active[region_idx];
+		if (active) {
+			shWriteMemory(
+				device,
+				p_gui->region_infos.staging_memory,
+				16 * region_idx,
+				16,
+				p_gui->region_infos.p_regions_data[region_idx].size_position
+			);
+		}
+		else {
+			shWriteMemory(
+				device,
+				p_gui->region_infos.staging_memory,
+				16 * region_idx,
+				16,
+				null_region
+			);
+		}
+	}
 
 
 	for (uint32_t text_idx = 0; text_idx < p_gui->text_infos.text_count; text_idx++) {
@@ -859,7 +881,7 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 	}
 
 	uint8_t* p_clicked = &p_gui->region_infos.p_regions_clicked[p_gui->region_infos.region_count];
-	if ((flags & SH_GUI_SWAP_INPUTS) == 0) {
+	if ((flags & SH_GUI_SWITCH) == 0) {
 		(*p_clicked) = 0;
 	}
 
@@ -888,6 +910,27 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 	p_gui->region_infos.region_count++;
 
 	return 0;
+}
+
+uint8_t SH_GUI_CALL shGuiRegionWrite(ShGui* p_gui, const uint32_t region_idx, const float width, const float height, const float pos_x, const float pos_y, const char* name, const ShGuiWidgetFlags flags, const ShGuiWriteFlags write_flags) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+
+	if (write_flags & SH_GUI_WIDTH) {
+		p_gui->region_infos.p_regions_data[region_idx].size_position[0] = width;
+	}
+	if (write_flags & SH_GUI_HEIGHT) {
+		p_gui->region_infos.p_regions_data[region_idx].size_position[1] = height;
+	}
+	if (write_flags & SH_GUI_POSITION_X) {
+		p_gui->region_infos.p_regions_data[region_idx].size_position[2] = pos_x;
+	}
+	if (write_flags & SH_GUI_POSITION_Y) {
+		p_gui->region_infos.p_regions_data[region_idx].size_position[3] = pos_y;
+	}
+
+	p_gui->region_infos.p_regions_overwritten_data[region_idx] = 1;
+
+	return 1;
 }
 
 uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags) {
@@ -1022,14 +1065,14 @@ uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
 
 	{
 		ShGuiRegion* p_regions_data = p_gui->region_infos.p_regions_data;
-		uint8_t* p_regions_overwriten_data = p_gui->region_infos.p_regions_overwritten_data;
+		uint8_t* p_regions_overwritten_data = p_gui->region_infos.p_regions_overwritten_data;
 		uint8_t* p_regions_clicked = p_gui->region_infos.p_regions_clicked;
 		uint8_t* p_regions_active = p_gui->region_infos.p_regions_active;
 		if (p_regions_data != NULL) {
 			free(p_regions_data);
 		}
-		if (p_regions_overwriten_data != NULL) {
-			free(p_regions_overwriten_data);
+		if (p_regions_overwritten_data != NULL) {
+			free(p_regions_overwritten_data);
 		}
 		if (p_regions_clicked != NULL) {
 			free(p_regions_clicked);

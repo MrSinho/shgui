@@ -118,8 +118,16 @@ typedef enum ShGuiWidgetFlags {
 	SH_GUI_RELATIVE		= 0b0001000000,
 	SH_GUI_MINIMIZABLE	= 0b0010000000,
 	SH_GUI_RESIZABLE	= 0b0100000000,
-	SH_GUI_SWAP_INPUTS	= 0b1000000000
+	SH_GUI_SWITCH		= 0b1000000000
 } ShGuiWidgetFlags;
+
+typedef enum ShGuiWriteFlags {
+	SH_GUI_WIDTH		= 0b00001,
+	SH_GUI_HEIGHT		= 0b00010,
+	SH_GUI_POSITION_X	= 0b00100,
+	SH_GUI_POSITION_Y	= 0b01000,
+	SH_GUI_TITLE		= 0b10000
+} ShGuiWriteFlags;
 
 
 typedef struct ShGuiCore {
@@ -222,6 +230,8 @@ extern uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record);
 extern uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name, const ShGuiWidgetFlags flags);
+
+extern uint8_t SH_GUI_CALL shGuiRegionWrite(ShGui* p_gui, const uint32_t region_idx, const float width, const float height, const float pos_x, const float pos_y, const char* name, const ShGuiWidgetFlags flags, const ShGuiWriteFlags write_flags);
 
 extern uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags);
 
