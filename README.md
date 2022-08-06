@@ -11,7 +11,8 @@ Features:
         * [x] close
         * [x] input conditions
     * [x] text
-
+    * [ ] input fields
+    * [ ] sliders
 
 to do:
  [ ] load and write .ini file
@@ -19,3 +20,7 @@ to do:
  [ ] create menu bar
  [ ] create menu
  [ ] find a way to add menu items
+
+ # Opening issues and contributing
+
+Yes
