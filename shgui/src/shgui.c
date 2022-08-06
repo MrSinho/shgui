@@ -16,6 +16,47 @@ extern "C" {
 #pragma warning (disable: 4996)
 #endif//_MSC_VER
 
+
+ShGui* shGuiInit(ShGuiCore core) {
+	ShGui* p_gui = (ShGui*)calloc(1, sizeof(ShGui));
+	memcpy(&p_gui->core, &core, sizeof(ShGuiCore));
+	return p_gui;
+}
+
+
+uint8_t shGuiLinkInputs(uint32_t* p_window_width, uint32_t* p_window_height, float* p_cursor_pos_x, float* p_cursor_pos_y, ShGuiKeyEvents key_events, ShGuiMouseEvents mouse_events, ShGuiCursorIcons icons, float* p_delta_time, ShGui* p_gui) {
+	shGuiError(
+		(p_window_width && p_window_height && p_cursor_pos_x && p_cursor_pos_y && key_events && mouse_events && p_gui) == 0,
+		"invalid arguments",
+		return 0;
+	);
+	ShGuiInputs inputs = {
+		p_window_width,
+		p_window_height,
+		p_cursor_pos_x,
+		p_cursor_pos_y,
+		(int8_t*)key_events,
+		(int8_t*)mouse_events,
+		(int32_t*)icons,
+		0,
+		p_delta_time
+	};
+	p_gui->inputs = inputs;
+	return 1;
+}
+
+uint8_t shGuiUpdateInputs(ShGui* p_gui) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+
+	p_gui->inputs.last.last_cursor_pos_x = *p_gui->inputs.p_cursor_pos_x;
+	p_gui->inputs.last.last_cursor_pos_y = *p_gui->inputs.p_cursor_pos_y;
+
+	memcpy(p_gui->inputs.last.last_key_events, p_gui->inputs.p_key_events, sizeof(ShGuiKeyEvents));
+	memcpy(p_gui->inputs.last.last_mouse_events, p_gui->inputs.p_mouse_events, sizeof(ShGuiMouseEvents));
+
+	return 1;
+}
+
 const char* shGuiReadBinary(const char* path, uint32_t* p_code_size) {
 
 	FILE* stream = fopen(path, "rb");
@@ -43,26 +84,26 @@ uint32_t SH_GUI_CALL shGuiGetAvailableHeap(ShGui* p_gui) {
 	{
 		uint32_t host_memory_type_index = 0;
 		shGetMemoryType(
-			p_gui->device,
-			p_gui->physical_device,
+			p_gui->core.device,
+			p_gui->core.physical_device,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			&host_memory_type_index
 		);
 		VkPhysicalDeviceMemoryBudgetPropertiesEXT heap_budget = { 0 };
-		shGetMemoryBudgetProperties(p_gui->physical_device, NULL, NULL, &heap_budget);
+		shGetMemoryBudgetProperties(p_gui->core.physical_device, NULL, NULL, &heap_budget);
 		host_visible_available_video_memory = (uint32_t)heap_budget.heapBudget[host_memory_type_index];
 	}
 	uint32_t device_available_video_memory = 0;
 	{
 		uint32_t device_memory_type_index = 0;
 		shGetMemoryType(
-			p_gui->device,
-			p_gui->physical_device,
+			p_gui->core.device,
+			p_gui->core.physical_device,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			&device_memory_type_index
 		);
 		VkPhysicalDeviceMemoryBudgetPropertiesEXT heap_budget = { 0 };
-		shGetMemoryBudgetProperties(p_gui->physical_device, NULL, NULL, &heap_budget);
+		shGetMemoryBudgetProperties(p_gui->core.physical_device, NULL, NULL, &heap_budget);
 		device_available_video_memory = (uint32_t)heap_budget.heapBudget[device_memory_type_index];
 	}
 	return host_visible_available_video_memory <= device_available_video_memory ? host_visible_available_video_memory : device_available_video_memory;
@@ -78,8 +119,8 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 
 	VkSurfaceCapabilitiesKHR surface_capabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-		p_gui->physical_device,
-		p_gui->surface,
+		p_gui->core.physical_device,
+		p_gui->core.surface,
 		&surface_capabilities
 	);
 
@@ -95,7 +136,7 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 
 	{//FIXED STATES
 		shSetFixedStates(
-			p_gui->device, 
+			p_gui->core.device, 
 			surface_capabilities.currentExtent.width, 
 			surface_capabilities.currentExtent.height, 
 			VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 
@@ -107,12 +148,12 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 	{//SHADER STAGES
 		uint32_t src_size = 0;
 		char* src = (char*)shGuiReadBinary("../shaders/bin/shgui-region.vert.spv", &src_size);
-		shPipelineCreateShaderModule(p_gui->device, src_size, src, &p_gui->region_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->region_infos.graphics_pipeline);
+		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->region_infos.graphics_pipeline);
+		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->region_infos.graphics_pipeline);
 		free(src);
 		src = (char*)shGuiReadBinary("../shaders/bin/shgui-region.frag.spv", &src_size);
-		shPipelineCreateShaderModule(p_gui->device, src_size, src, &p_gui->region_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->region_infos.graphics_pipeline);
+		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->region_infos.graphics_pipeline);
+		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->region_infos.graphics_pipeline);
 		free(src);
 	}//SHADER STAGES
 
@@ -129,27 +170,27 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 		p_gui->region_infos.p_regions_active = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
 		
 		shPipelineCreateDescriptorBuffer(
-			p_gui->device, 
+			p_gui->core.device, 
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 
 			0, 
 			p_gui->region_infos.regions_data_size, 
 			&p_gui->region_infos.graphics_pipeline
 		);
 		shPipelineAllocateDescriptorBufferMemory(
-			p_gui->device,
-			p_gui->physical_device,
+			p_gui->core.device,
+			p_gui->core.physical_device,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			0,
 			&p_gui->region_infos.graphics_pipeline
 		);
 		shPipelineBindDescriptorBufferMemory(
-			p_gui->device,
+			p_gui->core.device,
 			0,
 			0,
 			&p_gui->region_infos.graphics_pipeline
 		);
 
-		shPipelineDescriptorSetLayout(p_gui->device, 
+		shPipelineDescriptorSetLayout(p_gui->core.device, 
 			0, 
 			0, 
 			VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 
@@ -157,13 +198,13 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 		);
 
 		shPipelineCreateDescriptorPool(
-			p_gui->device, 
+			p_gui->core.device, 
 			0, 
 			&p_gui->region_infos.graphics_pipeline
 		);
 
 		shPipelineAllocateDescriptorSet(
-			p_gui->device, 
+			p_gui->core.device, 
 			0, 
 			&p_gui->region_infos.graphics_pipeline
 		);
@@ -171,20 +212,20 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 		{
 			{
 				shCreateBuffer(
-					p_gui->device,
+					p_gui->core.device,
 					p_gui->region_infos.regions_data_size,
 					VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
 					&p_gui->region_infos.staging_buffer
 				);
 				shAllocateMemory(
-					p_gui->device,
-					p_gui->physical_device,
+					p_gui->core.device,
+					p_gui->core.physical_device,
 					p_gui->region_infos.staging_buffer,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 					&p_gui->region_infos.staging_memory
 				);
 				shBindMemory(
-					p_gui->device,
+					p_gui->core.device,
 					p_gui->region_infos.staging_buffer,
 					0,
 					p_gui->region_infos.staging_memory
@@ -194,36 +235,36 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 
 		{
 			shPipelineCreateDescriptorBuffer(
-				p_gui->device,
+				p_gui->core.device,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				1,
 				16,
 				&p_gui->region_infos.graphics_pipeline
 			);
 			shPipelineAllocateDescriptorBufferMemory(
-				p_gui->device,
-				p_gui->physical_device,
+				p_gui->core.device,
+				p_gui->core.physical_device,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				1,
 				&p_gui->region_infos.graphics_pipeline
 			);
-			shPipelineBindDescriptorBufferMemory(p_gui->device, 1, 0, &p_gui->region_infos.graphics_pipeline);
+			shPipelineBindDescriptorBufferMemory(p_gui->core.device, 1, 0, &p_gui->region_infos.graphics_pipeline);
 			shPipelineDescriptorSetLayout(
-				p_gui->device, 
+				p_gui->core.device, 
 				1, 
 				0, 
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
 				VK_SHADER_STAGE_FRAGMENT_BIT, 
 				&p_gui->region_infos.graphics_pipeline
 			);
-			shPipelineCreateDescriptorPool(p_gui->device, 1, &p_gui->region_infos.graphics_pipeline);
-			shPipelineAllocateDescriptorSet(p_gui->device, 1, &p_gui->region_infos.graphics_pipeline);
+			shPipelineCreateDescriptorPool(p_gui->core.device, 1, &p_gui->region_infos.graphics_pipeline);
+			shPipelineAllocateDescriptorSet(p_gui->core.device, 1, &p_gui->region_infos.graphics_pipeline);
 		}
 	}
 	//DESCRIPTORS
 
 	{//GRAPHICS PIPELINE
-		shSetupGraphicsPipeline(p_gui->device, render_pass, p_gui->region_infos.fixed_states, &p_gui->region_infos.graphics_pipeline);
+		shSetupGraphicsPipeline(p_gui->core.device, render_pass, p_gui->region_infos.fixed_states, &p_gui->region_infos.graphics_pipeline);
 	}//GRAPHICS PIPELINE
 
 	return 1;
@@ -238,8 +279,8 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 
 	VkSurfaceCapabilitiesKHR surface_capabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-		p_gui->physical_device,
-		p_gui->surface,
+		p_gui->core.physical_device,
+		p_gui->core.surface,
 		&surface_capabilities
 	);
 
@@ -255,7 +296,7 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 
 	{//FIXED STATES
 		shSetFixedStates(
-			p_gui->device,
+			p_gui->core.device,
 			surface_capabilities.currentExtent.width,
 			surface_capabilities.currentExtent.height,
 			VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
@@ -272,12 +313,12 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 	{//SHADER STAGES
 		uint32_t src_size = 0;
 		char* src = (char*)shGuiReadBinary("../shaders/bin/shgui-text.vert.spv", &src_size);
-		shPipelineCreateShaderModule(p_gui->device, src_size, src, &p_gui->text_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->text_infos.graphics_pipeline);
+		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->text_infos.graphics_pipeline);
+		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->text_infos.graphics_pipeline);
 		free(src);
 		src = (char*)shGuiReadBinary("../shaders/bin/shgui-text.frag.spv", &src_size);
-		shPipelineCreateShaderModule(p_gui->device, src_size, src, &p_gui->text_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->text_infos.graphics_pipeline);
+		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->text_infos.graphics_pipeline);
+		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->text_infos.graphics_pipeline);
 		free(src);
 	}//SHADER STAGES
 
@@ -285,7 +326,7 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 	
 		VkPhysicalDeviceProperties physical_device_properties = { 0 };
 		{
-			vkGetPhysicalDeviceProperties(p_gui->physical_device, &physical_device_properties);
+			vkGetPhysicalDeviceProperties(p_gui->core.physical_device, &physical_device_properties);
 
 			p_gui->text_infos.char_info_map = shVkCreateShGuiCharInfoDescriptorStructures(
 				physical_device_properties,
@@ -294,7 +335,7 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 		}
 
 		shPipelineCreateDynamicDescriptorBuffer(
-			p_gui->device,
+			p_gui->core.device,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,// | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			0,
 			p_gui->text_infos.char_info_map.structure_size,
@@ -303,22 +344,22 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 		);
 
 		shPipelineAllocateDescriptorBufferMemory(
-			p_gui->device,
-			p_gui->physical_device,
+			p_gui->core.device,
+			p_gui->core.physical_device,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			0,
 			&p_gui->text_infos.graphics_pipeline
 		);
 
 		shPipelineBindDescriptorBufferMemory(
-			p_gui->device,
+			p_gui->core.device,
 			0,
 			0,
 			&p_gui->text_infos.graphics_pipeline
 		);
 
 		shPipelineDescriptorSetLayout(
-			p_gui->device,
+			p_gui->core.device,
 			0,
 			0,
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
@@ -327,48 +368,48 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 		);
 
 		shPipelineCreateDescriptorPool(
-			p_gui->device,
+			p_gui->core.device,
 			0,
 			&p_gui->text_infos.graphics_pipeline
 		);
 
 		shPipelineAllocateDescriptorSet(
-			p_gui->device,
+			p_gui->core.device,
 			0,
 			&p_gui->text_infos.graphics_pipeline
 		);
 
 
 		shPipelineCreateDescriptorBuffer(
-			p_gui->device,
+			p_gui->core.device,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			1,
 			16,
 			&p_gui->text_infos.graphics_pipeline
 		);
 		shPipelineAllocateDescriptorBufferMemory(
-			p_gui->device,
-			p_gui->physical_device,
+			p_gui->core.device,
+			p_gui->core.physical_device,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			1,
 			&p_gui->text_infos.graphics_pipeline
 		);
-		shPipelineBindDescriptorBufferMemory(p_gui->device, 1, 0, &p_gui->text_infos.graphics_pipeline);
+		shPipelineBindDescriptorBufferMemory(p_gui->core.device, 1, 0, &p_gui->text_infos.graphics_pipeline);
 		shPipelineDescriptorSetLayout(
-			p_gui->device,
+			p_gui->core.device,
 			1,
 			1,
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			&p_gui->text_infos.graphics_pipeline
 		);
-		shPipelineCreateDescriptorPool(p_gui->device, 1, &p_gui->text_infos.graphics_pipeline);
-		shPipelineAllocateDescriptorSet(p_gui->device, 1, &p_gui->text_infos.graphics_pipeline);
+		shPipelineCreateDescriptorPool(p_gui->core.device, 1, &p_gui->text_infos.graphics_pipeline);
+		shPipelineAllocateDescriptorSet(p_gui->core.device, 1, &p_gui->text_infos.graphics_pipeline);
 
 	}//DESCRIPTORS
 
 	{//GRAPHICS PIPELINE
-		shSetupGraphicsPipeline(p_gui->device, render_pass, p_gui->text_infos.fixed_states, &p_gui->text_infos.graphics_pipeline);
+		shSetupGraphicsPipeline(p_gui->core.device, render_pass, p_gui->text_infos.fixed_states, &p_gui->text_infos.graphics_pipeline);
 	}//GRAPHICS PIPELINE
 
 	p_gui->text_infos.p_text_data = calloc(max_gui_items, sizeof(ShGuiText));
@@ -376,20 +417,20 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 
 	{//VERTEX BUFFER
 		shCreateBuffer(
-			p_gui->device,
+			p_gui->core.device,
 			SH_GUI_MAX_CHAR_VERTEX_SIZE * max_gui_items,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			&p_gui->text_infos.vertex_staging_buffer
 		);
 		shAllocateMemory(
-			p_gui->device,
-			p_gui->physical_device,
+			p_gui->core.device,
+			p_gui->core.physical_device,
 			p_gui->text_infos.vertex_staging_buffer,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			&p_gui->text_infos.vertex_staging_memory
 		);
 		shBindMemory(
-			p_gui->device,
+			p_gui->core.device,
 			p_gui->text_infos.vertex_staging_buffer,
 			0,
 			p_gui->text_infos.vertex_staging_memory
@@ -397,19 +438,19 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 
 
 		shCreateBuffer(
-			p_gui->device, 
+			p_gui->core.device, 
 			SH_GUI_MAX_CHAR_VERTEX_SIZE * max_gui_items, 
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			&p_gui->text_infos.vertex_buffer
 		);
 		shAllocateMemory(
-			p_gui->device,
-			p_gui->physical_device,
+			p_gui->core.device,
+			p_gui->core.physical_device,
 			p_gui->text_infos.vertex_buffer,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			&p_gui->text_infos.vertex_memory
 		);
-		shBindVertexBufferMemory(p_gui->device, p_gui->text_infos.vertex_buffer, 0, p_gui->text_infos.vertex_memory);
+		shBindVertexBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_buffer, 0, p_gui->text_infos.vertex_memory);
 	}//VERTEX BUFFER
 
 	p_gui->text_infos.char_distance_offset = 3.0f;
@@ -421,9 +462,9 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, const ShGuiDefaultValues values, con
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 	shGuiError(values >= SH_GUI_DEFAULT_VALUES_MAX_ENUM, "invalid gui default values", return 0)
 
-	VkDevice			device			= p_gui->device;
-	VkCommandBuffer		cmd_buffer		= p_gui->cmd_buffer;
-	VkFence				fence			= p_gui->fence;
+	VkDevice			device			= p_gui->core.device;
+	VkCommandBuffer		cmd_buffer		= p_gui->core.cmd_buffer;
+	VkFence				fence			= p_gui->core.fence;
 
 	
 	float staging_data[8] = { 0 };
@@ -437,7 +478,7 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, const ShGuiDefaultValues values, con
 		);
 		shAllocateMemory(
 			device,
-			p_gui->physical_device,
+			p_gui->core.physical_device,
 			p_gui->default_infos.staging_buffer,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			&p_gui->default_infos.staging_memory
@@ -497,7 +538,7 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, const ShGuiDefaultValues values, con
 
 	if (instructions & SH_GUI_RECORD) {
 		shEndCommandBuffer(cmd_buffer);
-		shQueueSubmit(1, &cmd_buffer, p_gui->graphics_queue.queue, fence);
+		shQueueSubmit(1, &cmd_buffer, p_gui->core.graphics_queue.queue, fence);
 		shWaitForFence(device, &fence);
 	}
 
@@ -507,8 +548,8 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, const ShGuiDefaultValues values, con
 uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
-	VkDevice device				= p_gui->device;
-	VkCommandBuffer cmd_buffer	= p_gui->cmd_buffer;
+	VkDevice device				= p_gui->core.device;
+	VkCommandBuffer cmd_buffer	= p_gui->core.cmd_buffer;
 
 	//WRITE REGIONS DATA
 	//
@@ -542,8 +583,8 @@ uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record) {
 	//
 	{
 		if (record) {
-			shWaitForFence(device, &p_gui->fence);
-			shResetFence(device, &p_gui->fence);
+			shWaitForFence(device, &p_gui->core.fence);
+			shResetFence(device, &p_gui->core.fence);
 			shBeginCommandBuffer(cmd_buffer);
 		}
 
@@ -568,8 +609,8 @@ uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record) {
 
 		if (record) {
 			shEndCommandBuffer(cmd_buffer);
-			shQueueSubmit(1, &cmd_buffer, p_gui->graphics_queue.queue, p_gui->fence);
-			shWaitForFence(device, &p_gui->fence);
+			shQueueSubmit(1, &cmd_buffer, p_gui->core.graphics_queue.queue, p_gui->core.fence);
+			shWaitForFence(device, &p_gui->core.fence);
 		}
 	}
 	//
@@ -582,8 +623,8 @@ uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record) {
 uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
-	VkDevice			device				= p_gui->device;
-	VkCommandBuffer		cmd_buffer			= p_gui->cmd_buffer;
+	VkDevice			device				= p_gui->core.device;
+	VkCommandBuffer		cmd_buffer			= p_gui->core.cmd_buffer;
 
 	ShVkPipeline*		p_region_pipeline	= &p_gui->region_infos.graphics_pipeline;
 	ShVkPipeline*		p_text_pipeline		= &p_gui->text_infos.graphics_pipeline; 
@@ -652,7 +693,7 @@ uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui) {
 			);
 
 			shPipelineBindDynamicDescriptorSet(
-				p_gui->cmd_buffer,
+				p_gui->core.cmd_buffer,
 				0,
 				VK_PIPELINE_BIND_POINT_GRAPHICS,
 				&p_gui->text_infos.graphics_pipeline
@@ -756,51 +797,86 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 	if (name != NULL) {
 		shGuiText(
 			p_gui,
-			name,
 			text_size,
 			p_region->size_position[2] - p_region->size_position[0] / 2.0f + text_size / 2.0f,
-			-p_region->size_position[3] + p_region->size_position[1] / 2.0f - text_size
+			-p_region->size_position[3] + p_region->size_position[1] / 2.0f - text_size,
+			name
 		);
 	}
 
 	if (flags & SH_GUI_MINIMIZABLE) {
 		shGuiText(
 			p_gui, 
-			"O", 
 			text_size, 
 			p_region->size_position[2] + p_region->size_position[0] / 2.0f - text_size,
-			-p_region->size_position[3] + p_region->size_position[1] / 2.0f - text_size
+			-p_region->size_position[3] + p_region->size_position[1] / 2.0f - text_size,
+			"O"
 		);
 	}
 
+	if (flags & SH_GUI_RESIZABLE) {
+		float limit_left = p_region->size_position[2] - p_region->size_position[0] / 2.0f;
+		float limit_right = p_region->size_position[2] + p_region->size_position[0] / 2.0f;
+		float limit_top = p_region->size_position[3] - p_region->size_position[1] / 2.0f;
+		float limit_bottom = p_region->size_position[3] + p_region->size_position[1] / 2.0f;
+		p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_NORMAL];
+
+		uint8_t horizontal_right	=	(cursor_x >= limit_left - 3.0f && cursor_x <= limit_left + 3.0f) &&
+										(cursor_y <= limit_bottom && cursor_y >= limit_top);
+		uint8_t horizontal_left		=	(cursor_x <= limit_right + 3.0f && cursor_x >= limit_right - 3.0f) &&
+										(cursor_y <= limit_bottom && cursor_y >= limit_top);
+		uint8_t vertical_top		=	(cursor_y >= limit_bottom - 3.0f && cursor_y <= limit_bottom + 3.0f) &&
+										(cursor_x >= limit_left && cursor_x <= limit_right);
+		uint8_t vertical_bottom		=	(cursor_y <= limit_top + 3.0f && cursor_y >= limit_top - 3.0f) &&
+										(cursor_x >= limit_left && cursor_x <= limit_right);
+
+		float d_cursor_pos_x = (*p_gui->inputs.p_cursor_pos_x) - p_gui->inputs.last.last_cursor_pos_x;
+		float d_cursor_pos_y = (*p_gui->inputs.p_cursor_pos_y) - p_gui->inputs.last.last_cursor_pos_y;
+
+		if (horizontal_left || horizontal_right) {
+			p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_HORIZONTAL_RESIZE];
+			p_gui->region_infos.p_regions_overwritten_data[p_gui->region_infos.region_count] = 1;
+		}
+		if (vertical_top || vertical_bottom) {
+			p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_VERTICAL_RESIZE];
+			p_gui->region_infos.p_regions_overwritten_data[p_gui->region_infos.region_count] = 1;
+		}
+
+		if (p_gui->inputs.p_mouse_events[0]) {
+			if (horizontal_left) {
+				p_region->size_position[0] += 1000.0f * d_cursor_pos_x * (*p_gui->inputs.p_delta_time);
+			}
+			if (horizontal_right) {
+				p_region->size_position[0] -= 1000.0f * d_cursor_pos_x * (*p_gui->inputs.p_delta_time);
+			}
+			if (vertical_top) {
+				p_region->size_position[1] += 1000.0f * d_cursor_pos_y * (*p_gui->inputs.p_delta_time);
+			}
+			if (vertical_bottom) {
+				p_region->size_position[1] -= 1000.0f * d_cursor_pos_y * (*p_gui->inputs.p_delta_time);
+			}
+		}
+	}
+
 	uint8_t* p_clicked = &p_gui->region_infos.p_regions_clicked[p_gui->region_infos.region_count];
+	if ((flags & SH_GUI_SWAP_INPUTS) == 0) {
+		(*p_clicked) = 0;
+	}
 
 	if (
-	(cursor_x >= p_region->size_position[2] - (p_region->size_position[0] / 2.0f)) &&
-	(cursor_x <= p_region->size_position[2] + (p_region->size_position[0] / 2.0f)) &&
-	(cursor_y >= p_region->size_position[3] - (p_region->size_position[1] / 2.0f)) &&
-	(cursor_y <= p_region->size_position[3] + (p_region->size_position[1] / 2.0f))
+	(cursor_x >= p_region->size_position[2] - p_region->size_position[0] / 2.0f + 10.0f) &&
+	(cursor_x <= p_region->size_position[2] + p_region->size_position[0] / 2.0f - 10.0f) &&
+	(cursor_y >= p_region->size_position[3] - p_region->size_position[1] / 2.0f + 10.0f) &&
+	(cursor_y <= p_region->size_position[3] + p_region->size_position[1] / 2.0f - 10.0f)
 	) {
 		if (p_gui->inputs.p_mouse_events[1] == 1 && (flags & SH_GUI_MOVABLE)) {
 			
 			p_region->size_position[2]		= cursor_x;
 			p_region->size_position[3]		= cursor_y;
-			
-			uint32_t text_count				= p_gui->text_infos.text_count;
-			ShGuiText* p_text				= &p_gui->text_infos.p_text_data[p_gui->text_infos.text_count];
-
-			uint32_t		char_count	= (uint32_t)strlen(p_text->text);
-			for (uint32_t	char_idx	= 0; char_idx < char_count; char_idx++) {
-				ShGuiCharInfo* p_char_info = shVkGetShGuiCharInfoDescriptorStructure(
-					p_gui->text_infos.char_info_map, 
-					(p_gui->text_infos.total_char_count) - char_count + char_idx, 
-					0
-				);
-			}
+		
 			p_gui->region_infos.p_regions_overwritten_data[region_count] = 1;
 		}
-
-		if (p_gui->inputs.p_mouse_events[0] == 1) {
+		if (p_gui->inputs.p_mouse_events[0] == 1 && p_gui->inputs.last.last_mouse_events[0] == 0) {
 			uint8_t rtrn = (*p_clicked) == 0;
 			(*p_clicked) = 1;
 			p_gui->region_infos.region_count++;
@@ -814,7 +890,7 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 	return 0;
 }
 
-uint8_t SH_GUI_CALL shGuiBar(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags) {
+uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float window_width = (float)p_gui->region_infos.fixed_states.scissor.extent.width;
@@ -855,7 +931,7 @@ uint8_t SH_GUI_CALL shGuiBar(ShGui* p_gui, const float extent, const char* title
 	_char.vertex_count = sizeof(font ## _ ## char_name ## _vertices) / 4;\
 	_char.p_vertices = (float*)(font ## _ ## char_name ## _vertices);\
 
-uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const char* s_text, const float scale, const float pos_x, const float pos_y) {
+uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const float scale, const float pos_x, const float pos_y, const char* s_text) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 	shGuiError(s_text == NULL, "invalid text memory", return 0);
 
@@ -919,15 +995,15 @@ uint8_t SH_GUI_CALL shGuiDestroyPipelines(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	shFixedStatesRelease(&p_gui->region_infos.fixed_states);
-	shPipelineClearDescriptorBufferMemory(p_gui->device, 0, &p_gui->region_infos.graphics_pipeline);
-	shPipelineClearDescriptorBufferMemory(p_gui->device, 1, &p_gui->region_infos.graphics_pipeline);
-	shPipelineRelease(p_gui->device, &p_gui->region_infos.graphics_pipeline);
+	shPipelineClearDescriptorBufferMemory(p_gui->core.device, 0, &p_gui->region_infos.graphics_pipeline);
+	shPipelineClearDescriptorBufferMemory(p_gui->core.device, 1, &p_gui->region_infos.graphics_pipeline);
+	shPipelineRelease(p_gui->core.device, &p_gui->region_infos.graphics_pipeline);
 	
 
 	shFixedStatesRelease(&p_gui->text_infos.fixed_states);
-	shPipelineClearDescriptorBufferMemory(p_gui->device, 0, &p_gui->text_infos.graphics_pipeline);
-	shPipelineClearDescriptorBufferMemory(p_gui->device, 1, &p_gui->text_infos.graphics_pipeline);
-	shPipelineRelease(p_gui->device, &p_gui->text_infos.graphics_pipeline);
+	shPipelineClearDescriptorBufferMemory(p_gui->core.device, 0, &p_gui->text_infos.graphics_pipeline);
+	shPipelineClearDescriptorBufferMemory(p_gui->core.device, 1, &p_gui->text_infos.graphics_pipeline);
+	shPipelineRelease(p_gui->core.device, &p_gui->text_infos.graphics_pipeline);
 
 	return 1;
 }
@@ -935,12 +1011,12 @@ uint8_t SH_GUI_CALL shGuiDestroyPipelines(ShGui* p_gui) {
 uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 	
-	shClearBufferMemory(p_gui->device, p_gui->default_infos.staging_buffer, p_gui->default_infos.staging_memory);
+	shClearBufferMemory(p_gui->core.device, p_gui->default_infos.staging_buffer, p_gui->default_infos.staging_memory);
 
-	shClearBufferMemory(p_gui->device, p_gui->region_infos.staging_buffer, p_gui->region_infos.staging_memory);
+	shClearBufferMemory(p_gui->core.device, p_gui->region_infos.staging_buffer, p_gui->region_infos.staging_memory);
 	
-	shClearBufferMemory(p_gui->device, p_gui->text_infos.vertex_staging_buffer, p_gui->text_infos.vertex_staging_memory);
-	shClearBufferMemory(p_gui->device, p_gui->text_infos.vertex_buffer, p_gui->text_infos.vertex_memory);
+	shClearBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_staging_buffer, p_gui->text_infos.vertex_staging_memory);
+	shClearBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_buffer, p_gui->text_infos.vertex_memory);
 	
 	shGuiDestroyPipelines(p_gui);
 
@@ -970,6 +1046,8 @@ uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
 
 		shVkReleaseShGuiCharInfoDescriptorStructureMap(&p_gui->text_infos.char_info_map);
 	}
+
+	free(p_gui);
 
 	return 1;
 }

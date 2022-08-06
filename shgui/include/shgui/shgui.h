@@ -26,15 +26,28 @@ typedef int8_t ShGuiKeyEvents[SH_GUI_KEY_LAST + 1];
 #define SH_GUI_MOUSE_LAST 1
 typedef int8_t ShGuiMouseEvents[SH_GUI_MOUSE_LAST + 1];
 
+#define SH_GUI_CURSOR_NORMAL 0
+#define SH_GUI_CURSOR_HORIZONTAL_RESIZE 1
+#define SH_GUI_CURSOR_VERTICAL_RESIZE 2
+typedef int32_t ShGuiCursorIcons[3];//normal, horizontal_resize, vertical_resize
 
 typedef struct ShGuiInputs {
-	uint32_t*			p_window_width;
-	uint32_t*			p_window_height;
-	float*				p_cursor_pos_x;
-	float*				p_cursor_pos_y;
-	int8_t*				p_key_events;
-	int8_t*				p_mouse_events;
-	float*				p_delta_time;
+	uint32_t*				p_window_width;
+	uint32_t*				p_window_height;
+	float*					p_cursor_pos_x;
+	float*					p_cursor_pos_y;
+	int8_t*					p_key_events;
+	int8_t*					p_mouse_events;
+	int32_t*				p_cursor_icons;
+	int32_t					active_cursor_icon;
+	float*					p_delta_time;
+	
+	struct {
+		float				last_cursor_pos_x;
+		float				last_cursor_pos_y;
+		ShGuiKeyEvents		last_key_events;
+		ShGuiMouseEvents	last_mouse_events;
+	} last;
 } ShGuiInputs;
 
 
@@ -96,25 +109,33 @@ typedef enum ShGuiInstructions {
 } ShGuiInstructions;
 
 typedef enum ShGuiWidgetFlags {
-	SH_GUI_TOP			= 0b00000001,
-	SH_GUI_BOTTOM		= 0b00000010,
-	SH_GUI_LEFT			= 0b00000100,
-	SH_GUI_RIGHT		= 0b00001000,
-	SH_GUI_MOVABLE		= 0b00010000,
-	SH_GUI_PIXELS		= 0b00100000,
-	SH_GUI_RELATIVE		= 0b01000000,
-	SH_GUI_MINIMIZABLE	= 0b10000000
+	SH_GUI_TOP			= 0b0000000001,
+	SH_GUI_BOTTOM		= 0b0000000010,
+	SH_GUI_LEFT			= 0b0000000100,
+	SH_GUI_RIGHT		= 0b0000001000,
+	SH_GUI_MOVABLE		= 0b0000010000,
+	SH_GUI_PIXELS		= 0b0000100000,
+	SH_GUI_RELATIVE		= 0b0001000000,
+	SH_GUI_MINIMIZABLE	= 0b0010000000,
+	SH_GUI_RESIZABLE	= 0b0100000000,
+	SH_GUI_SWAP_INPUTS	= 0b1000000000
 } ShGuiWidgetFlags;
 
 
-typedef struct ShGui {
+typedef struct ShGuiCore {
 	VkDevice					device;
 	VkPhysicalDevice			physical_device;
 	ShGuiQueue					graphics_queue;
 	VkCommandBuffer				cmd_buffer;
 	VkFence						fence;
 	VkSurfaceKHR				surface;
+} ShGuiCore;
+
+
+typedef struct ShGui {
+	ShGuiCore					core;
 	ShGuiInputs					inputs;
+
 
 	struct {
 		VkBuffer			staging_buffer;
@@ -162,13 +183,13 @@ typedef struct ShGui {
 
 } ShGui;
 
+extern ShGui* shGuiInit(ShGuiCore core);
 
-
-#define SH_GUI_REGION_CONDITION(gui, condition, additional, create_widget)\
+#define SH_GUI_REGION_CONDITION(p_gui, condition, additional_to_condition, additional_to_widget, widget_func_name, dimension_0, ...)\
 	if ((uint8_t)(condition)) {\
-	((gui).region_infos.p_regions_active[gui.region_infos.region_count + 1] = 1 * (gui).region_infos.p_regions_active[gui.region_infos.region_count + 1] == 0); additional; }\
-	 if ((gui).region_infos.p_regions_active[gui.region_infos.region_count + 1]) { create_widget };
-
+	((p_gui)->region_infos.p_regions_active[gui.region_infos.region_count] = 1 * (p_gui)->region_infos.p_regions_active[gui.region_infos.region_count] == 0); additional_to_condition; }\
+	if ((p_gui)->region_infos.p_regions_active[gui.region_infos.region_count]) { if (widget_func_name(p_gui, dimension_0, __VA_ARGS__)) { (p_gui)->region_infos.p_regions_active[gui.region_infos.region_count - 2] = 0; additional_to_widget; } }\
+	else { widget_func_name(p_gui, 0.0f, __VA_ARGS__); (p_gui)->region_infos.p_regions_active[gui.region_infos.region_count] = 0; }
 
 
 #ifdef _MSC_VER
@@ -177,28 +198,15 @@ typedef struct ShGui {
 
 
 
-static uint8_t SH_GUI_CALL shGuiLinkInputs(uint32_t* p_window_width, uint32_t* p_window_height, float* p_cursor_pos_x, float* p_cursor_pos_y, ShGuiKeyEvents key_events, ShGuiMouseEvents mouse_events, float* p_delta_time, ShGui* p_gui) {
-	shGuiError(
-		(p_window_width && p_window_height && p_cursor_pos_x && p_cursor_pos_y && key_events && mouse_events && p_gui) == 0,
-		"invalid arguments",
-		return 0;
-	);
-	ShGuiInputs inputs = {
-		p_window_width,
-		p_window_height,
-		p_cursor_pos_x,
-		p_cursor_pos_y,
-		(int8_t*)key_events,
-		(int8_t*)mouse_events,
-		p_delta_time
-	};
-	p_gui->inputs = inputs;
-	return 1;
-}
+extern uint8_t SH_GUI_CALL shGuiLinkInputs(uint32_t* p_window_width, uint32_t* p_window_height, float* p_cursor_pos_x, float* p_cursor_pos_y, ShGuiKeyEvents key_events, ShGuiMouseEvents mouse_events, ShGuiCursorIcons icons, float* p_delta_time, ShGui* p_gui);
+
+extern uint8_t SH_GUI_CALL shGuiUpdateInputs(ShGui* p_gui);
+
+
 
 static uint8_t SH_GUI_CALL shGuiSetGraphicsQueue(const uint32_t graphics_queue_family_index, const VkQueue graphics_queue, ShGui* p_gui) {
-	p_gui->graphics_queue.queue = graphics_queue;
-	p_gui->graphics_queue.queue_family_index = graphics_queue_family_index;
+	p_gui->core.graphics_queue.queue = graphics_queue;
+	p_gui->core.graphics_queue.queue_family_index = graphics_queue_family_index;
 }
 
 
@@ -215,11 +223,11 @@ extern uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name, const ShGuiWidgetFlags flags);
 
-extern uint8_t SH_GUI_CALL shGuiBar(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags);
+extern uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags);
 
-//extern uint8_t SH_GUI_CALL shGuiBarButton(ShGui* p_gui, const float extent, const char* title, ShGuiRegionFlags flags);
+extern uint8_t SH_GUI_CALL shGuiMenuItem(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags);
 
-extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const char* text, const float scale, const float pos_x, const float pos_y);
+extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const float scale, const float pos_x, const float pos_y, const char* text);
 
 extern uint8_t SH_GUI_CALL shGuiInputField(ShGui* p_gui);
 

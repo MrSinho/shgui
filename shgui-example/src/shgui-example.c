@@ -58,7 +58,7 @@ int main(void) {
 	//SHGUI BASED CODE
 	//
 
-	ShGui gui = { 
+	ShGuiCore gui_core = { 
 		core.device,									//
 		core.physical_device,							//
 		(ShGuiQueue) {									//vulkan based data
@@ -70,7 +70,7 @@ int main(void) {
 		core.surface.surface,							//
 	};
 
-
+	ShGui* p_gui = shGuiInit(gui_core);
 	
 	float cursor_pos_x, cursor_pos_y = 0.0;// update in realtime
 	ShGuiKeyEvents key_events = {// update in realtime
@@ -79,6 +79,9 @@ int main(void) {
 	ShGuiMouseEvents mouse_events = {// update in realtime
 		0
 	};
+	ShGuiCursorIcons cursor_icons = {//update in realtime
+		GLFW_CURSOR_NORMAL, GLFW_HRESIZE_CURSOR, GLFW_VRESIZE_CURSOR //normal, horizontal_resize, vertical_resize
+	};
 	float delta_time = 0.0f;
 	shGuiLinkInputs(
 		&width, 
@@ -86,15 +89,16 @@ int main(void) {
 		&cursor_pos_x, 
 		&cursor_pos_y, 
 		key_events, 
-		mouse_events, 
+		mouse_events,
+		cursor_icons,
 		&delta_time,
-		&gui
+		p_gui
 	);
 
-	shGuiBuildRegionPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
-	shGuiBuildTextPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
+	shGuiBuildRegionPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
+	shGuiBuildTextPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
 
-	shGuiSetDefaultValues(&gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
+	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_LIGHT, SH_GUI_INITIALIZE | SH_GUI_RECORD);
 
 	uint32_t frame_idx;
 	float last_time = (float)glfwGetTime();
@@ -116,9 +120,12 @@ int main(void) {
 			delta_time = now - last_time;
 			last_time = now;
 
-			glfwGetWindowSize(window, &width, &height);
+			GLFWcursor* cursor = glfwCreateStandardCursor((int)p_gui->inputs.active_cursor_icon);
+			glfwSetCursor(window, cursor);
+
+			//glfwGetWindowSize(window, &width, &height);
 			//Resize window
-			//if (width != gui.region_infos.fixed_states.scissor.extent.width || height != gui.region_infos.fixed_states.scissor.extent.height) {
+			//if (width != p_gui->region_infos.fixed_states.scissor.extent.width || height != p_gui->region_infos.fixed_states.scissor.extent.height) {
 			//	shWaitDeviceIdle(core.device);
 			//	
 			//	shSwapchainRelease(&core);
@@ -130,11 +137,11 @@ int main(void) {
 			//	shInitSwapchainData(&core);
 			//	shSetFramebuffers(&core);
 			//
-			//	shGuiDestroyPipelines(&gui);
-			//	shGuiBuildRegionPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
-			//	shGuiBuildTextPipeline(&gui, core.render_pass, MAX_GUI_ITEMS);
+			//	shGuiDestroyPipelines(p_gui);
+			//	shGuiBuildRegionPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
+			//	shGuiBuildTextPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
 			//
-			//	shGuiSetDefaultValues(&gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
+			//	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
 			//}
 
 		}//GLFW BASED CODE
@@ -147,41 +154,37 @@ int main(void) {
 		cursor_pos_x = (float)d_cursor_pos_x - ((float)(width) / 2.0f);
 		cursor_pos_y = (float)d_cursor_pos_y - ((float)(height) / 2.0f);
 
-		shGuiBar(&gui, 5.0f, "POWER", SH_GUI_TOP);
 
-		SH_GUI_REGION_CONDITION(
-			gui,
-
-			shGuiRegion(
-				&gui,
-				30.0f, 20.0f,
-				0.0f, 0.0f,
-				"QUERTY",
-				SH_GUI_MOVABLE | SH_GUI_RELATIVE
-			),
-
+		if (shGuiRegion(
+			p_gui,
+			30.0f, 20.0f,
+			0.0f, 0.0f,
+			"QUERTY",
+			SH_GUI_MOVABLE | SH_GUI_RELATIVE | SH_GUI_RESIZABLE
+		)) {
 			puts("region clicked!");
-			
-			,
-
-			if (shGuiRegion(
-				&gui,
-				100.0f, 100.0f,
-				200.0f, 100.0f,
-				NULL,
-				SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_MINIMIZABLE
-			)) {
+			p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count] = 1 * (p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count] == 0); 
+		}
+		if (p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count]) {
+			//p_gui->region_infos.p_regions_data[p_gui->region_infos.region_count].size_position[0] = 100.0f;
+			if (shGuiRegion(p_gui, 100.0f, 100.0f, 200.0f, 100.0f, NULL, SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_MINIMIZABLE | SH_GUI_RESIZABLE)) {
 				puts("another region clicked!");
+				p_gui->region_infos.region_count--;
 			}
-		);
+		}
+		else {
+			//p_gui->region_infos.p_regions_data[p_gui->region_infos.region_count].size_position[0] = 0.0f;
+		}
+		p_gui->region_infos.region_count++;
 
+		shGuiMenuBar(p_gui, 5.0f, "POWER", SH_GUI_TOP);
 
-		shGuiText(&gui, "QWERTY", 25.0f, 0.0f, 0.0f);
-		shGuiText(&gui, "QWERTY", 50.0f, 0.0f, -50.0f);
-		shGuiText(&gui, "QWERTY", 100.0f, 0.0f, -150.0f);
-		shGuiText(&gui, "QWERTY", 200.0f, 0.0f, -300.0f);
+		shGuiText(p_gui, 25.0f, 0.0f, 0.0f, "QWERTY");
+		shGuiText(p_gui, 50.0f, 0.0f, -50.0f, "QWERTY");
+		shGuiText(p_gui, 100.0f, 0.0f, -150.0f, "QWERTY");
+		shGuiText(p_gui, 200.0f, 0.0f, -300.0f, "QWERTY");
 
-		shGuiWriteMemory(&gui, 1);
+		shGuiWriteMemory(p_gui, 1);
 
 
 		{//SHVULKAN CODE, write your own
@@ -197,8 +200,8 @@ int main(void) {
 
 
 
-		shGuiRender(&gui);
-
+		shGuiRender(p_gui);
+		shGuiUpdateInputs(p_gui);
 
 
 		{//SHVULKAN CODE
@@ -207,7 +210,7 @@ int main(void) {
 
 	}
 
-	shGuiRelease(&gui);
+	shGuiRelease(p_gui);
 
 	{//GLFW CODE
 		glfwTerminate();
