@@ -570,7 +570,7 @@ uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record) {
 				p_gui->region_infos.staging_memory,
 				16 * region_idx,
 				16,
-				p_gui->region_infos.p_regions_data[region_idx].size_position
+				p_gui->region_infos.p_regions_data[region_idx].raw.size_position
 			);
 		}
 		else {
@@ -801,10 +801,10 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 	}
 
 	else if (flags & SH_GUI_RELATIVE) {
-		item.region.size_position[0] = width / 100.0f * window_size_x;
-		item.region.size_position[1] = height / 100.0f * window_size_y;
-		item.region.size_position[2] = pos_x / 100.0f * window_size_x / 2.0f;
-		item.region.size_position[3] = -pos_y / 100.0f * window_size_y / 2.0f;
+		item.region.raw.size_position[0] = width / 100.0f * window_size_x;
+		item.region.raw.size_position[1] = height / 100.0f * window_size_y;
+		item.region.raw.size_position[2] = pos_x / 100.0f * window_size_x / 2.0f;
+		item.region.raw.size_position[3] = -pos_y / 100.0f * window_size_y / 2.0f;
 	}
 
 	uint32_t		region_count	= p_gui->region_infos.region_count;
@@ -820,8 +820,8 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 		shGuiText(
 			p_gui,
 			text_size,
-			p_region->size_position[2] - p_region->size_position[0] / 2.0f + text_size / 2.0f,
-			-p_region->size_position[3] + p_region->size_position[1] / 2.0f - text_size,
+			p_region->raw.size_position[2] - p_region->raw.size_position[0] / 2.0f + text_size / 2.0f,
+			-p_region->raw.size_position[3] + p_region->raw.size_position[1] / 2.0f - text_size,
 			name
 		);
 	}
@@ -830,18 +830,18 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 		shGuiText(
 			p_gui, 
 			text_size, 
-			p_region->size_position[2] + p_region->size_position[0] / 2.0f - text_size,
-			-p_region->size_position[3] + p_region->size_position[1] / 2.0f - text_size,
+			p_region->raw.size_position[2] + p_region->raw.size_position[0] / 2.0f - text_size,
+			-p_region->raw.size_position[3] + p_region->raw.size_position[1] / 2.0f - text_size,
 			"O"
 		);
 	}
 
 	if (flags & SH_GUI_RESIZABLE) {
-		float limit_left = p_region->size_position[2] - p_region->size_position[0] / 2.0f;
-		float limit_right = p_region->size_position[2] + p_region->size_position[0] / 2.0f;
-		float limit_top = p_region->size_position[3] - p_region->size_position[1] / 2.0f;
-		float limit_bottom = p_region->size_position[3] + p_region->size_position[1] / 2.0f;
-		p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_NORMAL];
+		float limit_left = p_region->raw.size_position[2] - p_region->raw.size_position[0] / 2.0f;
+		float limit_right = p_region->raw.size_position[2] + p_region->raw.size_position[0] / 2.0f;
+		float limit_top = p_region->raw.size_position[3] - p_region->raw.size_position[1] / 2.0f;
+		float limit_bottom = p_region->raw.size_position[3] + p_region->raw.size_position[1] / 2.0f;
+		//p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_NORMAL];
 
 		uint8_t horizontal_right	=	(cursor_x >= limit_left - 3.0f && cursor_x <= limit_left + 3.0f) &&
 										(cursor_y <= limit_bottom && cursor_y >= limit_top);
@@ -866,16 +866,16 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 
 		if (p_gui->inputs.p_mouse_events[0]) {
 			if (horizontal_left) {
-				p_region->size_position[0] += 1000.0f * d_cursor_pos_x * (*p_gui->inputs.p_delta_time);
+				p_region->raw.size_position[0] += 1000.0f * d_cursor_pos_x * (*p_gui->inputs.p_delta_time);
 			}
 			if (horizontal_right) {
-				p_region->size_position[0] -= 1000.0f * d_cursor_pos_x * (*p_gui->inputs.p_delta_time);
+				p_region->raw.size_position[0] -= 1000.0f * d_cursor_pos_x * (*p_gui->inputs.p_delta_time);
 			}
 			if (vertical_top) {
-				p_region->size_position[1] += 1000.0f * d_cursor_pos_y * (*p_gui->inputs.p_delta_time);
+				p_region->raw.size_position[1] += 1000.0f * d_cursor_pos_y * (*p_gui->inputs.p_delta_time);
 			}
 			if (vertical_bottom) {
-				p_region->size_position[1] -= 1000.0f * d_cursor_pos_y * (*p_gui->inputs.p_delta_time);
+				p_region->raw.size_position[1] -= 1000.0f * d_cursor_pos_y * (*p_gui->inputs.p_delta_time);
 			}
 		}
 	}
@@ -886,15 +886,15 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 	}
 
 	if (
-	(cursor_x >= p_region->size_position[2] - p_region->size_position[0] / 2.0f + 10.0f) &&
-	(cursor_x <= p_region->size_position[2] + p_region->size_position[0] / 2.0f - 10.0f) &&
-	(cursor_y >= p_region->size_position[3] - p_region->size_position[1] / 2.0f + 10.0f) &&
-	(cursor_y <= p_region->size_position[3] + p_region->size_position[1] / 2.0f - 10.0f)
+	(cursor_x >= p_region->raw.size_position[2] - p_region->raw.size_position[0] / 2.0f + 10.0f) &&
+	(cursor_x <= p_region->raw.size_position[2] + p_region->raw.size_position[0] / 2.0f - 10.0f) &&
+	(cursor_y >= p_region->raw.size_position[3] - p_region->raw.size_position[1] / 2.0f + 10.0f) &&
+	(cursor_y <= p_region->raw.size_position[3] + p_region->raw.size_position[1] / 2.0f - 10.0f)
 	) {
 		if (p_gui->inputs.p_mouse_events[1] == 1 && (flags & SH_GUI_MOVABLE)) {
 			
-			p_region->size_position[2]		= cursor_x;
-			p_region->size_position[3]		= cursor_y;
+			p_region->raw.size_position[2]		= cursor_x;
+			p_region->raw.size_position[3]		= cursor_y;
 		
 			p_gui->region_infos.p_regions_overwritten_data[region_count] = 1;
 		}
@@ -916,16 +916,16 @@ uint8_t SH_GUI_CALL shGuiRegionWrite(ShGui* p_gui, const uint32_t region_idx, co
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	if (write_flags & SH_GUI_WIDTH) {
-		p_gui->region_infos.p_regions_data[region_idx].size_position[0] = width;
+		p_gui->region_infos.p_regions_data[region_idx].raw.size_position[0] = width;
 	}
 	if (write_flags & SH_GUI_HEIGHT) {
-		p_gui->region_infos.p_regions_data[region_idx].size_position[1] = height;
+		p_gui->region_infos.p_regions_data[region_idx].raw.size_position[1] = height;
 	}
 	if (write_flags & SH_GUI_POSITION_X) {
-		p_gui->region_infos.p_regions_data[region_idx].size_position[2] = pos_x;
+		p_gui->region_infos.p_regions_data[region_idx].raw.size_position[2] = pos_x;
 	}
 	if (write_flags & SH_GUI_POSITION_Y) {
-		p_gui->region_infos.p_regions_data[region_idx].size_position[3] = pos_y;
+		p_gui->region_infos.p_regions_data[region_idx].raw.size_position[3] = pos_y;
 	}
 
 	p_gui->region_infos.p_regions_overwritten_data[region_idx] = 1;
