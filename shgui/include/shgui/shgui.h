@@ -52,8 +52,47 @@ typedef struct ShGuiInputs {
 
 
 
-typedef struct ShGuiRegion {
+typedef enum ShGuiDefaultValues {
+	SH_GUI_THEME_DARK = 0b0001,
+	SH_GUI_THEME_LIGHT = 0b0010,
+	SH_GUI_DEFAULT_VALUES_MAX_ENUM
+} ShGuiDefaultValues;
+
+typedef enum ShGuiInstructions {
+	SH_GUI_RECORD = 0b001,
+	SH_GUI_INITIALIZE = 0b010
+} ShGuiInstructions;
+
+typedef enum ShGuiWidgetFlags {
+	SH_GUI_TOP = 0b0000000001,
+	SH_GUI_BOTTOM = 0b0000000010,
+	SH_GUI_LEFT = 0b0000000100,
+	SH_GUI_RIGHT = 0b0000001000,
+	SH_GUI_MOVABLE = 0b0000010000,
+	SH_GUI_PIXELS = 0b0000100000,
+	SH_GUI_RELATIVE = 0b0001000000,
+	SH_GUI_MINIMIZABLE = 0b0010000000,
+	SH_GUI_RESIZABLE = 0b0100000000,
+	SH_GUI_SWITCH = 0b1000000000
+} ShGuiWidgetFlags;
+
+typedef enum ShGuiWriteFlags {
+	SH_GUI_WIDTH = 0b00001,
+	SH_GUI_HEIGHT = 0b00010,
+	SH_GUI_POSITION_X = 0b00100,
+	SH_GUI_POSITION_Y = 0b01000,
+	SH_GUI_TITLE = 0b10000
+} ShGuiWriteFlags;
+
+
+typedef struct ShGuiRegionRaw {
 	alignas(16) float size_position[4];
+} ShGuiRegionRaw;
+
+
+typedef struct ShGuiRegion {
+	ShGuiRegionRaw raw;
+	ShGuiWidgetFlags flags;
 } ShGuiRegion;
 
 
@@ -95,39 +134,6 @@ typedef struct ShGuiItem {
 	ShGuiRegion region;
 	ShGuiText*	p_text;
 } ShGuiItem;
-
-
-typedef enum ShGuiDefaultValues{
-	SH_GUI_THEME_DARK	= 0b0001,
-	SH_GUI_THEME_LIGHT	= 0b0010,
-	SH_GUI_DEFAULT_VALUES_MAX_ENUM
-} ShGuiDefaultValues;
-
-typedef enum ShGuiInstructions {
-	SH_GUI_RECORD		= 0b001,
-	SH_GUI_INITIALIZE	= 0b010
-} ShGuiInstructions;
-
-typedef enum ShGuiWidgetFlags {
-	SH_GUI_TOP			= 0b0000000001,
-	SH_GUI_BOTTOM		= 0b0000000010,
-	SH_GUI_LEFT			= 0b0000000100,
-	SH_GUI_RIGHT		= 0b0000001000,
-	SH_GUI_MOVABLE		= 0b0000010000,
-	SH_GUI_PIXELS		= 0b0000100000,
-	SH_GUI_RELATIVE		= 0b0001000000,
-	SH_GUI_MINIMIZABLE	= 0b0010000000,
-	SH_GUI_RESIZABLE	= 0b0100000000,
-	SH_GUI_SWITCH		= 0b1000000000
-} ShGuiWidgetFlags;
-
-typedef enum ShGuiWriteFlags {
-	SH_GUI_WIDTH		= 0b00001,
-	SH_GUI_HEIGHT		= 0b00010,
-	SH_GUI_POSITION_X	= 0b00100,
-	SH_GUI_POSITION_Y	= 0b01000,
-	SH_GUI_TITLE		= 0b10000
-} ShGuiWriteFlags;
 
 
 typedef struct ShGuiCore {
@@ -225,8 +231,6 @@ extern uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass ren
 
 extern uint8_t SH_GUI_CALL shGuiSetDefaultValues(ShGui* p_gui, const ShGuiDefaultValues values, const ShGuiInstructions instruction);
 
-extern uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record);
-
 extern uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name, const ShGuiWidgetFlags flags);
@@ -240,6 +244,12 @@ extern uint8_t SH_GUI_CALL shGuiMenuItem(ShGui* p_gui, const float extent, const
 extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, const float scale, const float pos_x, const float pos_y, const char* text);
 
 extern uint8_t SH_GUI_CALL shGuiInputField(ShGui* p_gui);
+
+
+
+extern uint8_t SH_GUI_CALL shGuiUpdateInputs(ShGui* p_gui);
+
+extern uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, const uint8_t record);
 
 extern uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui);
 
