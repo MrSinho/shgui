@@ -124,6 +124,7 @@ int main(void) {
 
 			GLFWcursor* cursor = glfwCreateStandardCursor((int)p_gui->inputs.active_cursor_icon);
 			glfwSetCursor(window, cursor);
+			p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_NORMAL];
 
 			//glfwGetWindowSize(window, &width, &height);
 			//Resize window
@@ -176,7 +177,7 @@ int main(void) {
 		p_gui->region_infos.region_count++;
 
 
-		shGuiMenuBar(p_gui, 5.0f, "POWER", SH_GUI_TOP);
+		shGuiMenuBar(p_gui, 5.0f, NULL, SH_GUI_TOP);
 
 		
 		ShGuiRegion* p_reg_0 = &p_gui->region_infos.p_regions_data[0];
@@ -193,7 +194,7 @@ int main(void) {
 			p_gui,
 			300.0f, 100.0f,
 			-200.0f, -200.0f,
-			"TROYU",
+			"TRE",
 			SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
 		);
 		shGuiWriteMemory(p_gui, 1);
