@@ -95,8 +95,6 @@ typedef struct ShGuiRegion {
 	ShGuiWidgetFlags flags;
 } ShGuiRegion;
 
-
-
 typedef struct ShGuiCharInfo {
 	alignas(16) float position_scale[4];
 } ShGuiCharInfo;
@@ -159,6 +157,7 @@ typedef struct ShGui {
 	uint32_t					active_item_idx;
 
 	struct {
+
 		VkBuffer				staging_buffer;
 		VkDeviceMemory			staging_memory;
 		uint32_t				regions_data_size;
@@ -175,6 +174,7 @@ typedef struct ShGui {
 	
 	struct {
 		float								char_distance_offset;
+
 		ShGuiCharInfoDescriptorStructureMap	char_info_map;
 		uint32_t							total_char_count;
 
@@ -233,9 +233,14 @@ extern uint8_t SH_GUI_CALL shGuiSetDefaultValues(ShGui* p_gui, const ShGuiDefaul
 
 extern uint8_t SH_GUI_CALL shGuiGetEvents(ShGui* p_gui);
 
-extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name, const ShGuiWidgetFlags flags);
+extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const ShGuiWidgetFlags flags);
 
 extern uint8_t SH_GUI_CALL shGuiRegionWrite(ShGui* p_gui, const uint32_t region_idx, const float width, const float height, const float pos_x, const float pos_y, const char* name, const ShGuiWidgetFlags flags, const ShGuiWriteFlags write_flags);
+
+
+extern uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* name, const ShGuiWidgetFlags flags);
+
+extern uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* title, const ShGuiWidgetFlags flags);
 
 extern uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags);
 
