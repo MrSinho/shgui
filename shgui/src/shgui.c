@@ -168,11 +168,13 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 		p_gui->region_infos.p_regions_overwritten_data = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
 		p_gui->region_infos.p_regions_clicked = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
 		p_gui->region_infos.p_regions_active = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
-		
+		p_gui->region_infos.menus.p_menu_indices = calloc(1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
+
 		shGuiError(p_gui->region_infos.p_regions_data == NULL, "invalid regions data memory", return 0);
 		shGuiError(p_gui->region_infos.p_regions_overwritten_data == NULL, "invalid regions overwrite memory", return 0);
 		shGuiError(p_gui->region_infos.p_regions_clicked == NULL, "invalid regions clicked memory", return 0);
 		shGuiError(p_gui->region_infos.p_regions_active == NULL, "invalid regions active memory", return 0);
+		shGuiError(p_gui->region_infos.menus.p_menu_indices == NULL, "invalid menu indices memory", return 0);
 
 		memset(p_gui->region_infos.p_regions_active, 1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
 
@@ -678,7 +680,7 @@ uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui) {
 	shDraw(cmd_buffer, p_gui->region_infos.region_count * 6);
 
 	p_gui->region_infos.region_count = 0;
-
+	p_gui->region_infos.menus.menu_count = 0;
 
 
 	
@@ -838,13 +840,15 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 		float limit_bottom = p_region->raw.size_position[3] + p_region->raw.size_position[1] / 2.0f;
 		//p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_NORMAL];
 
-		uint8_t horizontal_right	=	(cursor_x >= limit_left - 3.0f && cursor_x <= limit_left + 3.0f) &&
+		const float check_size = 6.0f;
+
+		uint8_t horizontal_right	=	(cursor_x >= limit_left - check_size && cursor_x <= limit_left + check_size) &&
 										(cursor_y <= limit_bottom && cursor_y >= limit_top);
-		uint8_t horizontal_left		=	(cursor_x <= limit_right + 3.0f && cursor_x >= limit_right - 3.0f) &&
+		uint8_t horizontal_left		=	(cursor_x <= limit_right + check_size && cursor_x >= limit_right - check_size) &&
 										(cursor_y <= limit_bottom && cursor_y >= limit_top);
-		uint8_t vertical_top		=	(cursor_y >= limit_bottom - 3.0f && cursor_y <= limit_bottom + 3.0f) &&
+		uint8_t vertical_top		=	(cursor_y >= limit_bottom - check_size && cursor_y <= limit_bottom + check_size) &&
 										(cursor_x >= limit_left && cursor_x <= limit_right);
-		uint8_t vertical_bottom		=	(cursor_y <= limit_top + 3.0f && cursor_y >= limit_top - 3.0f) &&
+		uint8_t vertical_bottom		=	(cursor_y <= limit_top + check_size && cursor_y >= limit_top - check_size) &&
 										(cursor_x >= limit_left && cursor_x <= limit_right);
 
 		float d_cursor_pos_x = (*p_gui->inputs.p_cursor_pos_x) - p_gui->inputs.last.last_cursor_pos_x;
@@ -888,8 +892,11 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, const float width, const float hei
 	) {
 		if (p_gui->inputs.p_mouse_events[1] == 1 && (flags & SH_GUI_MOVABLE)) {
 			
-			p_region->raw.size_position[2]		= cursor_x;
-			p_region->raw.size_position[3]		= cursor_y;
+			float dx = cursor_x - p_gui->inputs.last.last_cursor_pos_x;
+			float dy = cursor_y - p_gui->inputs.last.last_cursor_pos_y;
+
+			p_region->raw.size_position[2]		+= dx;
+			p_region->raw.size_position[3]		+= dy;
 		
 			p_gui->region_infos.p_regions_overwritten_data[region_count] = 1;
 		}
@@ -953,16 +960,29 @@ uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, const float width, const float heigh
 uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* title, const ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 	
+	uint32_t region_count = p_gui->region_infos.region_count;
+	ShGuiRegion* main_region = &p_gui->region_infos.p_regions_data[region_count];
+
 	uint8_t sig = shGuiItem(p_gui, width, height, pos_x, pos_y, title, flags);
 	
 	//bar region
+		float bar_size = 20.0f;
+		float* main_size_position = main_region->raw.size_position;
+		shGuiRegion(
+			p_gui, 
+			main_size_position[0],
+			bar_size, 
+			main_size_position[2],
+			-main_size_position[3] + main_size_position[1] / 2.0f - bar_size / 2.0f,
+			SH_GUI_PIXELS
+		);
 
 	//close region
 
 	return sig;
 }
 
-uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags) {
+uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float region_width = 100.0f;
@@ -989,9 +1009,13 @@ uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const char* t
 		}
 	}
 
+	p_gui->region_infos.menus.p_menu_indices[p_gui->region_infos.menus.menu_count] = p_gui->region_infos.region_count;
+
 	shGuiRegion(
 		p_gui, region_width, region_height, region_pos_x, region_pos_y, flags | SH_GUI_RELATIVE
 	);
+
+	p_gui->region_infos.menus.menu_count++;
 
 	return 1;
 }
@@ -999,31 +1023,32 @@ uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const char* t
 uint8_t SH_GUI_CALL shGuiMenuItem(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
+	float text_size = 15.0f;
+
 	float width = 10.0f;//%
 	ShGuiWidgetFlags additional_flags = SH_GUI_RELATIVE;
 	if (title != NULL) {
-		float size = 15.0f;
 		additional_flags &= ~SH_GUI_RELATIVE;
 		additional_flags |= SH_GUI_PIXELS;
-		width = (strlen(title) + 1.0f) * p_gui->text_infos.char_distance_offset * size / 4.0f;//in pixels
+		width = (strlen(title) + 1.0f) * p_gui->text_infos.char_distance_offset * text_size / 4.0f;//in pixels
 	}
 	
-	uint32_t region_count = p_gui->region_infos.region_count - 1;
-	ShGuiRegion* bar = &p_gui->region_infos.p_regions_data[region_count];
+	uint32_t bar_idx = p_gui->region_infos.menus.menu_count - 1;
+	ShGuiRegion* bar = &p_gui->region_infos.p_regions_data[p_gui->region_infos.menus.p_menu_indices[bar_idx]];
 	
 	float size_position[4] = { 0.0f };
 	
 	if (bar->flags & SH_GUI_TOP || bar->flags & SH_GUI_BOTTOM) {
 		size_position[0] = width;
 		size_position[1] = bar->raw.size_position[1];
-		size_position[2] = bar->raw.size_position[2];
+		size_position[2] = -bar->raw.size_position[0] / 2.0f + size_position[0] / 2.0f;
 		size_position[3] = bar->raw.size_position[3];
 	}
 	else if (bar->flags & SH_GUI_LEFT || bar->flags && SH_GUI_RIGHT) {
-		size_position[0] = bar->raw.size_position[1];
-		size_position[1] = bar->raw.size_position[0];
-		size_position[2] = bar->raw.size_position[3];
-		size_position[3] = bar->raw.size_position[2];
+		size_position[0] = width;
+		size_position[1] = text_size + 8.0f;
+		size_position[2] = bar->raw.size_position[2];
+		size_position[3] = -bar->raw.size_position[1] / 2.0f + size_position[1] / 2.0f;
 	}
 	else {
 		return 0;

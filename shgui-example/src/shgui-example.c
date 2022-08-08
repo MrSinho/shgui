@@ -98,7 +98,7 @@ int main(void) {
 	shGuiBuildRegionPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
 	shGuiBuildTextPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
 
-	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_LIGHT, SH_GUI_INITIALIZE | SH_GUI_RECORD);
+	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
 
 	uint32_t frame_idx;
 	float last_time = (float)glfwGetTime();
@@ -177,9 +177,11 @@ int main(void) {
 		p_gui->region_infos.region_count++;
 
 
-		shGuiMenuBar(p_gui, 5.0f, NULL, SH_GUI_TOP);
+		shGuiMenuBar(p_gui, 3.0f, SH_GUI_TOP);
 
-		shGuiMenuItem(p_gui, 5.0f, "YOOU", 0);
+		if (shGuiMenuItem(p_gui, 0.0f, "YOOU", 0)) {//extent parameter not necessary if text is specified
+			puts("menu item clicked");//not really working
+		}
 
 		ShGuiRegion* p_reg_0 = &p_gui->region_infos.p_regions_data[0];
 		ShGuiRegion* p_reg_1 = &p_gui->region_infos.p_regions_data[1];

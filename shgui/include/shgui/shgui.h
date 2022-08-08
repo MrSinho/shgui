@@ -148,7 +148,7 @@ typedef struct ShGui {
 	ShGuiCore					core;
 	ShGuiInputs					inputs;
 
-
+	
 	struct {
 		VkBuffer			staging_buffer;
 		VkDeviceMemory		staging_memory;
@@ -157,6 +157,10 @@ typedef struct ShGui {
 	uint32_t					active_item_idx;
 
 	struct {
+		struct {
+			uint32_t menu_count;
+			uint32_t* p_menu_indices;
+		} menus;
 
 		VkBuffer				staging_buffer;
 		VkDeviceMemory			staging_memory;
@@ -242,7 +246,7 @@ extern uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, const float width, const floa
 
 extern uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, const float width, const float height, const float pos_x, const float pos_y, const char* title, const ShGuiWidgetFlags flags);
 
-extern uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags);
+extern uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, const float extent, const ShGuiWidgetFlags flags);
 
 extern uint8_t SH_GUI_CALL shGuiMenuItem(ShGui* p_gui, const float extent, const char* title, const ShGuiWidgetFlags flags);
 
