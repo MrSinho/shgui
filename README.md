@@ -8,11 +8,13 @@ Features:
     * [x] window
         * [x] highlight edge
         * [x] movable
-        * [x] close
         * [x] input conditions
+        * [x] change cursor default icons
     * [x] text
     * [ ] input fields
     * [ ] sliders
+
+Change
 
 to do:
  [ ] load and write .ini file
