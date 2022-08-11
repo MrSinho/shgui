@@ -8,7 +8,9 @@ find_package(Vulkan REQUIRED FATAL_ERROR)
 
 
 function(build_shgui)
+if (NOT TARGET shvulkan)
 add_subdirectory(externals/shvulkan)
+endif()
 add_library(shgui 
     shgui/src/shgui.c
 )
@@ -16,7 +18,7 @@ target_include_directories(shgui PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/shgui/include
     ${CMAKE_CURRENT_SOURCE_DIR}/fonts/include
 )
-target_link_libraries(shgui PRIVATE shvulkan)
+target_link_libraries(shgui PUBLIC shvulkan)
 set_target_properties(shgui shvulkan PROPERTIES 
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 )
@@ -29,7 +31,7 @@ add_subdirectory(externals/glfw)
 add_executable(shgui-example 
     shgui-example/src/shgui-example.c
 )
-target_link_libraries(shgui-example PRIVATE 
+target_link_libraries(shgui-example PUBLIC 
     shgui shvulkan glfw
 )
 set_target_properties(shgui-example shvulkan glfw PROPERTIES 
