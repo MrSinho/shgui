@@ -110,7 +110,8 @@ uint32_t SH_GUI_CALL shGuiGetAvailableHeap(ShGui* p_gui, uint32_t item_count, ui
 
 	uint32_t available_gpu_heap = host_visible_available_video_memory <= device_available_video_memory ? host_visible_available_video_memory : device_available_video_memory;
 	available_gpu_heap /= 2;
-	uint32_t max_items_size = item_count * sizeof(ShGuiRegionRaw);
+
+	uint32_t max_items_size = item_count * item_size;
 	
 	return available_gpu_heap >= max_items_size ? max_items_size : available_gpu_heap;
 }
