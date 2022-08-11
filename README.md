@@ -14,15 +14,6 @@ Features:
     * [ ] input fields
     * [ ] sliders
 
-Change
-
-to do:
- [ ] load and write .ini file
- [ ] close window option
- [ ] create menu bar
- [ ] create menu
- [ ] find a way to add menu items
-
  # Opening issues and contributing
 
-Yes
+Yesn't
