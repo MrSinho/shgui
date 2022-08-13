@@ -157,47 +157,43 @@ int main(void) {
 			p_gui,
 			30.0f, 20.0f,
 			0.0f, 0.0f,
-			"QUERTY",
+			"Menu",
 			SH_GUI_MOVABLE | SH_GUI_RELATIVE | SH_GUI_RESIZABLE
 		);
-		shGuiWindowText(p_gui, 15.0f, "WQEE", SH_GUI_CENTER_WIDTH);
-		shGuiWindowText(p_gui, 15.0f, "POIPOIPOI", 0);
-
-		//	p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count] = 1 * (p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count] == 0);
-		//if (shGuiWindowButton(p_gui, 15.0f, "WRITE", 0)) {
-		//	puts("Window button pressed");
-		//}
-
-		//if (p_gui->region_infos.p_regions_active[p_gui->region_infos.region_count]) {
-		//	if (shGuiWindow(p_gui, 100.0f, 100.0f, 200.0f, 100.0f, NULL, SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_MINIMIZABLE | SH_GUI_RESIZABLE)) {
-		//		puts("another region clicked!");
-		//		p_gui->region_infos.region_count--;
-		//	} 
-		//}
-		//p_gui->region_infos.region_count++;
+		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "Menu text", SH_GUI_CENTER_WIDTH);
+		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "Some info here", 0);
+		shGuiWindowSeparator(p_gui);
+		if (shGuiWindowButton(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "Popup", 0)) {
+			puts("Popup");
+		}
 
 		shGuiWindow(
 			p_gui,
 			300.0f, 100.0f,
 			-200.0f, -200.0f,
-			"WOW",
+			"Window",
+			SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
+		);
+
+		shGuiWindow(
+			p_gui,
+			300.0f, 100.0f,
+			200.0f, -200.0f,
+			"Another window",
 			SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
 		);
 		
 
-		shGuiMenuBar(p_gui, 3.0f, SH_GUI_TOP);
+		shGuiMenuBar(p_gui, SH_GUI_WINDOW_BAR_SIZE, SH_GUI_TOP);
 
-		if (shGuiMenuItem(p_gui, 0.0f, "RETRT", 0)) {//extent parameter not necessary if text is specified
-			puts("menu item clicked");//not really working
+		if (shGuiMenuItem(p_gui, 0.0f, "File", 0)) {
+			puts("File");
 		}
-		if (shGuiMenuItem(p_gui, 0.0f, "TTI", 0)) {
-			
+		if (shGuiMenuItem(p_gui, 0.0f, "Settings", 0)) {
+			puts("Settings");
 		}
 
-		ShGuiRegion* p_reg_0 = &p_gui->region_infos.p_regions_data[0];
-		ShGuiRegion* p_reg_1 = &p_gui->region_infos.p_regions_data[1];
-		ShGuiRegion* p_reg_2 = &p_gui->region_infos.p_regions_data[2];
-
+		
 		shGuiText(p_gui, 25.0f, 0.0f, 0.0f, "QWERTY");
 		shGuiText(p_gui, 50.0f, 0.0f, -50.0f, "QWERTY");
 		shGuiText(p_gui, 100.0f, 0.0f, -150.0f, "QWERTY");

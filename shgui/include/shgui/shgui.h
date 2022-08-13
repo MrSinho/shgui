@@ -58,6 +58,26 @@ typedef struct ShGuiInputs {
 } ShGuiInputs;
 
 
+//WIDGET MACROS
+//
+//
+#define SH_GUI_WINDOW_BAR_SIZE 20.0f
+#define SH_GUI_WINDOW_TEXT_SIZE 15.0f
+#define SH_GUI_WINDOW_TEXT_BORDER_OFFSET 5.0f
+#define SH_GUI_WINDOW_USED_HEIGHT(window_pos_y, window_height, used_height)\
+	((float)(window_pos_y)) + ((float)(window_size_y)) / 2.0f - SH_GUI_WINDOW_BAR_SIZE - ((float)(used_height))
+#define SH_GUI_WINDOW_ITEMS_OFFSET 15.0f
+
+#define SH_GUI_CURSOR_EDGE_CHECK_SIZE 6.0f
+
+#define SH_GUI_CHAR_DISTANCE_OFFSET 3.0f
+#define SH_GUI_CHAR_FINAL_OFFSET(char_distance_offset, scale, char_idx)\
+	((float)char_distance_offset) / 4.0f * ((float)scale) * ((float)char_idx)
+
+#define SH_GUI_SEPARATOR_OFFSET 5.0f
+
+static float SH_GUI_EMPTY_CHAR[1] = { 0x0 };
+
 //WIDGET PROPERTIES
 //
 //
@@ -101,7 +121,8 @@ typedef enum ShGuiWriteFlags {
 //
 //
 typedef struct ShGuiRegionRaw {
-	alignas(16) float			size_position[4];
+	alignas(8) float			position[2];
+	alignas(8) float			size[2];
 } ShGuiRegionRaw;
 
 typedef struct ShGuiRegion {
@@ -179,8 +200,6 @@ typedef struct ShGui {
 		VkDeviceMemory		staging_memory;
 	} default_infos;
 
-	uint32_t					active_item_idx;
-
 	struct {
 		struct {
 			uint32_t menu_count;
@@ -208,8 +227,6 @@ typedef struct ShGui {
 	} region_infos;
 	
 	struct {
-		float								char_distance_offset;
-
 		ShGuiCharInfoDescriptorStructureMap	char_info_map;
 		uint32_t							total_char_count;
 
@@ -272,6 +289,8 @@ extern uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, float width, float height, 
 extern uint8_t SH_GUI_CALL shGuiWindowText(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlags flags);
 
 extern uint8_t SH_GUI_CALL shGuiWindowButton(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlags flags);
+
+extern uint8_t SH_GUI_CALL shGuiWindowSeparator(ShGui* p_gui);
 
 #if 0
 extern uint8_t SH_GUI_CALL shGuiWindowSlideri(ShGui* p_gui, float extent, int min, int max, int step, ShGuiWidgetFlags flags);
