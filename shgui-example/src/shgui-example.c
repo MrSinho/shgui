@@ -121,26 +121,32 @@ int main(void) {
 			glfwSetCursor(window, cursor);
 			p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_NORMAL];
 
-			//glfwGetWindowSize(window, &width, &height);
-			//Resize window
-			//if (width != p_gui->region_infos.fixed_states.scissor.extent.width || height != p_gui->region_infos.fixed_states.scissor.extent.height) {
-			//	shWaitDeviceIdle(core.device);
-			//	
-			//	shSwapchainRelease(&core);
-			//	shSurfaceRelease(&core);
-			//
-			//	glfwCreateWindowSurface(core.instance, window, NULL, &core.surface.surface);
-			//	core.surface.width = width;
-			//	core.surface.height = height;
-			//	shInitSwapchainData(&core);
-			//	shSetFramebuffers(&core);
-			//
-			//	shGuiDestroyPipelines(p_gui);
-			//	shGuiBuildRegionPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
-			//	shGuiBuildTextPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
-			//
-			//	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
-			//}
+			glfwGetWindowSize(window, &width, &height);
+			if (width != p_gui->region_infos.fixed_states.scissor.extent.width || height != p_gui->region_infos.fixed_states.scissor.extent.height) {
+				
+				//shvulkan and glfw based code, write your own
+				//
+				//
+				shWaitDeviceIdle(core.device);
+				shSwapchainRelease(&core);
+				shSurfaceRelease(&core);
+				glfwCreateWindowSurface(core.instance, window, NULL, &core.surface.surface);
+				gui_core.surface = core.surface.surface;
+				p_gui->core.surface = core.surface.surface;
+				core.surface.width = width;
+				core.surface.height = height;
+				shInitSwapchainData(&core);
+				//shInitDepthData(&core);
+				shSetFramebuffers(&core);
+				
+				//update shgui canvas
+				//
+				//
+				shGuiDestroyPipelines(p_gui);
+				shGuiBuildRegionPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
+				shGuiBuildTextPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
+				shGuiSetDefaultValues(p_gui, SH_GUI_THEME_DARK, SH_GUI_RECORD);
+			}
 
 		}//GLFW BASED CODE
 
@@ -246,7 +252,7 @@ GLFWwindow* createWindow(const uint32_t width, const uint32_t height, const char
 	shVkError(!glfwInit(), "error initializing glfw", return NULL);
 	shVkError(glfwVulkanSupported() == GLFW_FALSE, "vulkan not supported by glfw", return NULL);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	return glfwCreateWindow(width, height, title, NULL, NULL);
 }
 

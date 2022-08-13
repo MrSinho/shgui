@@ -1443,11 +1443,15 @@ uint8_t SH_GUI_CALL shGuiDestroyPipelines(ShGui* p_gui) {
 	shPipelineClearDescriptorBufferMemory(p_gui->core.device, 1, &p_gui->region_infos.graphics_pipeline);
 	shPipelineRelease(p_gui->core.device, &p_gui->region_infos.graphics_pipeline);
 	
+	shClearBufferMemory(p_gui->core.device, p_gui->region_infos.staging_buffer, p_gui->region_infos.staging_memory);
 
 	shFixedStatesRelease(&p_gui->text_infos.fixed_states);
 	shPipelineClearDescriptorBufferMemory(p_gui->core.device, 0, &p_gui->text_infos.graphics_pipeline);
 	shPipelineClearDescriptorBufferMemory(p_gui->core.device, 1, &p_gui->text_infos.graphics_pipeline);
 	shPipelineRelease(p_gui->core.device, &p_gui->text_infos.graphics_pipeline);
+
+	shClearBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_staging_buffer, p_gui->text_infos.vertex_staging_memory);
+	shClearBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_buffer, p_gui->text_infos.vertex_memory);
 
 	return 1;
 }
@@ -1456,11 +1460,6 @@ uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 	
 	shClearBufferMemory(p_gui->core.device, p_gui->default_infos.staging_buffer, p_gui->default_infos.staging_memory);
-
-	shClearBufferMemory(p_gui->core.device, p_gui->region_infos.staging_buffer, p_gui->region_infos.staging_memory);
-	
-	shClearBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_staging_buffer, p_gui->text_infos.vertex_staging_memory);
-	shClearBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_buffer, p_gui->text_infos.vertex_memory);
 	
 	shGuiDestroyPipelines(p_gui);
 
