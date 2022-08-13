@@ -13,6 +13,7 @@ vec4 canvas[6] = vec4[6](
 struct GuiRegion {
     vec2 position;
     vec2 size;
+	vec4 priority;
 };
 
 layout (std140, set = 0, binding = 0) buffer GuiRegionsBuffer {
@@ -48,5 +49,5 @@ void main() {
 	region_size		 		= vec2(storageregions.regions[region_index].size);
 	window_size 			= vec4(pconst.window_size, 0.0f, 1.0f);
 	
-	gl_Position = pconst.projection * vertex;
+	gl_Position = pconst.projection * vec4(vertex.xy, storageregions.regions[region_index].priority.x, 1.0f);
 }

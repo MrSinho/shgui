@@ -80,7 +80,7 @@ char* shGuiReadBinary(char* path, uint32_t* p_code_size) {
 }
 
 
-uint32_t SH_GUI_CALL shGuiGetAvailableHeap(ShGui* p_gui, uint32_t item_count, uint32_t item_size) {
+uint32_t shGuiGetAvailableHeap(ShGui* p_gui, uint32_t item_count, uint32_t item_size) {
 	uint32_t host_visible_available_video_memory = 0;
 	{
 		uint32_t host_memory_type_index = 0;
@@ -117,7 +117,7 @@ uint32_t SH_GUI_CALL shGuiGetAvailableHeap(ShGui* p_gui, uint32_t item_count, ui
 }
 
 
-uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t max_gui_items) {
+uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t max_gui_items) {
 	shGuiError(
 		p_gui == NULL,
 		"invalid gui memory",
@@ -187,7 +187,7 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 		shGuiError(p_gui->region_infos.windows.p_window_indices			== NULL, "invalid menu indices memory",			return 0);
 		shGuiError(p_gui->region_infos.windows.p_windows_used_height	== NULL, "invalid menu indices memory",			return 0);
 
-		memset(p_gui->region_infos.p_regions_active, 1, p_gui->region_infos.regions_data_size / sizeof(ShGuiRegion));
+		memset(p_gui->region_infos.p_regions_active, 1, region_count);
 
 		shPipelineCreateDescriptorBuffer(
 			p_gui->core.device, 
@@ -258,7 +258,7 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 				p_gui->core.device,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				1,
-				16,
+				sizeof(ShGuiRegionRaw),
 				&p_gui->region_infos.graphics_pipeline
 			);
 			shPipelineAllocateDescriptorBufferMemory(
@@ -290,7 +290,7 @@ uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_p
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t max_gui_items) {
+uint8_t shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t max_gui_items) {
 	shGuiError(
 		p_gui == NULL,
 		"invalid gui memory",
@@ -411,7 +411,7 @@ uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pas
 			p_gui->core.device,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			1,
-			16,
+			sizeof(ShGuiCharInfo),
 			&p_gui->text_infos.graphics_pipeline
 		);
 		shPipelineAllocateDescriptorBufferMemory(
@@ -570,7 +570,7 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiDefaultValues values, ShGuiInst
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, uint8_t record) {
+uint8_t shGuiWriteMemory(ShGui* p_gui, uint8_t record) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	VkDevice device				= p_gui->core.device;
@@ -579,24 +579,25 @@ uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, uint8_t record) {
 	//WRITE REGIONS DATA
 	//
 	//
-	float null_region[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	float null_region[6] = { 0.0f };
 	for (uint32_t region_idx = 0; region_idx < p_gui->region_infos.region_count; region_idx++) {
 		uint8_t active = p_gui->region_infos.p_regions_active[region_idx];
+		ShGuiRegion* p_region = &p_gui->region_infos.p_regions_data[region_idx];
 		if (active) {
 			shWriteMemory(
 				device,
 				p_gui->region_infos.staging_memory,
-				16 * region_idx,
-				16,
-				p_gui->region_infos.p_regions_data[region_idx].raw.position
+				sizeof(ShGuiRegionRaw) * region_idx,
+				sizeof(ShGuiRegionRaw),
+				&p_gui->region_infos.p_regions_data[region_idx].raw
 			);
 		}
 		else {
 			shWriteMemory(
 				device,
 				p_gui->region_infos.staging_memory,
-				16 * region_idx,
-				16,
+				sizeof(ShGuiRegionRaw) * region_idx,
+				sizeof(ShGuiRegionRaw),
 				null_region
 			);
 		}
@@ -660,7 +661,7 @@ uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, uint8_t record) {
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui) {
+uint8_t shGuiRender(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	VkDevice			device				= p_gui->core.device;
@@ -789,7 +790,7 @@ uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui) {
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float pos_y, ShGuiWidgetFlags flags) {
+uint8_t shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float pos_y, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float cursor_x		= *p_gui->inputs.p_cursor_pos_x;
@@ -910,7 +911,7 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, float p
 	return 0;
 }
 
-uint8_t SH_GUI_CALL shGuiRegionWrite(ShGui* p_gui, uint32_t region_idx, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags, ShGuiWriteFlags write_flags) {
+uint8_t shGuiRegionWrite(ShGui* p_gui, uint32_t region_idx, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags, ShGuiWriteFlags write_flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	if (write_flags & SH_GUI_WIDTH) {
@@ -931,7 +932,16 @@ uint8_t SH_GUI_CALL shGuiRegionWrite(ShGui* p_gui, uint32_t region_idx, float wi
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags) {
+uint8_t shGuiSetRegionPriority(ShGui* p_gui, uint32_t region_idx, float priority) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+
+	ShGuiRegion* p_region = &p_gui->region_infos.p_regions_data[region_idx];
+	p_region->raw.priority[0] = priority;
+
+	return 1;
+}
+
+uint8_t shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	uint32_t		region_count	= p_gui->region_infos.region_count;
@@ -952,18 +962,21 @@ uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, float width, float height, float pos
 	return sig;
 }
 
-uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* title, ShGuiWidgetFlags flags) {
+uint8_t shGuiWindow(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* title, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 	
-	uint32_t region_count			= p_gui->region_infos.region_count;
-	ShGuiRegion* main_region		= &p_gui->region_infos.p_regions_data[region_count];
+	uint32_t main_region_idx		= p_gui->region_infos.region_count;
+	ShGuiRegion* main_region		= &p_gui->region_infos.p_regions_data[main_region_idx];
 
 	p_gui->region_infos.windows.p_window_indices[p_gui->region_infos.windows.window_count] = p_gui->region_infos.region_count;
 
 	uint8_t sig						= shGuiRegion(p_gui, width, height, pos_x, pos_y, flags);
-	
+	shGuiSetRegionPriority(p_gui, main_region_idx, SH_GUI_EMPTY_REGION_PRIORITY);
+
 	float* main_position		= main_region->raw.position;
 	float* main_size			= main_region->raw.size;
+
+	uint32_t bar_region_idx = p_gui->region_infos.region_count;
 
 	shGuiItem(
 		p_gui, 
@@ -974,13 +987,14 @@ uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, float width, float height, float p
 		title,
 		SH_GUI_PIXELS
 	);
+	shGuiSetRegionPriority(p_gui, bar_region_idx, SH_GUI_ITEMS_PRIORITY);
 
 	p_gui->region_infos.windows.window_count++;
 
 	return sig;
 }
 
-uint8_t SH_GUI_CALL shGuiWindowText(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlags flags) {
+uint8_t shGuiWindowText(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	uint32_t window_count			= p_gui->region_infos.windows.window_count;
@@ -1021,7 +1035,7 @@ uint8_t SH_GUI_CALL shGuiWindowText(ShGui* p_gui, float scale, char* text, ShGui
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiWindowButton(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlags flags) {
+uint8_t shGuiWindowButton(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memmory", return 0);
 
 	uint32_t window_count			= p_gui->region_infos.windows.window_count;
@@ -1050,7 +1064,7 @@ uint8_t SH_GUI_CALL shGuiWindowButton(ShGui* p_gui, float scale, char* text, ShG
 	}
 	(*p_used_height)				+= scale + SH_GUI_WINDOW_ITEMS_OFFSET;
 
-
+	uint32_t button_region_idx = p_gui->region_infos.region_count;
 	uint8_t pressed = shGuiItem(
 		p_gui,
 		width,
@@ -1060,11 +1074,12 @@ uint8_t SH_GUI_CALL shGuiWindowButton(ShGui* p_gui, float scale, char* text, ShG
 		text,
 		SH_GUI_PIXELS
 	);
+	shGuiSetRegionPriority(p_gui, button_region_idx, SH_GUI_ITEMS_PRIORITY);
 
 	return pressed;
 }
 
-uint8_t SH_GUI_CALL shGuiWindowSeparator(ShGui* p_gui) {
+uint8_t shGuiWindowSeparator(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	uint32_t window_count			= p_gui->region_infos.windows.window_count;
@@ -1088,6 +1103,7 @@ uint8_t SH_GUI_CALL shGuiWindowSeparator(ShGui* p_gui) {
 
 	(*p_used_height) += item_height + SH_GUI_WINDOW_ITEMS_OFFSET;
 
+	uint32_t separator_region_idx = p_gui->region_infos.region_count;
 	shGuiRegion(
 		p_gui,
 		window_size_x / 1.2f,
@@ -1096,86 +1112,12 @@ uint8_t SH_GUI_CALL shGuiWindowSeparator(ShGui* p_gui) {
 		item_pos_y,
 		SH_GUI_PIXELS
 	);
+	shGuiSetRegionPriority(p_gui, separator_region_idx, SH_GUI_ITEMS_PRIORITY);
 
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiWindowSlideri(ShGui* p_gui, float extent, int min, int max, int step, ShGuiWidgetFlags flags) {
-	shGuiError(p_gui == NULL, "invalid gui memmory", return 0);
-
-	uint32_t window_count			= p_gui->region_infos.windows.window_count;
-	uint32_t window_idx				= p_gui->region_infos.windows.p_window_indices[window_count - 1];
-	uint32_t last_region			= p_gui->region_infos.region_count - 1;
-
-	ShGuiRegion window_region		= p_gui->region_infos.p_regions_data[window_idx];
-	float* p_window_position		= window_region.raw.position;
-	float* p_window_size			= window_region.raw.size;
-
-	float window_pos_x				= p_window_position[0];
-	float window_pos_y				= -p_window_position[1];
-	float window_size_x				= p_window_size[0];
-	float window_size_y				= p_window_size[1];
-
-	float* p_used_height			= &p_gui->region_infos.windows.p_windows_used_height[window_count - 1];
-
-	return 1;
-}
-
-uint8_t SH_GUI_CALL shGuiWindowInputFieldi(ShGui* p_gui, float scale, char* text, char* hint, int* p_value, ShGuiWidgetFlags flags) {
-	shGuiError(p_gui == NULL, "invalid gui memmory", return 0);
-
-	uint32_t window_count			= p_gui->region_infos.windows.window_count;
-	uint32_t window_idx				= p_gui->region_infos.windows.p_window_indices[window_count - 1];
-	uint32_t last_region			= p_gui->region_infos.region_count - 1;
-
-	ShGuiRegion window_region		= p_gui->region_infos.p_regions_data[window_idx];
-	float* p_window_position		= window_region.raw.position;
-	float* p_window_size			= window_region.raw.size;
-
-	float window_pos_x				= p_window_position[0];
-	float window_pos_y				= -p_window_position[1];
-	float window_size_x				= p_window_size[0];
-	float window_size_y				= p_window_size[1];
-
-	float used_height				= p_gui->region_infos.windows.p_windows_used_height[window_count - 1];
-
-	shGuiWindowText(
-		p_gui, 
-		scale, 
-		text, 
-		flags
-	);
-
-	float* p_used_height			= &p_gui->region_infos.windows.p_windows_used_height[window_count - 1];
-	(*p_used_height)				= used_height;
-
-	float used_width				= text != NULL 
-									? strlen(text) * SH_GUI_CHAR_DISTANCE_OFFSET * scale / 4.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET
-									: 0.0f;
-
-	float region_width				= hint != NULL ? strlen(hint) * SH_GUI_CHAR_DISTANCE_OFFSET * scale / 4.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET : 0.0f;
-	float region_pos_x				= used_width + window_pos_x - window_size_x / 2.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET + region_width / 2.0f;
-	float region_pos_y				= window_pos_y + window_size_y / 2.0f - SH_GUI_WINDOW_BAR_SIZE - SH_GUI_WINDOW_TEXT_BORDER_OFFSET - (*p_used_height) - scale / 2.0f;
-
-	if (flags & SH_GUI_CENTER_WIDTH) {
-		region_pos_x				= used_width + window_pos_x;
-	}
-
-	shGuiRegion(
-		p_gui,
-		region_width,
-		scale,
-		region_pos_x,
-		region_pos_y,
-		SH_GUI_PIXELS
-	);
-
-	p_gui->region_infos.windows.p_windows_used_height[window_count] += region_pos_y;
-
-	return 1;
-}
-
-uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, float extent, ShGuiWidgetFlags flags) {
+uint8_t shGuiMenuBar(ShGui* p_gui, float extent, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float region_width = 100.0f;
@@ -1230,16 +1172,19 @@ uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, float extent, ShGuiWidgetFlags fl
 
 	p_gui->region_infos.menus.p_menu_indices[p_gui->region_infos.menus.menu_count] = p_gui->region_infos.region_count;
 
+
+	uint32_t bar_region_idx = p_gui->region_infos.region_count;
 	shGuiRegion(
 		p_gui, region_width, region_height, region_pos_x, region_pos_y, flags
 	);
+	shGuiSetRegionPriority(p_gui, bar_region_idx, SH_GUI_EMPTY_REGION_PRIORITY);
 
 	p_gui->region_infos.menus.menu_count++;
 
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiMenuItem(ShGui* p_gui, float extent, char* title, ShGuiWidgetFlags flags) {
+uint8_t shGuiMenuItem(ShGui* p_gui, float extent, char* title, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float width							= 10.0f;//%
@@ -1284,7 +1229,8 @@ uint8_t SH_GUI_CALL shGuiMenuItem(ShGui* p_gui, float extent, char* title, ShGui
 		return 0;
 	}
 
-	return shGuiItem(
+	uint32_t item_region_idx = p_gui->region_infos.region_count;
+	uint8_t pressed = shGuiItem(
 		p_gui, 
 		size[0], 
 		size[1], 
@@ -1293,13 +1239,15 @@ uint8_t SH_GUI_CALL shGuiMenuItem(ShGui* p_gui, float extent, char* title, ShGui
 		title, 
 		flags | additional_flags
 	);
+	shGuiSetRegionPriority(p_gui, item_region_idx, SH_GUI_ITEMS_PRIORITY);
+	return pressed;
 }
 
 #define SH_GUI_LOAD_CHAR(font, char_name, _char)\
 	_char.vertex_count = sizeof(font ## _ ## char_name ## _vertices) / 4;\
 	_char.p_vertices = (float*)(font ## _ ## char_name ## _vertices);\
 
-uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_text) {
+uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_text) {
 	shGuiError(p_gui					== NULL, "invalid gui memory", return 0);
 	shGuiError(s_text					== NULL, "invalid text memory", return 0);
 
@@ -1312,9 +1260,9 @@ uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_
 	for (uint32_t char_idx				= 0; char_idx < strlen(s_text); char_idx++) {
 		ShGuiCharInfo* p_char_info		= shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, p_gui->text_infos.total_char_count, 0);
 		
-		p_char_info->position_scale[0]	= pos_x + SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, char_idx);
-		p_char_info->position_scale[1]	= -pos_y;
-		p_char_info->position_scale[2]	= scale;
+		p_char_info->position[0]	= pos_x + SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, char_idx);
+		p_char_info->position[1]	= -pos_y;
+		p_char_info->scale[0]		= scale;
 		
 		p_gui->text_infos.total_char_count++;
 
@@ -1435,7 +1383,7 @@ uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiDestroyPipelines(ShGui* p_gui) {
+uint8_t shGuiDestroyPipelines(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	shFixedStatesRelease(&p_gui->region_infos.fixed_states);
@@ -1456,7 +1404,7 @@ uint8_t SH_GUI_CALL shGuiDestroyPipelines(ShGui* p_gui) {
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
+uint8_t shGuiRelease(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 	
 	shClearBufferMemory(p_gui->core.device, p_gui->default_infos.staging_buffer, p_gui->default_infos.staging_memory);
@@ -1483,13 +1431,15 @@ uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui) {
 		if (p_regions_active != NULL) {
 			free(p_regions_active);
 		}
+		if (p_menu_indices != NULL) {
+			free(p_menu_indices);
+		}
 		if (p_window_indices != NULL) {
 			free(p_window_indices);
 		}
 		if (p_windows_used_height != NULL) {
 			free(p_windows_used_height);
 		}
-
 
 		ShGuiText* p_text_data = p_gui->text_infos.p_text_data;
 		if (p_text_data != NULL) {

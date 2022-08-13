@@ -76,6 +76,11 @@ typedef struct ShGuiInputs {
 
 #define SH_GUI_SEPARATOR_OFFSET 5.0f
 
+
+#define SH_GUI_TEXT_PRIORITY 0.0f
+#define SH_GUI_ITEMS_PRIORITY 0.1f
+#define SH_GUI_EMPTY_REGION_PRIORITY 0.2f
+
 static float SH_GUI_EMPTY_CHAR[1] = { 0x0 };
 
 //WIDGET PROPERTIES
@@ -121,8 +126,9 @@ typedef enum ShGuiWriteFlags {
 //
 //
 typedef struct ShGuiRegionRaw {
-	alignas(8) float			position[2];
-	alignas(8) float			size[2];
+	alignas(8)	float			position[2];
+	alignas(8)	float			size[2];
+	alignas(16) float			priority[4];//only priority[0] is relevant
 } ShGuiRegionRaw;
 
 typedef struct ShGuiRegion {
@@ -136,7 +142,9 @@ typedef struct ShGuiRegion {
 //
 //
 typedef struct ShGuiCharInfo {
-	alignas(16) float			position_scale[4];
+	alignas(8) float			position[2];
+	alignas(8) float			scale[2];
+	alignas(16) float			priority[4];
 } ShGuiCharInfo;
 SH_VULKAN_GENERATE_DESCRIPTOR_STRUCTURE_MAP(ShGuiCharInfo)
 
@@ -217,9 +225,9 @@ typedef struct ShGui {
 		uint32_t				regions_data_size;
 
 		ShGuiRegion*			p_regions_data;
-		uint8_t*				p_regions_overwritten_data;	//gonna merge
-		uint8_t*				p_regions_clicked;			//gonna merge
-		uint8_t*				p_regions_active;			//gonna merge
+		uint8_t*				p_regions_overwritten_data;	//merge bits later
+		uint8_t*				p_regions_clicked;			//merge bits later
+		uint8_t*				p_regions_active;			//merge bits later
 		uint32_t				region_count;
 
 		ShVkPipeline			graphics_pipeline;
@@ -280,6 +288,8 @@ extern uint8_t SH_GUI_CALL shGuiRegionWrite(ShGui* p_gui, uint32_t region_idx, f
 
 extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* text);
 
+
+extern uint8_t SH_GUI_CALL shGuiSetRegionPriority(ShGui* p_gui, uint32_t region_idx, float priority);
 
 
 extern uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags);

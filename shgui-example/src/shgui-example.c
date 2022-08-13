@@ -50,7 +50,7 @@ int main(void) {
 		shSelectPhysicalDevice(&core, VK_QUEUE_GRAPHICS_BIT);
 		shSetLogicalDevice(&core);
 		shInitSwapchainData(&core);
-		//shInitDepthData(&core);
+		shInitDepthData(&core);
 		shCreateRenderPass(&core);
 		shSetFramebuffers(&core);
 		shCreateGraphicsCommandBuffers(&core, 1);
@@ -129,6 +129,7 @@ int main(void) {
 				//
 				shWaitDeviceIdle(core.device);
 				shSwapchainRelease(&core);
+				shDepthBufferRelease(&core);
 				shSurfaceRelease(&core);
 				glfwCreateWindowSurface(core.instance, window, NULL, &core.surface.surface);
 				gui_core.surface = core.surface.surface;
@@ -136,7 +137,7 @@ int main(void) {
 				core.surface.width = width;
 				core.surface.height = height;
 				shInitSwapchainData(&core);
-				//shInitDepthData(&core);
+				shInitDepthData(&core);
 				shSetFramebuffers(&core);
 				
 				//update shgui canvas
