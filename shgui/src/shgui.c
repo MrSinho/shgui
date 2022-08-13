@@ -1263,6 +1263,7 @@ uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_t
 		p_char_info->position[0]	= pos_x + SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, char_idx);
 		p_char_info->position[1]	= -pos_y;
 		p_char_info->scale[0]		= scale;
+		p_char_info->priority[0]	= SH_GUI_TEXT_PRIORITY;
 		
 		p_gui->text_infos.total_char_count++;
 
