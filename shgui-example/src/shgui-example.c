@@ -174,6 +174,8 @@ int main(void) {
 			puts("Popup");
 		}
 
+
+
 		shGuiWindow(
 			p_gui,
 			300.0f, 100.0f,
@@ -181,18 +183,23 @@ int main(void) {
 			"Window",
 			SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
 		);
+		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 2.0f, "0123456789", SH_GUI_CENTER_WIDTH);
+
+
 
 		shGuiWindow(
 			p_gui,
-			300.0f, 100.0f,
+			350.0f, 100.0f,
 			200.0f, -200.0f,
 			"Another window",
 			SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
 		);
-		
+		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "an email: lmao555@gmail.com", 0);
+		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 1.5f, "|!\"£$%&/=?*@#,.-;:_", 0);
+
+
 
 		shGuiMenuBar(p_gui, SH_GUI_WINDOW_BAR_SIZE, SH_GUI_TOP);
-
 		if (shGuiMenuItem(p_gui, 0.0f, "File", 0)) {
 			puts("File");
 		}
@@ -201,10 +208,10 @@ int main(void) {
 		}
 
 		
-		shGuiText(p_gui, 25.0f, 0.0f, 0.0f, "QWERTY");
-		shGuiText(p_gui, 50.0f, 0.0f, -50.0f, "QWERTY");
-		shGuiText(p_gui, 100.0f, 0.0f, -150.0f, "QWERTY");
-		shGuiText(p_gui, 200.0f, 0.0f, -300.0f, "QWERTY");
+		//shGuiText(p_gui, 25.0f, 0.0f, 0.0f, "QWERTY");
+		//shGuiText(p_gui, 50.0f, 0.0f, -50.0f, "QWERTY");
+		//shGuiText(p_gui, 100.0f, 0.0f, -150.0f, "QWERTY");
+		//shGuiText(p_gui, 200.0f, 0.0f, -300.0f, "QWERTY");
 
 
 		

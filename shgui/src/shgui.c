@@ -1372,6 +1372,120 @@ uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_t
 		case 'M':
 			SH_GUI_LOAD_CHAR(consolas, bigM, p_text->chars[char_idx]);
 			break;
+		case '\\':
+			SH_GUI_LOAD_CHAR(consolas, backslash, p_text->chars[char_idx]);
+			break;
+		case '1':
+			SH_GUI_LOAD_CHAR(consolas, 1, p_text->chars[char_idx]);
+			break;
+		case '2':
+			SH_GUI_LOAD_CHAR(consolas, 2, p_text->chars[char_idx]);
+			break;
+		case '3':
+			SH_GUI_LOAD_CHAR(consolas, 3, p_text->chars[char_idx]);
+			break;
+		case '4':
+			SH_GUI_LOAD_CHAR(consolas, 4, p_text->chars[char_idx]);
+			break;
+		case '5':
+			SH_GUI_LOAD_CHAR(consolas, 5, p_text->chars[char_idx]);
+			break;
+		case '6':
+			SH_GUI_LOAD_CHAR(consolas, 6, p_text->chars[char_idx]);
+			break;
+		case '7':
+			SH_GUI_LOAD_CHAR(consolas, 7, p_text->chars[char_idx]);
+			break;
+		case '8':
+			SH_GUI_LOAD_CHAR(consolas, 8, p_text->chars[char_idx]);
+			break;
+		case '9':
+			SH_GUI_LOAD_CHAR(consolas, 9, p_text->chars[char_idx]);
+			break;
+		case '0':
+			SH_GUI_LOAD_CHAR(consolas, 0, p_text->chars[char_idx]);
+			break;
+		case '\'':
+			SH_GUI_LOAD_CHAR(consolas, quote, p_text->chars[char_idx]); 
+				break;
+		case '|':
+			SH_GUI_LOAD_CHAR(consolas, stick, p_text->chars[char_idx]);
+			break;
+		case '!':
+			SH_GUI_LOAD_CHAR(consolas, exclamation, p_text->chars[char_idx]);
+			break;
+		case '"':
+			SH_GUI_LOAD_CHAR(consolas, double_quote, p_text->chars[char_idx]); 
+			break;
+		case '£':
+			SH_GUI_LOAD_CHAR(consolas, pound, p_text->chars[char_idx]);
+			break;
+		case '$':
+			SH_GUI_LOAD_CHAR(consolas, dollar, p_text->chars[char_idx]);
+			break;
+		case '%':
+			SH_GUI_LOAD_CHAR(consolas, percent, p_text->chars[char_idx]);
+			break;
+		case '&':
+			SH_GUI_LOAD_CHAR(consolas, and, p_text->chars[char_idx]);
+			break;
+		case '/':
+			SH_GUI_LOAD_CHAR(consolas, frontslash, p_text->chars[char_idx]);
+			break;
+		//case '(':
+		//	SH_GUI_LOAD_CHAR(consolas, open_round_bracket, p_text->chars[char_idx]);
+		//	break;
+		//case ')':
+		//	SH_GUI_LOAD_CHAR(consolas, close_round_bracket, p_text->chars[char_idx]);
+		//	break;
+		case '=':
+			SH_GUI_LOAD_CHAR(consolas, equal, p_text->chars[char_idx]);
+			break;
+		case '?':
+			SH_GUI_LOAD_CHAR(consolas, question_mark, p_text->chars[char_idx]);
+			break;
+		case '+':
+			SH_GUI_LOAD_CHAR(consolas, plus, p_text->chars[char_idx]);
+			break;
+		case ',':
+			SH_GUI_LOAD_CHAR(consolas, comma, p_text->chars[char_idx]);
+			break;
+		case '.':
+			SH_GUI_LOAD_CHAR(consolas, dot, p_text->chars[char_idx]);
+			break;
+		case '-':
+			SH_GUI_LOAD_CHAR(consolas, dash, p_text->chars[char_idx]);
+			break;
+		case '*':
+			SH_GUI_LOAD_CHAR(consolas, star, p_text->chars[char_idx]);
+			break;
+		case ';':
+			SH_GUI_LOAD_CHAR(consolas, semicolon, p_text->chars[char_idx]);
+			break;
+		case ':':
+			SH_GUI_LOAD_CHAR(consolas, colon, p_text->chars[char_idx]);
+			break;
+		case '_':
+			SH_GUI_LOAD_CHAR(consolas, underscore, p_text->chars[char_idx]);
+			break;
+		//case '[':
+		//	SH_GUI_LOAD_CHAR(consolas, open_round_bracket, p_text->chars[char_idx]);
+		//	break;
+		//case ']':
+		//	SH_GUI_LOAD_CHAR(consolas, close_round_bracket, p_text->chars[char_idx]);
+		//	break;
+		case '@':
+			SH_GUI_LOAD_CHAR(consolas, at, p_text->chars[char_idx]);
+			break;
+		case '#':
+			SH_GUI_LOAD_CHAR(consolas, hash, p_text->chars[char_idx]);
+			break;
+		//case '{':
+		//	SH_GUI_LOAD_CHAR(consolas, open_curly_bracket, p_text->chars[char_idx]);
+		//	break;
+		//case '}':
+		//	SH_GUI_LOAD_CHAR(consolas, close_curly_bracket, p_text->chars[char_idx]);
+		//	break;
 		default:
 			p_text->chars[char_idx].vertex_count = 1;
 			p_text->chars[char_idx].p_vertices = SH_GUI_EMPTY_CHAR;
@@ -1383,6 +1497,7 @@ uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_t
 
 	return 1;
 }
+
 
 uint8_t shGuiDestroyPipelines(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
