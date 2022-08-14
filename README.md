@@ -1,5 +1,7 @@
 # shgui
 
+![example-0](media/shgui-example-0.png)
+
 Features:
 * Widgets
     * [x] menu bar
