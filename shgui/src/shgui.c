@@ -52,6 +52,14 @@ uint8_t shGuiUpdateInputs(ShGui* p_gui) {
 	p_gui->inputs.last.last_cursor_pos_x = *p_gui->inputs.p_cursor_pos_x;
 	p_gui->inputs.last.last_cursor_pos_y = *p_gui->inputs.p_cursor_pos_y;
 
+	p_gui->region_infos.cursor_on_regions = 0;
+	for (uint32_t region_idx = 0; region_idx < p_gui->region_infos.region_count; region_idx++) {
+		if (p_gui->region_infos.p_cursor_on_regions[region_idx]) {
+			p_gui->region_infos.cursor_on_regions = 1;
+			break;
+		}
+	}
+
 	memcpy(p_gui->inputs.last.last_key_events, p_gui->inputs.p_key_events, sizeof(ShGuiKeyEvents));
 	memcpy(p_gui->inputs.last.last_mouse_events, p_gui->inputs.p_mouse_events, sizeof(ShGuiMouseEvents));
 
@@ -182,6 +190,7 @@ uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, uint32_t max_gui_items) {
 		p_gui->region_infos.p_regions_overwritten_data					= calloc(1, region_count);
 		p_gui->region_infos.p_regions_clicked							= calloc(1, region_count);
 		p_gui->region_infos.p_regions_active							= calloc(1, region_count);
+		p_gui->region_infos.p_cursor_on_regions							= calloc(1, region_count);
 		p_gui->region_infos.menus.p_menu_indices						= calloc(4, region_count);
 		p_gui->region_infos.windows.p_window_indices					= calloc(4, region_count);
 		p_gui->region_infos.windows.p_windows_used_height				= calloc(4, region_count);
@@ -190,6 +199,7 @@ uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, uint32_t max_gui_items) {
 		shGuiError(p_gui->region_infos.p_regions_overwritten_data		== NULL, "invalid regions overwrite memory",	return 0);
 		shGuiError(p_gui->region_infos.p_regions_clicked				== NULL, "invalid regions clicked memory",		return 0);
 		shGuiError(p_gui->region_infos.p_regions_active					== NULL, "invalid regions active memory",		return 0);
+		shGuiError(p_gui->region_infos.p_cursor_on_regions				== NULL, "invalid cursor on regions memory",	return 0);
 		shGuiError(p_gui->region_infos.menus.p_menu_indices				== NULL, "invalid menu indices memory",			return 0);
 		shGuiError(p_gui->region_infos.windows.p_window_indices			== NULL, "invalid menu indices memory",			return 0);
 		shGuiError(p_gui->region_infos.windows.p_windows_used_height	== NULL, "invalid menu indices memory",			return 0);
@@ -905,6 +915,9 @@ uint8_t shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float 
 	(cursor_y >= p_region->raw.position[1] - p_region->raw.size[1] / 2.0f) &&
 	(cursor_y <= p_region->raw.position[1] + p_region->raw.size[1] / 2.0f)
 	) {
+
+		p_gui->region_infos.p_cursor_on_regions[region_count] = 1;
+
 		if (p_gui->inputs.p_mouse_events[1] == 1 && (flags & SH_GUI_MOVABLE)) {
 			
 			float dx = cursor_x - p_gui->inputs.last.last_cursor_pos_x;
@@ -921,6 +934,9 @@ uint8_t shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float 
 			p_gui->region_infos.region_count++;
 			return rtrn;
 		}
+	}
+	else {
+		p_gui->region_infos.p_cursor_on_regions[region_count] = 0;
 	}
 
 	(*p_clicked) = 0;

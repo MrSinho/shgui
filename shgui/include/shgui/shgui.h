@@ -241,6 +241,8 @@ typedef struct ShGui {
 		uint8_t*				p_regions_overwritten_data;	//merge bits later
 		uint8_t*				p_regions_clicked;			//merge bits later
 		uint8_t*				p_regions_active;			//merge bits later
+		uint8_t*				p_cursor_on_regions;
+		uint8_t					cursor_on_regions;
 		uint32_t				region_count;
 
 		ShVkPipeline			graphics_pipeline;

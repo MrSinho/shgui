@@ -243,8 +243,8 @@ int main(void) {
 
 
 
-		shGuiRender(p_gui);
 		shGuiUpdateInputs(p_gui);
+		shGuiRender(p_gui);
 
 
 		{//SHVULKAN CODE
