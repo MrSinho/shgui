@@ -156,8 +156,8 @@ int main(void) {
 				//
 				//
 				shGuiDestroyPipelines(p_gui);
-				shGuiBuildRegionPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
-				shGuiBuildTextPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
+				shGuiBuildRegionPipeline(p_gui, MAX_GUI_ITEMS);
+				shGuiBuildTextPipeline(p_gui, MAX_GUI_ITEMS);
 				shGuiSetDefaultValues(p_gui, SH_GUI_THEME_DARK, SH_GUI_RECORD);
 			}
 
