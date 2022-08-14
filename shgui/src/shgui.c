@@ -25,7 +25,7 @@ ShGui* shGuiInit(ShGuiCore core) {
 }
 
 
-uint8_t shGuiLinkInputs(uint32_t* p_window_width, uint32_t* p_window_height, float* p_cursor_pos_x, float* p_cursor_pos_y, ShGuiKeyEvents key_events, ShGuiMouseEvents mouse_events, ShGuiCursorIcons icons, float* p_delta_time, ShGui* p_gui) {
+uint8_t shGuiLinkInputs(uint32_t* p_window_width, uint32_t* p_window_height, float* p_cursor_pos_x, float* p_cursor_pos_y, ShGuiKeyEvents key_events, ShGuiMouseEvents mouse_events, ShGuiCursorIcons icons, double* p_delta_time, ShGui* p_gui) {
 	shGuiError(
 		(p_window_width && p_window_height && p_cursor_pos_x && p_cursor_pos_y && key_events && mouse_events && p_gui) == 0,
 		"invalid arguments",
@@ -890,16 +890,16 @@ uint8_t shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float 
 
 		if (p_gui->inputs.p_mouse_events[0]) {
 			if (horizontal_left) {
-				p_region->raw.size[0] += 1000.0f * d_cursor_pos_x * (*p_gui->inputs.p_delta_time);
+				p_region->raw.size[0] += 1000.0f * d_cursor_pos_x * ((float)*p_gui->inputs.p_delta_time);
 			}
 			if (horizontal_right) {
-				p_region->raw.size[0] -= 1000.0f * d_cursor_pos_x * (*p_gui->inputs.p_delta_time);
+				p_region->raw.size[0] -= 1000.0f * d_cursor_pos_x * ((float)*p_gui->inputs.p_delta_time);
 			}
 			if (vertical_top) {
-				p_region->raw.size[1] += 1000.0f * d_cursor_pos_y * (*p_gui->inputs.p_delta_time);
+				p_region->raw.size[1] += 1000.0f * d_cursor_pos_y * ((float)*p_gui->inputs.p_delta_time);
 			}
 			if (vertical_bottom) {
-				p_region->raw.size[1] -= 1000.0f * d_cursor_pos_y * (*p_gui->inputs.p_delta_time);
+				p_region->raw.size[1] -= 1000.0f * d_cursor_pos_y * ((float)*p_gui->inputs.p_delta_time);
 			}
 		}
 	}

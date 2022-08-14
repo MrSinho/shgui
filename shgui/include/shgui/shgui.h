@@ -51,7 +51,7 @@ typedef struct ShGuiInputs {
 	int8_t*					p_mouse_events;
 	int32_t*				p_cursor_icons;
 	int32_t					active_cursor_icon;
-	float*					p_delta_time;
+	double*					p_delta_time;
 	
 	struct {
 		float				last_cursor_pos_x;
@@ -278,7 +278,7 @@ extern ShGui* SH_GUI_CALL shGuiInit(ShGuiCore core);
 
 
 
-extern uint8_t SH_GUI_CALL shGuiLinkInputs(uint32_t* p_window_width, uint32_t* p_window_height, float* p_cursor_pos_x, float* p_cursor_pos_y, ShGuiKeyEvents key_events, ShGuiMouseEvents mouse_events, ShGuiCursorIcons icons, float* p_delta_time, ShGui* p_gui);
+extern uint8_t SH_GUI_CALL shGuiLinkInputs(uint32_t* p_window_width, uint32_t* p_window_height, float* p_cursor_pos_x, float* p_cursor_pos_y, ShGuiKeyEvents key_events, ShGuiMouseEvents mouse_events, ShGuiCursorIcons icons, double* p_delta_time, ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiUpdateInputs(ShGui* p_gui);
 

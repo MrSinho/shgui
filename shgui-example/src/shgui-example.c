@@ -93,7 +93,7 @@ int main(void) {
 	ShGuiCursorIcons cursor_icons		= {
 		GLFW_CURSOR_NORMAL, GLFW_HRESIZE_CURSOR, GLFW_VRESIZE_CURSOR //normal, horizontal_resize, vertical_resize
 	};
-	float delta_time = 0.0f;
+	double delta_time = 0.0f;
 	shGuiLinkInputs(
 		&width, 
 		&height, 
@@ -112,7 +112,7 @@ int main(void) {
 	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
 
 	uint32_t frame_idx	= 0;
-	float last_time		= (float)glfwGetTime();
+	double last_time	= glfwGetTime();
 	
 	while (!glfwWindowShouldClose(window)) {
 		
@@ -125,7 +125,7 @@ int main(void) {
 			for (uint32_t mouse_button_idx = 0; mouse_button_idx < SH_GUI_MOUSE_LAST + 1; mouse_button_idx++) {
 				mouse_events[mouse_button_idx] = glfwGetMouseButton(window, mouse_button_idx);
 			}
-			float now = (float)glfwGetTime();
+			double now = glfwGetTime();
 			delta_time = now - last_time;
 			last_time = now;
 
