@@ -2,13 +2,24 @@
 extern "C" {
 #endif//__cplusplus
 
-#include <shgui/shgui.h>
+
+
 #include <shvulkan/shVkCore.h>
 #include <shvulkan/shVkPipelineData.h>
 #include <shvulkan/shVkMemoryInfo.h>
 #include <shvulkan/shVkDrawLoop.h>
 
 #include <GLFW/glfw3.h>
+
+
+
+//ONLY FOR DEV, COMMENT IF 
+//
+//
+#define SH_GUI_DEBUG_SHADERS 1
+#include <shgui/shgui.h>
+
+
 
 GLFWwindow* createWindow(const uint32_t width, const uint32_t height, const char* title);
 
@@ -18,8 +29,6 @@ const char* readBinary(const char* path, uint32_t* p_size);
 #define WINDOW_HEIGHT 800
 
 #define MAX_GUI_ITEMS 256
-
-#define SH_GUI_DEBUG_SHADERS 1
 
 int main(void) {
 	
