@@ -19,6 +19,8 @@ const char* readBinary(const char* path, uint32_t* p_size);
 
 #define MAX_GUI_ITEMS 256
 
+#define SH_GUI_DEBUG_SHADERS 1
+
 int main(void) {
 	
 

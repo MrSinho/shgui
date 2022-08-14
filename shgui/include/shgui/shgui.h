@@ -13,11 +13,15 @@ extern "C" {
 #endif//alignas
 
 
+#ifndef SH_GUI_DEBUG_SHADERS
+#define SH_GUI_DEBUG_SHADERS 0
+#else 
+#define SH_GUI_DEBUG_SHADERS 1
+#endif//SH_GUI_DEBUG
 
 #include "shgui/shgui-call.h"
 #include "shgui/shgui-assert.h"
-
-
+#include "shgui/shgui-shaders.h"
 
 #include <shvulkan/shVkCore.h>
 #include <shvulkan/shVkPipelineData.h>

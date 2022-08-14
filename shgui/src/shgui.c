@@ -153,6 +153,7 @@ uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_
 	}//FIXED STATES
 
 	{//SHADER STAGES
+#if SH_GUI_DEBUG_SHADERS
 		uint32_t src_size = 0;
 		char* src = (char*)shGuiReadBinary("../shaders/bin/shgui-region.vert.spv", &src_size);
 		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->region_infos.graphics_pipeline);
@@ -162,6 +163,12 @@ uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_
 		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->region_infos.graphics_pipeline);
 		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->region_infos.graphics_pipeline);
 		free(src);
+#else 
+		shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_region_vert_spv), shgui_region_vert_spv, &p_gui->region_infos.graphics_pipeline);
+		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->region_infos.graphics_pipeline);
+		shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_region_frag_spv), shgui_region_frag_spv, &p_gui->region_infos.graphics_pipeline);
+		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->region_infos.graphics_pipeline);
+#endif//SH_GUI_DEBUG_SHADERS
 	}//SHADER STAGES
 
 	{//DESCRIPTORS
