@@ -643,7 +643,7 @@ uint8_t shGuiWriteMemory(ShGui* p_gui, uint8_t record) {
 			shBeginCommandBuffer(cmd_buffer);
 		}
 
-		if (p_gui->region_infos.regions_data_size >= 0) {
+		if (p_gui->region_infos.regions_data_size > 0) {
 			shCopyBuffer(
 				cmd_buffer,
 				p_gui->region_infos.staging_buffer,
@@ -654,7 +654,7 @@ uint8_t shGuiWriteMemory(ShGui* p_gui, uint8_t record) {
 			);
 		}
 
-		if (p_gui->text_infos.vertex_count >= 0) {
+		if (p_gui->text_infos.vertex_count > 0) {
 			shCopyBuffer(
 				cmd_buffer,
 				p_gui->text_infos.vertex_staging_buffer,
