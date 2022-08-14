@@ -181,7 +181,7 @@ int main(void) {
 		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "Menu text", SH_GUI_CENTER_WIDTH);
 		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "Some info here", 0);
 		shGuiWindowSeparator(p_gui);
-		if (shGuiWindowButton(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "Popup", 0)) {
+		if (shGuiWindowButton(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 2.0f, "Popup", SH_GUI_CENTER_WIDTH)) {
 			puts("Popup");
 		}
 
@@ -210,7 +210,7 @@ int main(void) {
 
 
 
-		shGuiMenuBar(p_gui, SH_GUI_WINDOW_BAR_SIZE, SH_GUI_TOP);
+		shGuiMenuBar(p_gui, SH_GUI_WINDOW_BAR_SIZE * 1.5f, SH_GUI_TOP);
 		if (shGuiMenuItem(p_gui, 0.0f, "File", 0)) {
 			puts("File");
 		}

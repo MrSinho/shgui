@@ -78,12 +78,17 @@ typedef struct ShGuiInputs {
 #define SH_GUI_CHAR_FINAL_OFFSET(char_distance_offset, scale, char_idx)\
 	((float)char_distance_offset) / 4.0f * ((float)scale) * ((float)char_idx)
 
+
 #define SH_GUI_SEPARATOR_OFFSET 5.0f
 
 
-#define SH_GUI_TEXT_PRIORITY 0.0f
-#define SH_GUI_ITEMS_PRIORITY 0.1f
-#define SH_GUI_EMPTY_REGION_PRIORITY 0.2f
+#define SH_GUI_SELECTED_TEXT_PRIORITY 0.0f
+#define SH_GUI_SELECTED_ITEMS_PRIORITY 0.1f
+#define SH_GUI_SELECTED_EMPTY_REGION_PRIORITY 0.2f
+
+#define SH_GUI_TEXT_PRIORITY			SH_GUI_SELECTED_TEXT_PRIORITY * 1.1f
+#define SH_GUI_ITEMS_PRIORITY			SH_GUI_SELECTED_ITEMS_PRIORITY * 1.1f
+#define SH_GUI_EMPTY_REGION_PRIORITY	SH_GUI_SELECTED_EMPTY_REGION_PRIORITY * 1.1f
 
 static float SH_GUI_EMPTY_CHAR[1] = { 0x0 };
 
@@ -98,7 +103,8 @@ typedef enum ShGuiDefaultValues {
 
 typedef enum ShGuiInstructions {
 	SH_GUI_RECORD				= 0b001,
-	SH_GUI_INITIALIZE			= 0b010
+	SH_GUI_INITIALIZE			= 0b010,
+	SH_GUI_INSTRUCTIONS_MAX_ENUM
 } ShGuiInstructions;
 
 typedef enum ShGuiWidgetFlags {
@@ -113,7 +119,8 @@ typedef enum ShGuiWidgetFlags {
 	SH_GUI_RELATIVE				= 0b000100000000,
 	SH_GUI_MINIMIZABLE			= 0b001000000000,
 	SH_GUI_RESIZABLE			= 0b010000000000,
-	SH_GUI_SWITCH				= 0b100000000000
+	SH_GUI_SWITCH				= 0b100000000000,
+	SH_GUI_WIDGET_FLAGS_MAX_ENUM
 } ShGuiWidgetFlags;
 
 typedef enum ShGuiWriteFlags {
@@ -121,7 +128,8 @@ typedef enum ShGuiWriteFlags {
 	SH_GUI_HEIGHT				= 0b00010,
 	SH_GUI_POSITION_X			= 0b00100,
 	SH_GUI_POSITION_Y			= 0b01000,
-	SH_GUI_TITLE				= 0b10000
+	SH_GUI_TITLE				= 0b10000,
+	SH_GUI_WRITE_FLAGS_MAX_ENUM
 } ShGuiWriteFlags;
 
 
