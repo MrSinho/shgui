@@ -4,19 +4,25 @@
 
 Features:
 * Widgets
-    * [x] menu bar
-        * [x] menu items
-    * [ ] menu popup
-        * [ ] menu items
-    * [x] window
-        * [x] highlight edge
-        * [x] movable
-        * [x] input conditions
-        * [x] change cursor default icons
-    * [x] text
-    * [x] buttons
-    * [ ] input fields
-    * [ ] sliders
+    * menu bar
+        * menu item
+    * window
+        * highlight edge
+        * movable
+        * input conditions
+        * change cursor default icons
+    * text
+    * button
+
+
+To do:
+* menu popup
+* minimize window
+* input field
+* slider
+* color picker
+* graph
+* font customization
 
  # Opening issues and contributing
 
