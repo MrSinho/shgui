@@ -117,7 +117,7 @@ uint32_t shGuiGetAvailableHeap(ShGui* p_gui, uint32_t item_count, uint32_t item_
 }
 
 
-uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t max_gui_items) {
+uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, uint32_t max_gui_items) {
 	shGuiError(
 		p_gui == NULL,
 		"invalid gui memory",
@@ -291,13 +291,13 @@ uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_
 	//DESCRIPTORS
 
 	{//GRAPHICS PIPELINE
-		shSetupGraphicsPipeline(p_gui->core.device, render_pass, p_gui->region_infos.fixed_states, &p_gui->region_infos.graphics_pipeline);
+		shSetupGraphicsPipeline(p_gui->core.device, p_gui->core.render_pass, p_gui->region_infos.fixed_states, &p_gui->region_infos.graphics_pipeline);
 	}//GRAPHICS PIPELINE
 
 	return 1;
 }
 
-uint8_t shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t max_gui_items) {
+uint8_t shGuiBuildTextPipeline(ShGui* p_gui, uint32_t max_gui_items) {
 	shGuiError(
 		p_gui == NULL,
 		"invalid gui memory",
@@ -338,6 +338,7 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t 
 	}//FIXED STATES
 
 	{//SHADER STAGES
+#if SH_GUI_DEBUG_SHADERS
 		uint32_t src_size = 0;
 		char* src = (char*)shGuiReadBinary("../shaders/bin/shgui-text.vert.spv", &src_size);
 		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->text_infos.graphics_pipeline);
@@ -347,6 +348,12 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t 
 		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->text_infos.graphics_pipeline);
 		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->text_infos.graphics_pipeline);
 		free(src);
+#else
+		shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_text_vert_spv), shgui_text_vert_spv, &p_gui->text_infos.graphics_pipeline);
+		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->text_infos.graphics_pipeline);
+		shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_text_frag_spv), shgui_text_frag_spv, &p_gui->text_infos.graphics_pipeline);
+		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->text_infos.graphics_pipeline);
+#endif//SH_GUI_DEBUG_SHADERS
 	}//SHADER STAGES
 
 	{//DESCRIPTORS
@@ -443,7 +450,7 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t 
 	}//DESCRIPTORS
 
 	{//GRAPHICS PIPELINE
-		shSetupGraphicsPipeline(p_gui->core.device, render_pass, p_gui->text_infos.fixed_states, &p_gui->text_infos.graphics_pipeline);
+		shSetupGraphicsPipeline(p_gui->core.device, p_gui->core.render_pass, p_gui->text_infos.fixed_states, &p_gui->text_infos.graphics_pipeline);
 	}//GRAPHICS PIPELINE
 
 	p_gui->text_infos.p_text_data = calloc(max_gui_items, sizeof(ShGuiText));

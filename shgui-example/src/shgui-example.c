@@ -82,7 +82,8 @@ int main(void) {
 		},												
 		core.p_graphics_commands[0].cmd_buffer,			
 		core.p_graphics_commands[0].fence,				
-		core.surface.surface,							
+		core.surface.surface,
+		core.render_pass
 	};
 	ShGui* p_gui = shGuiInit(gui_core);
 	
@@ -105,8 +106,8 @@ int main(void) {
 		p_gui
 	);
 
-	shGuiBuildRegionPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
-	shGuiBuildTextPipeline(p_gui, core.render_pass, MAX_GUI_ITEMS);
+	shGuiBuildRegionPipeline(p_gui, MAX_GUI_ITEMS);
+	shGuiBuildTextPipeline(p_gui, MAX_GUI_ITEMS);
 
 	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
 

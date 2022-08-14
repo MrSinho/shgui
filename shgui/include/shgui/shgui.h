@@ -202,6 +202,7 @@ typedef struct ShGuiCore {
 	VkCommandBuffer				cmd_buffer;
 	VkFence						fence;
 	VkSurfaceKHR				surface;
+	VkRenderPass				render_pass;
 } ShGuiCore;
 
 
@@ -288,9 +289,9 @@ static uint8_t SH_GUI_CALL shGuiSetGraphicsQueue(const uint32_t graphics_queue_f
 
 
 
-extern uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t max_gui_items);
+extern uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, uint32_t max_gui_items);
 
-extern uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, VkRenderPass render_pass, uint32_t max_gui_items);
+extern uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, uint32_t max_gui_items);
 
 extern uint8_t SH_GUI_CALL shGuiSetDefaultValues(ShGui* p_gui, ShGuiDefaultValues values, ShGuiInstructions instruction);
 
