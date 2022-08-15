@@ -915,6 +915,7 @@ uint8_t shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float 
 	(cursor_y >= p_region->raw.position[1] - p_region->raw.size[1] / 2.0f) &&
 	(cursor_y <= p_region->raw.position[1] + p_region->raw.size[1] / 2.0f)
 	) {
+		p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_NORMAL];
 
 		p_gui->region_infos.p_cursor_on_regions[region_count] = 1;
 
