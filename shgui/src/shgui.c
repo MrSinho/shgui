@@ -540,7 +540,8 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiDefaultValues values, ShGuiInst
 		);
 	}
 
-	if (values & SH_GUI_THEME_DARK) {
+	switch (values) {
+	case SH_GUI_THEME_DARK:
 		staging_data[0] = 0.05f;//WINDOWS
 		staging_data[1] = 0.05f;
 		staging_data[2] = 0.05f;
@@ -548,8 +549,17 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiDefaultValues values, ShGuiInst
 		staging_data[4] = 1.0f;//TEXT
 		staging_data[5] = 1.0f;
 		staging_data[6] = 1.0f;
-	}
-	if (values & SH_GUI_THEME_LIGHT) {
+		break;
+	case SH_GUI_THEME_EXTRA_DARK:
+		staging_data[0] = 0.01f;//WINDOWS
+		staging_data[1] = 0.01f;
+		staging_data[2] = 0.01f;
+
+		staging_data[4] = 1.0f;//TEXT
+		staging_data[5] = 1.0f;
+		staging_data[6] = 1.0f;
+		break;
+	case SH_GUI_THEME_LIGHT:
 		staging_data[0] = 0.8f;//WINDOWS
 		staging_data[1] = 0.8f;
 		staging_data[2] = 0.8f;
@@ -557,6 +567,7 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiDefaultValues values, ShGuiInst
 		staging_data[4] = 0.0f;//TEXT
 		staging_data[5] = 0.0f;
 		staging_data[6] = 0.0f;
+		break;
 	}
 
 	shWriteMemory(device, p_gui->default_infos.staging_memory, 0, sizeof(staging_data), staging_data);

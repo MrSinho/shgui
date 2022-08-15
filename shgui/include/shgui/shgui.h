@@ -96,8 +96,9 @@ static float SH_GUI_EMPTY_CHAR[1] = { 0x0 };
 //
 //
 typedef enum ShGuiDefaultValues {
-	SH_GUI_THEME_DARK			= 0b0001,
-	SH_GUI_THEME_LIGHT			= 0b0010,
+	SH_GUI_THEME_DARK			= 0,
+	SH_GUI_THEME_EXTRA_DARK,
+	SH_GUI_THEME_LIGHT,
 	SH_GUI_DEFAULT_VALUES_MAX_ENUM
 } ShGuiDefaultValues;
 

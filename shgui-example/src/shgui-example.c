@@ -109,7 +109,7 @@ int main(void) {
 	shGuiBuildRegionPipeline(p_gui, MAX_GUI_ITEMS);
 	shGuiBuildTextPipeline(p_gui, MAX_GUI_ITEMS);
 
-	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
+	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_EXTRA_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
 
 	uint32_t frame_idx	= 0;
 	double last_time	= glfwGetTime();
@@ -131,7 +131,7 @@ int main(void) {
 
 			GLFWcursor* cursor = glfwCreateStandardCursor((int)p_gui->inputs.active_cursor_icon);
 			glfwSetCursor(window, cursor);
-			p_gui->inputs.active_cursor_icon = p_gui->inputs.p_cursor_icons[SH_GUI_CURSOR_NORMAL];
+			p_gui->inputs.active_cursor_icon = GLFW_CROSSHAIR_CURSOR;
 
 			glfwGetWindowSize(window, &width, &height);
 			if (width != p_gui->region_infos.fixed_states.scissor.extent.width || height != p_gui->region_infos.fixed_states.scissor.extent.height) {
