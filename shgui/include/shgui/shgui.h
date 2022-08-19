@@ -78,6 +78,8 @@ typedef struct ShGuiInputs {
 #define SH_GUI_CHAR_FINAL_OFFSET(char_distance_offset, scale, char_idx)\
 	((float)char_distance_offset) / 4.0f * ((float)scale) * ((float)char_idx)
 
+#define SH_GUI_CENTER_TEXT_WIDTH(text, scale)\
+	strlen(text) * SH_GUI_CHAR_DISTANCE_OFFSET * scale / 4.0f 
 
 #define SH_GUI_SEPARATOR_OFFSET 5.0f
 
@@ -306,7 +308,7 @@ extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, 
 
 extern uint8_t SH_GUI_CALL shGuiRegionWrite(ShGui* p_gui, uint32_t region_idx, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags, ShGuiWriteFlags write_flags);
 
-extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* text);
+extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* text, ShGuiWidgetFlags flags);
 
 
 extern uint8_t SH_GUI_CALL shGuiSetRegionPriority(ShGui* p_gui, uint32_t region_idx, float priority);

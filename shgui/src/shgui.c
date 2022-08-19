@@ -1006,7 +1006,8 @@ uint8_t shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float po
 			SH_GUI_WINDOW_TEXT_SIZE,
 			p_region->raw.position[0] - p_region->raw.size[0] / 2.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET,
 			-p_region->raw.position[1] - SH_GUI_WINDOW_TEXT_BORDER_OFFSET,
-			name
+			name, 
+			0
 		);
 	}
 
@@ -1068,7 +1069,7 @@ uint8_t shGuiWindowText(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlags 
 
 	if (flags & SH_GUI_CENTER_WIDTH) {
 		float chars_offset			= text != NULL 
-									? strlen(text) * SH_GUI_CHAR_DISTANCE_OFFSET * scale / 4.0f 
+									? SH_GUI_CENTER_TEXT_WIDTH(text, scale)
 									: 0.0f;
 		text_pos_x					= window_pos_x - chars_offset / 2.0f;
 	}
@@ -1080,7 +1081,8 @@ uint8_t shGuiWindowText(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlags 
 		scale,
 		text_pos_x,
 		text_pos_y,
-		text
+		text,
+		0
 	);
 
 	return 1;
@@ -1298,7 +1300,7 @@ uint8_t shGuiMenuItem(ShGui* p_gui, float extent, char* title, ShGuiWidgetFlags 
 	_char.vertex_count = sizeof(font ## _ ## char_name ## _vertices) / 4;\
 	_char.p_vertices = (float*)(font ## _ ## char_name ## _vertices);\
 
-uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_text) {
+uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_text, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui					== NULL, "invalid gui memory", return 0);
 	shGuiError(s_text					== NULL, "invalid text memory", return 0);
 
@@ -1316,6 +1318,10 @@ uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_t
 		p_char_info->scale[0]		= scale;
 		p_char_info->priority[0]	= SH_GUI_TEXT_PRIORITY;
 		
+		if (flags & SH_GUI_CENTER_WIDTH) {
+			p_char_info->position[0] -= SH_GUI_CENTER_TEXT_WIDTH(s_text, scale) / 2.0f;
+		}
+
 		p_gui->text_infos.total_char_count++;
 
 		switch (s_text[char_idx]) {
