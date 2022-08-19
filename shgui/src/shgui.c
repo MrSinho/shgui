@@ -1321,8 +1321,21 @@ uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_t
 		if (flags & SH_GUI_CENTER_WIDTH) {
 			p_char_info->position[0] -= SH_GUI_CENTER_TEXT_WIDTH(s_text, scale) / 2.0f;
 		}
+		else if (flags & SH_GUI_EDGE_LEFT) {
+			p_char_info->position[0] -= window_size_x / 2.0f;
+		}
+		else if (flags & SH_GUI_EDGE_RIGHT) {
+			p_char_info->position[0] += window_size_x / 2.0f - SH_GUI_CENTER_TEXT_WIDTH(s_text, scale);
+		}
+
 		if (flags & SH_GUI_CENTER_HEIGHT) {
 			p_char_info->position[1] += scale / 2.0f;
+		}
+		else if (flags & SH_GUI_EDGE_TOP) {
+			p_char_info->position[1] -= (window_size_y - scale) / 2.0f;
+		}
+		else if (flags & SH_GUI_EDGE_BOTTOM) {
+			p_char_info->position[1] += (window_size_y - scale / 4.0f) / 2.0f;
 		}
 
 		p_gui->text_infos.total_char_count++;
