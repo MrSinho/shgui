@@ -132,6 +132,8 @@ uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, uint32_t max_gui_items) {
 		return 0
 	);
 
+	p_gui->region_infos.max_region_items = max_gui_items;
+
 	VkSurfaceCapabilitiesKHR surface_capabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
 		p_gui->core.physical_device,
@@ -313,6 +315,8 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, uint32_t max_gui_items) {
 		"invalid gui memory",
 		return 0
 	);
+
+	p_gui->text_infos.max_text_items = max_gui_items;
 
 	VkSurfaceCapabilitiesKHR surface_capabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
