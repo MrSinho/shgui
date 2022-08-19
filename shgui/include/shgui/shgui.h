@@ -216,10 +216,10 @@ typedef struct ShGui {
 	ShGuiCore					core;
 	ShGuiInputs					inputs;
 
-	
 	struct {
 		VkBuffer			staging_buffer;
 		VkDeviceMemory		staging_memory;
+		ShGuiDefaultValues	default_values;
 	} default_infos;
 
 	struct {

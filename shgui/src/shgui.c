@@ -515,7 +515,8 @@ uint8_t shGuiSetDefaultValues(ShGui* p_gui, ShGuiDefaultValues values, ShGuiInst
 	VkCommandBuffer		cmd_buffer		= p_gui->core.cmd_buffer;
 	VkFence				fence			= p_gui->core.fence;
 
-	
+	p_gui->default_infos.default_values = values;
+
 	float staging_data[8] = { 0 };
 
 	if (instructions & SH_GUI_INITIALIZE) {

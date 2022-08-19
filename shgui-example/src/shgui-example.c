@@ -158,7 +158,7 @@ int main(void) {
 				shGuiDestroyPipelines(p_gui);
 				shGuiBuildRegionPipeline(p_gui, MAX_GUI_ITEMS);
 				shGuiBuildTextPipeline(p_gui, MAX_GUI_ITEMS);
-				shGuiSetDefaultValues(p_gui, SH_GUI_THEME_DARK, SH_GUI_RECORD);
+				shGuiSetDefaultValues(p_gui, p_gui->default_infos.default_values, SH_GUI_RECORD);
 			}
 
 		}//GLFW BASED CODE
