@@ -217,21 +217,23 @@ typedef struct ShGui {
 	ShGuiInputs					inputs;
 
 	struct {
-		VkBuffer			staging_buffer;
-		VkDeviceMemory		staging_memory;
-		ShGuiDefaultValues	default_values;
+		VkBuffer				staging_buffer;
+		VkDeviceMemory			staging_memory;
+		ShGuiDefaultValues		default_values;
 	} default_infos;
 
 	struct {
+		uint32_t				max_region_items;
+		
 		struct {
-			uint32_t menu_count;
-			uint32_t* p_menu_indices;
+			uint32_t			menu_count;
+			uint32_t*			p_menu_indices;
 		} menus;
 
 		struct {
-			uint32_t	window_count;
-			uint32_t*	p_window_indices;
-			float*		p_windows_used_height;
+			uint32_t			window_count;
+			uint32_t*			p_window_indices;
+			float*				p_windows_used_height;
 		} windows;
 
 		VkBuffer				staging_buffer;
@@ -251,6 +253,8 @@ typedef struct ShGui {
 	} region_infos;
 	
 	struct {
+		uint32_t							max_text_items;
+
 		ShGuiCharInfoDescriptorStructureMap	char_info_map;
 		uint32_t							total_char_count;
 
