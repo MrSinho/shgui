@@ -1321,6 +1321,9 @@ uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_t
 		if (flags & SH_GUI_CENTER_WIDTH) {
 			p_char_info->position[0] -= SH_GUI_CENTER_TEXT_WIDTH(s_text, scale) / 2.0f;
 		}
+		if (flags & SH_GUI_CENTER_HEIGHT) {
+			p_char_info->position[1] += scale / 2.0f;
+		}
 
 		p_gui->text_infos.total_char_count++;
 

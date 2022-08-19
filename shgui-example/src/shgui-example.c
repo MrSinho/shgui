@@ -220,7 +220,7 @@ int main(void) {
 		}
 
 		
-		shGuiText(p_gui, 25.0f, 0.0f, 0.0f, "QWERTY", SH_GUI_CENTER_WIDTH);
+		//shGuiText(p_gui, 25.0f, 0.0f, 0.0f, "QWERTY", SH_GUI_CENTER_WIDTH | SH_GUI_CENTER_HEIGHT);
 		//shGuiText(p_gui, 50.0f, 0.0f, -50.0f, "QWERTY");
 		//shGuiText(p_gui, 100.0f, 0.0f, -150.0f, "QWERTY");
 		//shGuiText(p_gui, 200.0f, 0.0f, -300.0f, "QWERTY");
