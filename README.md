@@ -16,6 +16,7 @@ Features:
 
 
 To do:
+* round char size to 7* 7* 3 bytes
 * menu popup
 * minimize window
 * input field
