@@ -196,7 +196,15 @@ int main(void) {
 			SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
 		);
 		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 2.0f, "0123456789", SH_GUI_CENTER_WIDTH);
-
+		shGuiWindowSeparator(p_gui);
+		char input[256];
+		shGuiWindowInputField(
+			p_gui,
+			SH_GUI_WINDOW_TEXT_SIZE,
+			input,
+			"Write something...",
+			SH_GUI_CENTER_WIDTH
+		);
 
 
 		shGuiWindow(
@@ -211,11 +219,11 @@ int main(void) {
 
 
 
-		shGuiMenuBar(p_gui, SH_GUI_WINDOW_BAR_SIZE * 1.5f, SH_GUI_TOP);
-		if (shGuiMenuItem(p_gui, 0.0f, "File", 0)) {
+		shGuiMenuBar(p_gui, SH_GUI_WINDOW_BAR_SIZE * 1.5f, SH_GUI_EDGE_TOP);
+		if (shGuiMenuItem(p_gui, "File", 0)) {
 			puts("File");
 		}
-		if (shGuiMenuItem(p_gui, 0.0f, "Settings", 0)) {
+		if (shGuiMenuItem(p_gui, "Settings", 0)) {
 			puts("Settings");
 		}
 

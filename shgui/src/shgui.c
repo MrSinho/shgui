@@ -1170,6 +1170,55 @@ uint8_t shGuiWindowSeparator(ShGui* p_gui) {
 	return 1;
 }
 
+uint8_t SH_GUI_CALL shGuiWindowInputField(ShGui* p_gui, float scale, char* text, char* hint, ShGuiWidgetFlags flags) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+
+	uint32_t window_count			= p_gui->region_infos.windows.window_count;
+	uint32_t window_idx				= p_gui->region_infos.windows.p_window_indices[window_count - 1];
+	uint32_t last_region			= p_gui->region_infos.region_count - 1;
+
+	ShGuiRegion window_region		= p_gui->region_infos.p_regions_data[window_idx];
+	float* p_window_position		= window_region.raw.position;
+	float* p_window_size			= window_region.raw.size;
+
+	float window_pos_x				= p_window_position[0];
+	float window_pos_y				= -p_window_position[1];
+	float window_size_x				= p_window_size[0];
+	float window_size_y				= p_window_size[1];
+
+	float* p_used_height			= &p_gui->region_infos.windows.p_windows_used_height[window_count - 1];
+
+	float width						= hint != NULL ? SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, strlen(hint)) + SH_GUI_WINDOW_TEXT_BORDER_OFFSET : 50.0f;
+	float height					= scale + SH_GUI_WINDOW_TEXT_BORDER_OFFSET;
+
+	float item_pos_x				= window_pos_x - window_size_x / 2.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET + width / 2.0f;
+	float item_pos_y				= SH_GUI_WINDOW_USED_HEIGHT(window_pos_y, window_size_y, *p_used_height) - height / 2.0f;
+
+	if (flags & SH_GUI_CENTER_WIDTH) {
+		item_pos_x					= window_pos_x;
+	}
+	(*p_used_height)				+= scale + SH_GUI_WINDOW_ITEMS_OFFSET;
+
+	uint32_t button_region_idx = p_gui->region_infos.region_count;
+	uint8_t pressed = shGuiItem(
+		p_gui,
+		width,
+		scale,
+		item_pos_x,
+		item_pos_y,
+		hint,
+		SH_GUI_PIXELS
+	);
+
+	if (pressed && p_gui->region_infos.p_regions_clicked[button_region_idx]) {
+		
+	}
+
+	shGuiSetRegionPriority(p_gui, button_region_idx, SH_GUI_ITEMS_PRIORITY);
+
+	return 1;
+}
+
 uint8_t shGuiMenuBar(ShGui* p_gui, float extent, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
@@ -1179,21 +1228,21 @@ uint8_t shGuiMenuBar(ShGui* p_gui, float extent, ShGuiWidgetFlags flags) {
 	float region_pos_y = 100.0f;
 
 	if (flags & SH_GUI_RELATIVE) {
-		if (flags & SH_GUI_TOP || flags & SH_GUI_BOTTOM) {
+		if (flags & SH_GUI_EDGE_TOP || flags & SH_GUI_EDGE_BOTTOM) {
 			region_width = 100.0f;
 			region_height = extent;
 			region_pos_x = 0.0f;
 			region_pos_y = 100.0f - extent;
-			if (flags & SH_GUI_BOTTOM) {
+			if (flags & SH_GUI_EDGE_BOTTOM) {
 				region_pos_y = -100.0f + extent;
 			}
 		}
-		if (flags & SH_GUI_LEFT || flags & SH_GUI_RIGHT) {
+		if (flags & SH_GUI_EDGE_LEFT || flags & SH_GUI_EDGE_RIGHT) {
 			region_width = extent;
 			region_height = 100.0f;
 			region_pos_x = -100.0f + extent;
 			region_pos_y = 0.0f;
-			if (flags & SH_GUI_RIGHT) {
+			if (flags & SH_GUI_EDGE_RIGHT) {
 				region_pos_x = 100.0f - extent;
 			}
 		}
@@ -1202,21 +1251,21 @@ uint8_t shGuiMenuBar(ShGui* p_gui, float extent, ShGuiWidgetFlags flags) {
 		float full_window_width = (float)p_gui->region_infos.fixed_states.scissor.extent.width;
 		float full_window_height = (float)p_gui->region_infos.fixed_states.scissor.extent.height;
 
-		if (flags & SH_GUI_TOP || flags & SH_GUI_BOTTOM) {
+		if (flags & SH_GUI_EDGE_TOP || flags & SH_GUI_EDGE_BOTTOM) {
 			region_width = full_window_width;
 			region_height = extent;
 			region_pos_x = 0.0f;
 			region_pos_y = (full_window_height - extent) / 2.0f;
-			if (flags & SH_GUI_BOTTOM) {
+			if (flags & SH_GUI_EDGE_BOTTOM) {
 				region_pos_y = (-full_window_height + extent) / 2.0f;
 			}
 		}
-		if (flags & SH_GUI_LEFT || flags & SH_GUI_RIGHT) {
+		if (flags & SH_GUI_EDGE_LEFT || flags & SH_GUI_EDGE_RIGHT) {
 			region_width = extent;
 			region_height = full_window_height;
 			region_pos_x = (-full_window_width + extent) / 2.0f;
 			region_pos_y = 0.0f;
-			if (flags & SH_GUI_RIGHT) {
+			if (flags & SH_GUI_EDGE_RIGHT) {
 				region_pos_x = (full_window_width - extent) / 2.0f;
 			}
 		}
@@ -1237,7 +1286,7 @@ uint8_t shGuiMenuBar(ShGui* p_gui, float extent, ShGuiWidgetFlags flags) {
 	return 1;
 }
 
-uint8_t shGuiMenuItem(ShGui* p_gui, float extent, char* title, ShGuiWidgetFlags flags) {
+uint8_t shGuiMenuItem(ShGui* p_gui, char* title, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float width							= 10.0f;//%
@@ -1257,7 +1306,7 @@ uint8_t shGuiMenuItem(ShGui* p_gui, float extent, char* title, ShGuiWidgetFlags 
 	float position[2]					= { 0.0f };
 	float size[2]						= { 0.0f };
 	
-	if (bar->flags & SH_GUI_TOP || bar->flags & SH_GUI_BOTTOM) {
+	if (bar->flags & SH_GUI_EDGE_TOP || bar->flags & SH_GUI_EDGE_BOTTOM) {
 
 		float bar_corner_left			= -bar->raw.size[0] / 2.0f;
 		float last_region_corner_left	= p_gui->region_infos.p_regions_data[last_region_idx].raw.position[0] - p_gui->region_infos.p_regions_data[last_region_idx].raw.size[0] / 2.0f;
@@ -1272,7 +1321,7 @@ uint8_t shGuiMenuItem(ShGui* p_gui, float extent, char* title, ShGuiWidgetFlags 
 		}
 		position[1]						= bar->raw.position[1];
 	}
-	else if (bar->flags & SH_GUI_LEFT || bar->flags && SH_GUI_RIGHT) {
+	else if (bar->flags & SH_GUI_EDGE_LEFT || bar->flags && SH_GUI_EDGE_RIGHT) {
 		size[0]				= width;
 		size[1]				= SH_GUI_WINDOW_TEXT_SIZE;
 		position[0]				= bar->raw.position[0];
