@@ -906,24 +906,21 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, float p
 
 		if (p_gui->inputs.p_mouse_events[0]) {
 			if (horizontal_left) {
-				p_region->raw.size[0] += 1000.0f * d_cursor_pos_x * ((float)*p_gui->inputs.p_delta_time);
+				p_region->raw.size[0] += SH_GUI_WINDOW_CURSOR_OFFSET_SCALE * d_cursor_pos_x * ((float)*p_gui->inputs.p_delta_time);
 			}
 			if (horizontal_right) {
-				p_region->raw.size[0] -= 1000.0f * d_cursor_pos_x * ((float)*p_gui->inputs.p_delta_time);
+				p_region->raw.size[0] -= SH_GUI_WINDOW_CURSOR_OFFSET_SCALE * d_cursor_pos_x * ((float)*p_gui->inputs.p_delta_time);
 			}
 			if (vertical_top) {
-				p_region->raw.size[1] += 1000.0f * d_cursor_pos_y * ((float)*p_gui->inputs.p_delta_time);
+				p_region->raw.size[1] += SH_GUI_WINDOW_CURSOR_OFFSET_SCALE * d_cursor_pos_y * ((float)*p_gui->inputs.p_delta_time);
 			}
 			if (vertical_bottom) {
-				p_region->raw.size[1] -= 1000.0f * d_cursor_pos_y * ((float)*p_gui->inputs.p_delta_time);
+				p_region->raw.size[1] -= SH_GUI_WINDOW_CURSOR_OFFSET_SCALE * d_cursor_pos_y * ((float)*p_gui->inputs.p_delta_time);
 			}
 		}
 	}
 
 	uint8_t* p_clicked = &p_gui->region_infos.p_regions_clicked[p_gui->region_infos.region_count];
-	if ((flags & SH_GUI_SWITCH) == 0) {
-		(*p_clicked) = 0;
-	}
 
 	if (
 	(cursor_x >= p_region->raw.position[0] - p_region->raw.size[0] / 2.0f) &&
@@ -940,11 +937,11 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, float p
 			if (flags & SH_GUI_X_MOVABLE) {
 				float dx = cursor_x - p_gui->inputs.last.last_cursor_pos_x;
 				if (dx < 0.0f) {
-					if (max_x_offset == SH_GUI_NO_OFFSET || p_region->raw.position[0] > -max_x_offset) {
+					if (max_x_offset == SH_GUI_NO_OFFSET || p_region->raw.position[0] > (offset_center_x - max_x_offset)) {
 						p_region->raw.position[0] += dx;
 					}
 				}
-				else if (max_x_offset == SH_GUI_NO_OFFSET || p_region->raw.position[0] < max_x_offset) {
+				else if (max_x_offset == SH_GUI_NO_OFFSET || p_region->raw.position[0] < (offset_center_x + max_x_offset)) {
 					p_region->raw.position[0] += dx;
 				}
 			}
@@ -966,11 +963,20 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, float p
 			}
 
 		}
-		if (p_gui->inputs.p_mouse_events[0] == 1 && p_gui->inputs.last.last_mouse_events[0] == 0) {
-			uint8_t rtrn = (*p_clicked) == 0;
-			(*p_clicked) = 1;
-			p_gui->region_infos.region_count++;
-			return rtrn;
+		if (p_gui->inputs.p_mouse_events[0] == 1) {
+			if (flags & SH_GUI_SINGLE_CLICK) {
+				if (p_gui->inputs.last.last_mouse_events[0] == 0) {
+					uint8_t rtrn = (*p_clicked) == 0;
+					(*p_clicked) = 1;
+					p_gui->region_infos.region_count++;
+					return rtrn;
+				}
+			}
+			else {
+				(*p_clicked) = 1; 
+				p_gui->region_infos.region_count++;
+				return *p_clicked;
+			}
 		}
 	}
 	else {
@@ -1013,7 +1019,7 @@ uint8_t shGuiSetRegionPriority(ShGui* p_gui, uint32_t region_idx, float priority
 	return 1;
 }
 
-uint8_t shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags, uint8_t move_mouse_button, float max_x_offset, float max_y_offset, float offset_center_x, float offset_center_y) {
+uint8_t shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* text, float text_scale, ShGuiWidgetFlags flags, uint8_t move_mouse_button, float max_x_offset, float max_y_offset, float offset_center_x, float offset_center_y) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	uint32_t		region_count	= p_gui->region_infos.region_count;
@@ -1033,13 +1039,13 @@ uint8_t shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float po
 		offset_center_y
 	);
 
-	if (name != NULL) {
+	if (text != NULL) {
 		shGuiText(
 			p_gui,
-			SH_GUI_WINDOW_TEXT_SIZE,
+			text_scale,
 			p_region->raw.position[0] - p_region->raw.size[0] / 2.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET,
 			-p_region->raw.position[1] - SH_GUI_WINDOW_TEXT_BORDER_OFFSET,
-			name, 
+			text, 
 			0
 		);
 	}
@@ -1082,6 +1088,7 @@ uint8_t shGuiWindow(ShGui* p_gui, float width, float height, float pos_x, float 
 		main_position[0],
 		-main_position[1] + main_size[1] / 2.0f - SH_GUI_WINDOW_BAR_SIZE / 2.0f,
 		title,
+		SH_GUI_WINDOW_TEXT_SIZE,
 		SH_GUI_PIXELS,
 		SH_GUI_NO_KEY,
 		SH_GUI_NO_OFFSET, 
@@ -1175,7 +1182,8 @@ uint8_t shGuiWindowButton(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlag
 		item_pos_x,
 		item_pos_y,
 		text,
-		SH_GUI_PIXELS,
+		scale,
+		SH_GUI_PIXELS | SH_GUI_SINGLE_CLICK,
 		SH_GUI_NO_KEY,
 		SH_GUI_NO_OFFSET,
 		SH_GUI_NO_OFFSET,
@@ -1230,9 +1238,9 @@ uint8_t shGuiWindowSeparator(ShGui* p_gui) {
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiWindowSlideri(ShGui* p_gui, float extent, float scale, int min, int max, int step, char* hint, int* p_dst, ShGuiWidgetFlags flags) {
+uint8_t SH_GUI_CALL shGuiWindowSliderf(ShGui* p_gui, float extent, float scale, float min, float max, float step, char* hint, float* p_dst, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
-	shGuiError(p_gui == NULL, "invalid destination memory", return 0);
+	shGuiError(p_dst == NULL, "invalid destination memory", return 0);
 
 	uint32_t window_count = p_gui->region_infos.windows.window_count;
 	uint32_t window_idx = p_gui->region_infos.windows.p_window_indices[window_count - 1];
@@ -1280,23 +1288,37 @@ uint8_t SH_GUI_CALL shGuiWindowSlideri(ShGui* p_gui, float extent, float scale, 
 
 	uint32_t slider_handle_region_idx = p_gui->region_infos.region_count;
 	
-	shGuiItem(
+	float slider_handle_offset_x = -extent / 2.0f + (float)(*p_dst) / (float)(max)*extent;
+	uint8_t pressed = shGuiItem(
 		p_gui,
 		width,
 		scale,
-		item_pos_x - extent / 2.0f + (float)(*p_dst) / (float)(max) * extent,
-		-p_gui->region_infos.p_regions_data[line_region_idx].raw.position[1],
+		item_pos_x + slider_handle_offset_x,
+		item_pos_y,
 		hint,
+		scale,
 		SH_GUI_X_MOVABLE | SH_GUI_PIXELS,
 		SH_GUI_LEFT_MOUSE_BUTTON,
-		extent,
+		extent / 2.0f,
 		SH_GUI_NO_OFFSET,
-		SH_GUI_NO_OFFSET_CENTER,
+		p_gui->region_infos.p_regions_data[line_region_idx].raw.position[0],
 		SH_GUI_NO_OFFSET_CENTER
 	);
+	
+	p_gui->region_infos.p_regions_data[slider_handle_region_idx].raw.position[1] = p_gui->region_infos.p_regions_data[line_region_idx].raw.position[1];
+	p_gui->region_infos.p_regions_data[slider_handle_region_idx].raw.position[0] = p_gui->region_infos.p_regions_data[line_region_idx].raw.position[0] + slider_handle_offset_x;
+	
 	shGuiSetRegionPriority(p_gui, slider_handle_region_idx, SH_GUI_TEXT_PRIORITY + 0.1f);
 
-	if (p_gui->region_infos.p_regions_clicked[slider_handle_region_idx]) {
+	if (pressed) {
+		float cursor_x   = (float)*p_gui->inputs.p_cursor_pos_x;
+		float cursor_dx  = cursor_x - p_gui->inputs.last.last_cursor_pos_x;
+		float delta_time = (float)*p_gui->inputs.p_delta_time;
+
+		float _dst = (*p_dst) + SH_GUI_SLIDER_CURSOR_OFFSET_SCALE * cursor_dx * delta_time;
+		if (_dst < max && _dst > min) {
+			(*p_dst) = _dst;
+		}
 	}
 
 	return 1;
@@ -1383,7 +1405,7 @@ uint8_t shGuiMenuItem(ShGui* p_gui, char* title, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float width							= 10.0f;//%
-	ShGuiWidgetFlags additional_flags	= SH_GUI_RELATIVE;
+	ShGuiWidgetFlags additional_flags	= SH_GUI_RELATIVE | SH_GUI_SINGLE_CLICK;
 	if (title != NULL) {
 		additional_flags				&= ~SH_GUI_RELATIVE;
 		additional_flags				|= SH_GUI_PIXELS;
@@ -1432,6 +1454,7 @@ uint8_t shGuiMenuItem(ShGui* p_gui, char* title, ShGuiWidgetFlags flags) {
 		position[0], 
 		-position[1], 
 		title, 
+		SH_GUI_WINDOW_TEXT_SIZE,
 		flags | additional_flags,
 		SH_GUI_NO_KEY,
 		SH_GUI_NO_OFFSET,

@@ -49,6 +49,9 @@ typedef int8_t ShGuiMouseEvents[SH_GUI_MOUSE_LAST + 1];
 #define SH_GUI_CURSOR_VERTICAL_RESIZE 2
 typedef int32_t ShGuiCursorIcons[3];//normal, horizontal_resize, vertical_resize
 
+#define SH_GUI_WINDOW_CURSOR_OFFSET_SCALE 1000.0f
+#define SH_GUI_SLIDER_CURSOR_OFFSET_SCALE 100.0f
+
 typedef struct ShGuiInputs {
 	uint32_t*				p_window_width;
 	uint32_t*				p_window_height;
@@ -131,7 +134,7 @@ typedef enum ShGuiWidgetFlags {
 	SH_GUI_RELATIVE				 = 1 <<  9,
 	SH_GUI_MINIMIZABLE			 = 1 << 10,
 	SH_GUI_RESIZABLE			 = 1 << 11,
-	SH_GUI_SWITCH				 = 1 << 12,
+	SH_GUI_SINGLE_CLICK			 = 1 << 12,
 	SH_GUI_WIDGET_FLAGS_MAX_ENUM
 } ShGuiWidgetFlags;
 
@@ -323,7 +326,7 @@ extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, float scale, float pos_x, flo
 extern uint8_t SH_GUI_CALL shGuiSetRegionPriority(ShGui* p_gui, uint32_t region_idx, float priority);
 
 
-extern uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags, uint8_t move_mouse_button, float max_x_offset, float max_y_offset, float offset_center_x, float offset_center_y);
+extern uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* text, float text_scale, ShGuiWidgetFlags flags, uint8_t move_mouse_button, float max_x_offset, float max_y_offset, float offset_center_x, float offset_center_y);
 
 extern uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* title, ShGuiWidgetFlags flags);
 
@@ -337,7 +340,7 @@ extern uint8_t SH_GUI_CALL shGuiWindowSeparator(ShGui* p_gui);
 extern uint8_t SH_GUI_CALL shGuiWindowInputField(ShGui* p_gui, float scale, char* text, char* hint, ShGuiWidgetFlags flags);
 #endif//0
 
-extern uint8_t SH_GUI_CALL shGuiWindowSlideri(ShGui* p_gui, float extent, float scale, int min, int max, int step, char* hint, int* p_dst, ShGuiWidgetFlags flags);
+extern uint8_t SH_GUI_CALL shGuiWindowSliderf(ShGui* p_gui, float extent, float scale, float min, float max, float step, char* hint, float* p_dst, ShGuiWidgetFlags flags);
 
 
 

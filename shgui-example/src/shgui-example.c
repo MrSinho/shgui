@@ -117,7 +117,7 @@ int main(void) {
 	uint32_t frame_idx	= 0;
 	double last_time	= glfwGetTime();
 	
-	int slider_value = 50;
+	float slider_value = 50.0f;
 	while (!glfwWindowShouldClose(window)) {
 		
 		{//GLFW BASED CODE
@@ -194,7 +194,7 @@ int main(void) {
 
 		shGuiWindow(
 			p_gui,
-			300.0f, 100.0f,
+			300.0f, 150.0f,
 			-200.0f, -200.0f,
 			"Window",
 			SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
@@ -202,15 +202,15 @@ int main(void) {
 		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 2.0f, "0123456789", SH_GUI_CENTER_WIDTH);
 		shGuiWindowSeparator(p_gui);
 
-		char s_slider_value[4];
-		sprintf(s_slider_value, "%i", slider_value);
-		shGuiWindowSlideri(
+		char s_slider_value[3];
+		sprintf(s_slider_value, "%.0f", slider_value);
+		shGuiWindowSliderf(
 			p_gui,
 			100.0f,
-			SH_GUI_WINDOW_TEXT_SIZE,
-			0,
-			100,
-			1,
+			SH_GUI_WINDOW_TEXT_SIZE * 2.0f,
+			0.0f,
+			99.0f,
+			1.0f,
 			s_slider_value,
 			&slider_value,
 			SH_GUI_CENTER_WIDTH
