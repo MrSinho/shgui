@@ -834,7 +834,7 @@ uint8_t shGuiRender(ShGui* p_gui) {
 	return 1;
 }
 
-uint8_t shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float pos_y, ShGuiWidgetFlags flags) {
+uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float pos_y, ShGuiWidgetFlags flags, uint8_t move_mouse_button, float max_x_offset, float max_y_offset, float offset_center_x, float offset_center_y) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	float cursor_x		= *p_gui->inputs.p_cursor_pos_x;
@@ -935,15 +935,36 @@ uint8_t shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float 
 
 		p_gui->region_infos.p_cursor_on_regions[region_count] = 1;
 
-		if (p_gui->inputs.p_mouse_events[1] == 1 && (flags & SH_GUI_MOVABLE)) {
+		if (p_gui->inputs.p_mouse_events[move_mouse_button] == 1) {
 			
-			float dx = cursor_x - p_gui->inputs.last.last_cursor_pos_x;
-			float dy = cursor_y - p_gui->inputs.last.last_cursor_pos_y;
+			if (flags & SH_GUI_X_MOVABLE) {
+				float dx = cursor_x - p_gui->inputs.last.last_cursor_pos_x;
+				if (dx < 0.0f) {
+					if (max_x_offset == SH_GUI_NO_OFFSET || p_region->raw.position[0] > -max_x_offset) {
+						p_region->raw.position[0] += dx;
+					}
+				}
+				else if (max_x_offset == SH_GUI_NO_OFFSET || p_region->raw.position[0] < max_x_offset) {
+					p_region->raw.position[0] += dx;
+				}
+			}
 
-			p_region->raw.position[0]		+= dx;
-			p_region->raw.position[1]		+= dy;
-		
-			p_gui->region_infos.p_regions_overwritten_data[region_count] = 1;
+			if (flags & SH_GUI_Y_MOVABLE) {
+				float dy = cursor_y - p_gui->inputs.last.last_cursor_pos_y;
+				if (dy < 0.0f) {
+					if (max_y_offset == SH_GUI_NO_OFFSET || p_region->raw.position[1] > -max_y_offset) {
+						p_region->raw.position[1] += dy;
+					}
+				}
+				else if (max_y_offset == SH_GUI_NO_OFFSET || p_region->raw.position[1] < max_y_offset) {
+					p_region->raw.position[1] += dy;
+				}
+			}
+
+			if (flags & SH_GUI_MOVABLE) {//x or y
+				p_gui->region_infos.p_regions_overwritten_data[region_count] = 1;
+			}
+
 		}
 		if (p_gui->inputs.p_mouse_events[0] == 1 && p_gui->inputs.last.last_mouse_events[0] == 0) {
 			uint8_t rtrn = (*p_clicked) == 0;
@@ -992,13 +1013,25 @@ uint8_t shGuiSetRegionPriority(ShGui* p_gui, uint32_t region_idx, float priority
 	return 1;
 }
 
-uint8_t shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags) {
+uint8_t shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags, uint8_t move_mouse_button, float max_x_offset, float max_y_offset, float offset_center_x, float offset_center_y) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	uint32_t		region_count	= p_gui->region_infos.region_count;
 	ShGuiRegion*	p_region		= &p_gui->region_infos.p_regions_data[region_count];
 
-	uint8_t sig						= shGuiRegion(p_gui, width, height, pos_x, pos_y, flags);
+	uint8_t sig	= shGuiRegion(
+		p_gui, 
+		width,
+		height, 
+		pos_x, 
+		pos_y, 
+		flags, 
+		move_mouse_button,
+		max_x_offset, 
+		max_y_offset,
+		offset_center_x,
+		offset_center_y
+	);
 
 	if (name != NULL) {
 		shGuiText(
@@ -1022,7 +1055,19 @@ uint8_t shGuiWindow(ShGui* p_gui, float width, float height, float pos_x, float 
 
 	p_gui->region_infos.windows.p_window_indices[p_gui->region_infos.windows.window_count] = p_gui->region_infos.region_count;
 
-	uint8_t sig						= shGuiRegion(p_gui, width, height, pos_x, pos_y, flags);
+	uint8_t sig	= shGuiRegion(
+		p_gui, 
+		width, 
+		height, 
+		pos_x, 
+		pos_y, 
+		flags, 
+		SH_GUI_RIGHT_MOUSE_BUTTON, 
+		((float)p_gui->region_infos.fixed_states.scissor.extent.width  - p_gui->region_infos.p_regions_data[main_region_idx].raw.size[0]) / 2.0f,
+		((float)p_gui->region_infos.fixed_states.scissor.extent.height - p_gui->region_infos.p_regions_data[main_region_idx].raw.size[1]) / 2.0f,
+		0.0f,
+		0.0f
+	);
 	shGuiSetRegionPriority(p_gui, main_region_idx, SH_GUI_EMPTY_REGION_PRIORITY);
 
 	float* main_position		= main_region->raw.position;
@@ -1037,7 +1082,12 @@ uint8_t shGuiWindow(ShGui* p_gui, float width, float height, float pos_x, float 
 		main_position[0],
 		-main_position[1] + main_size[1] / 2.0f - SH_GUI_WINDOW_BAR_SIZE / 2.0f,
 		title,
-		SH_GUI_PIXELS
+		SH_GUI_PIXELS,
+		SH_GUI_NO_KEY,
+		SH_GUI_NO_OFFSET, 
+		SH_GUI_NO_OFFSET,
+		SH_GUI_NO_OFFSET_CENTER,
+		SH_GUI_NO_OFFSET_CENTER
 	);
 	shGuiSetRegionPriority(p_gui, bar_region_idx, SH_GUI_ITEMS_PRIORITY);
 
@@ -1125,7 +1175,12 @@ uint8_t shGuiWindowButton(ShGui* p_gui, float scale, char* text, ShGuiWidgetFlag
 		item_pos_x,
 		item_pos_y,
 		text,
-		SH_GUI_PIXELS
+		SH_GUI_PIXELS,
+		SH_GUI_NO_KEY,
+		SH_GUI_NO_OFFSET,
+		SH_GUI_NO_OFFSET,
+		SH_GUI_NO_OFFSET_CENTER,
+		SH_GUI_NO_OFFSET_CENTER
 	);
 	shGuiSetRegionPriority(p_gui, button_region_idx, SH_GUI_ITEMS_PRIORITY);
 
@@ -1163,58 +1218,86 @@ uint8_t shGuiWindowSeparator(ShGui* p_gui) {
 		item_height,
 		item_pos_x,
 		item_pos_y,
-		SH_GUI_PIXELS
+		SH_GUI_PIXELS,
+		SH_GUI_NO_KEY,
+		SH_GUI_NO_OFFSET,
+		SH_GUI_NO_OFFSET,
+		0.0f,
+		0.0f
 	);
 	shGuiSetRegionPriority(p_gui, separator_region_idx, SH_GUI_ITEMS_PRIORITY);
 
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiWindowInputField(ShGui* p_gui, float scale, char* text, char* hint, ShGuiWidgetFlags flags) {
+uint8_t SH_GUI_CALL shGuiWindowSlideri(ShGui* p_gui, float extent, float scale, int min, int max, int step, char* hint, int* p_dst, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+	shGuiError(p_gui == NULL, "invalid destination memory", return 0);
 
-	uint32_t window_count			= p_gui->region_infos.windows.window_count;
-	uint32_t window_idx				= p_gui->region_infos.windows.p_window_indices[window_count - 1];
-	uint32_t last_region			= p_gui->region_infos.region_count - 1;
+	uint32_t window_count = p_gui->region_infos.windows.window_count;
+	uint32_t window_idx = p_gui->region_infos.windows.p_window_indices[window_count - 1];
+	uint32_t last_region = p_gui->region_infos.region_count - 1;
 
-	ShGuiRegion window_region		= p_gui->region_infos.p_regions_data[window_idx];
-	float* p_window_position		= window_region.raw.position;
-	float* p_window_size			= window_region.raw.size;
+	ShGuiRegion window_region = p_gui->region_infos.p_regions_data[window_idx];
+	float* p_window_position = window_region.raw.position;
+	float* p_window_size = window_region.raw.size;
 
-	float window_pos_x				= p_window_position[0];
-	float window_pos_y				= -p_window_position[1];
-	float window_size_x				= p_window_size[0];
-	float window_size_y				= p_window_size[1];
+	float window_pos_x = p_window_position[0];
+	float window_pos_y = -p_window_position[1];
+	float window_size_x = p_window_size[0];
+	float window_size_y = p_window_size[1];
 
-	float* p_used_height			= &p_gui->region_infos.windows.p_windows_used_height[window_count - 1];
+	float* p_used_height = &p_gui->region_infos.windows.p_windows_used_height[window_count - 1];
 
-	float width						= hint != NULL ? SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, strlen(hint)) + SH_GUI_WINDOW_TEXT_BORDER_OFFSET : 50.0f;
-	float height					= scale + SH_GUI_WINDOW_TEXT_BORDER_OFFSET;
+	float width = hint != NULL ? SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, strlen(hint)) + SH_GUI_WINDOW_TEXT_BORDER_OFFSET : 50.0f;
+	float height = scale;
 
-	float item_pos_x				= window_pos_x - window_size_x / 2.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET + width / 2.0f;
-	float item_pos_y				= SH_GUI_WINDOW_USED_HEIGHT(window_pos_y, window_size_y, *p_used_height) - height / 2.0f;
+	float item_pos_x = window_pos_x - window_size_x / 2.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET + width / 2.0f;
+	float item_pos_y = SH_GUI_WINDOW_USED_HEIGHT(window_pos_y, window_size_y, *p_used_height) - height / 2.0f;
 
 	if (flags & SH_GUI_CENTER_WIDTH) {
-		item_pos_x					= window_pos_x;
+		item_pos_x = window_pos_x;
 	}
-	(*p_used_height)				+= scale + SH_GUI_WINDOW_ITEMS_OFFSET;
+	(*p_used_height) += scale + SH_GUI_WINDOW_ITEMS_OFFSET;
 
-	uint32_t button_region_idx = p_gui->region_infos.region_count;
-	uint8_t pressed = shGuiItem(
+	uint32_t line_region_idx = p_gui->region_infos.region_count;
+	
+	float line_height = 2.0f;
+	shGuiRegion(
+		p_gui,
+		extent,
+		line_height,
+		item_pos_x,
+		item_pos_y,
+		SH_GUI_PIXELS,
+		SH_GUI_NO_KEY,
+		SH_GUI_NO_OFFSET,
+		SH_GUI_NO_OFFSET,
+		0.0f,
+		0.0f
+	);
+	shGuiSetRegionPriority(p_gui, line_region_idx, SH_GUI_ITEMS_PRIORITY);
+
+	uint32_t slider_handle_region_idx = p_gui->region_infos.region_count;
+	
+	shGuiItem(
 		p_gui,
 		width,
 		scale,
-		item_pos_x,
-		item_pos_y,
+		item_pos_x - extent / 2.0f + (float)(*p_dst) / (float)(max) * extent,
+		-p_gui->region_infos.p_regions_data[line_region_idx].raw.position[1],
 		hint,
-		SH_GUI_PIXELS
+		SH_GUI_X_MOVABLE | SH_GUI_PIXELS,
+		SH_GUI_LEFT_MOUSE_BUTTON,
+		extent,
+		SH_GUI_NO_OFFSET,
+		SH_GUI_NO_OFFSET_CENTER,
+		SH_GUI_NO_OFFSET_CENTER
 	);
+	shGuiSetRegionPriority(p_gui, slider_handle_region_idx, SH_GUI_TEXT_PRIORITY + 0.1f);
 
-	if (pressed && p_gui->region_infos.p_regions_clicked[button_region_idx]) {
-		
+	if (p_gui->region_infos.p_regions_clicked[slider_handle_region_idx]) {
 	}
-
-	shGuiSetRegionPriority(p_gui, button_region_idx, SH_GUI_ITEMS_PRIORITY);
 
 	return 1;
 }
@@ -1277,7 +1360,17 @@ uint8_t shGuiMenuBar(ShGui* p_gui, float extent, ShGuiWidgetFlags flags) {
 
 	uint32_t bar_region_idx = p_gui->region_infos.region_count;
 	shGuiRegion(
-		p_gui, region_width, region_height, region_pos_x, region_pos_y, flags
+		p_gui, 
+		region_width, 
+		region_height, 
+		region_pos_x, 
+		region_pos_y, 
+		flags, 
+		SH_GUI_NO_KEY,
+		SH_GUI_NO_OFFSET,
+		SH_GUI_NO_OFFSET,
+		0.0f,
+		0.0f
 	);
 	shGuiSetRegionPriority(p_gui, bar_region_idx, SH_GUI_EMPTY_REGION_PRIORITY);
 
@@ -1339,7 +1432,12 @@ uint8_t shGuiMenuItem(ShGui* p_gui, char* title, ShGuiWidgetFlags flags) {
 		position[0], 
 		-position[1], 
 		title, 
-		flags | additional_flags
+		flags | additional_flags,
+		SH_GUI_NO_KEY,
+		SH_GUI_NO_OFFSET,
+		SH_GUI_NO_OFFSET,
+		SH_GUI_NO_OFFSET_CENTER,
+		SH_GUI_NO_OFFSET_CENTER
 	);
 	shGuiSetRegionPriority(p_gui, item_region_idx, SH_GUI_ITEMS_PRIORITY);
 	return pressed;

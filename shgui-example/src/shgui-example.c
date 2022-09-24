@@ -19,7 +19,10 @@ extern "C" {
 #define SH_GUI_DEBUG_SHADERS 1
 #include <shgui/shgui.h>
 
-
+#include <string.h>
+#ifdef _MSC_VER
+#pragma warning (disable: 4996)
+#endif//_MSC_VER
 
 GLFWwindow* createWindow(const uint32_t width, const uint32_t height, const char* title);
 
@@ -28,7 +31,7 @@ const char* readBinary(const char* path, uint32_t* p_size);
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 800
 
-#define MAX_GUI_ITEMS 256
+#define MAX_GUI_ITEMS 528
 
 int main(void) {
 	
@@ -114,6 +117,7 @@ int main(void) {
 	uint32_t frame_idx	= 0;
 	double last_time	= glfwGetTime();
 	
+	int slider_value = 50;
 	while (!glfwWindowShouldClose(window)) {
 		
 		{//GLFW BASED CODE
@@ -197,14 +201,30 @@ int main(void) {
 		);
 		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 2.0f, "0123456789", SH_GUI_CENTER_WIDTH);
 		shGuiWindowSeparator(p_gui);
-		char input[256];
-		shGuiWindowInputField(
+
+		char s_slider_value[4];
+		sprintf(s_slider_value, "%i", slider_value);
+		shGuiWindowSlideri(
 			p_gui,
+			100.0f,
 			SH_GUI_WINDOW_TEXT_SIZE,
-			input,
-			"Write something...",
+			0,
+			100,
+			1,
+			s_slider_value,
+			&slider_value,
 			SH_GUI_CENTER_WIDTH
 		);
+		
+
+		//char input[256];
+		//shGuiWindowInputField(
+		//	p_gui,
+		//	SH_GUI_WINDOW_TEXT_SIZE,
+		//	input,
+		//	"Write something...",
+		//	SH_GUI_CENTER_WIDTH
+		//);
 
 
 		shGuiWindow(

@@ -37,6 +37,13 @@ typedef int8_t ShGuiKeyEvents[SH_GUI_KEY_LAST + 1];
 #define SH_GUI_MOUSE_LAST 1
 typedef int8_t ShGuiMouseEvents[SH_GUI_MOUSE_LAST + 1];
 
+#define SH_GUI_LEFT_MOUSE_BUTTON 0
+#define SH_GUI_RIGHT_MOUSE_BUTTON 1
+#define SH_GUI_NO_KEY UINT8_MAX
+
+#define SH_GUI_NO_OFFSET 0.0f
+#define SH_GUI_NO_OFFSET_CENTER 0.0f
+
 #define SH_GUI_CURSOR_NORMAL 0
 #define SH_GUI_CURSOR_HORIZONTAL_RESIZE 1
 #define SH_GUI_CURSOR_VERTICAL_RESIZE 2
@@ -117,12 +124,14 @@ typedef enum ShGuiWidgetFlags {
 	SH_GUI_EDGE_RIGHT			 = 1 <<  3,
 	SH_GUI_EDGE_TOP				 = 1 <<  4,
 	SH_GUI_EDGE_BOTTOM			 = 1 <<  5,
-	SH_GUI_MOVABLE				 = 1 <<  6,
-	SH_GUI_PIXELS				 = 1 <<  7,
-	SH_GUI_RELATIVE				 = 1 <<  8,
-	SH_GUI_MINIMIZABLE			 = 1 <<  9,
-	SH_GUI_RESIZABLE			 = 1 << 10,
-	SH_GUI_SWITCH				 = 1 << 11,
+	SH_GUI_X_MOVABLE			 = 1 <<  6,
+	SH_GUI_Y_MOVABLE			 = 1 <<  7,
+	SH_GUI_MOVABLE				 = SH_GUI_X_MOVABLE | SH_GUI_Y_MOVABLE,
+	SH_GUI_PIXELS				 = 1 <<  8,
+	SH_GUI_RELATIVE				 = 1 <<  9,
+	SH_GUI_MINIMIZABLE			 = 1 << 10,
+	SH_GUI_RESIZABLE			 = 1 << 11,
+	SH_GUI_SWITCH				 = 1 << 12,
 	SH_GUI_WIDGET_FLAGS_MAX_ENUM
 } ShGuiWidgetFlags;
 
@@ -304,7 +313,7 @@ extern uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, uint32_t max_gui
 
 extern uint8_t SH_GUI_CALL shGuiSetDefaultValues(ShGui* p_gui, ShGuiDefaultValues values, ShGuiInstructions instruction);
 
-extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float pos_y, ShGuiWidgetFlags flags);
+extern uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, float pos_x, float pos_y, ShGuiWidgetFlags flags, uint8_t move_mouse_button, float max_x_offset, float max_y_offset, float offset_center_x, float offset_center_y);
 
 extern uint8_t SH_GUI_CALL shGuiRegionWrite(ShGui* p_gui, uint32_t region_idx, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags, ShGuiWriteFlags write_flags);
 
@@ -314,7 +323,7 @@ extern uint8_t SH_GUI_CALL shGuiText(ShGui* p_gui, float scale, float pos_x, flo
 extern uint8_t SH_GUI_CALL shGuiSetRegionPriority(ShGui* p_gui, uint32_t region_idx, float priority);
 
 
-extern uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags);
+extern uint8_t SH_GUI_CALL shGuiItem(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* name, ShGuiWidgetFlags flags, uint8_t move_mouse_button, float max_x_offset, float max_y_offset, float offset_center_x, float offset_center_y);
 
 extern uint8_t SH_GUI_CALL shGuiWindow(ShGui* p_gui, float width, float height, float pos_x, float pos_y, char* title, ShGuiWidgetFlags flags);
 
@@ -324,12 +333,13 @@ extern uint8_t SH_GUI_CALL shGuiWindowButton(ShGui* p_gui, float scale, char* te
 
 extern uint8_t SH_GUI_CALL shGuiWindowSeparator(ShGui* p_gui);
 
-extern uint8_t SH_GUI_CALL shGuiWindowInputField(ShGui* p_gui, float scale, char* text, char* hint, ShGuiWidgetFlags flags);
-
 #if 0
-extern uint8_t SH_GUI_CALL shGuiWindowSlideri(ShGui* p_gui, float extent, int min, int max, int step, ShGuiWidgetFlags flags);
-
+extern uint8_t SH_GUI_CALL shGuiWindowInputField(ShGui* p_gui, float scale, char* text, char* hint, ShGuiWidgetFlags flags);
 #endif//0
+
+extern uint8_t SH_GUI_CALL shGuiWindowSlideri(ShGui* p_gui, float extent, float scale, int min, int max, int step, char* hint, int* p_dst, ShGuiWidgetFlags flags);
+
+
 
 extern uint8_t SH_GUI_CALL shGuiMenuBar(ShGui* p_gui, float extent, ShGuiWidgetFlags flags);
 
