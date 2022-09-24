@@ -50,7 +50,6 @@ typedef int8_t ShGuiMouseEvents[SH_GUI_MOUSE_LAST + 1];
 typedef int32_t ShGuiCursorIcons[3];//normal, horizontal_resize, vertical_resize
 
 #define SH_GUI_WINDOW_CURSOR_OFFSET_SCALE 1000.0f
-#define SH_GUI_SLIDER_CURSOR_OFFSET_SCALE 100.0f
 
 typedef struct ShGuiInputs {
 	uint32_t*				p_window_width;

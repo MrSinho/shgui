@@ -1313,9 +1313,8 @@ uint8_t SH_GUI_CALL shGuiWindowSliderf(ShGui* p_gui, float extent, float scale, 
 	if (pressed) {
 		float cursor_x   = (float)*p_gui->inputs.p_cursor_pos_x;
 		float cursor_dx  = cursor_x - p_gui->inputs.last.last_cursor_pos_x;
-		float delta_time = (float)*p_gui->inputs.p_delta_time;
 
-		float _dst = (*p_dst) + SH_GUI_SLIDER_CURSOR_OFFSET_SCALE * cursor_dx * delta_time;
+		float _dst = (*p_dst) + cursor_dx;
 		if (_dst < max && _dst > min) {
 			(*p_dst) = _dst;
 		}
