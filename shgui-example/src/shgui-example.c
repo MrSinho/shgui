@@ -210,7 +210,6 @@ int main(void) {
 			SH_GUI_WINDOW_TEXT_SIZE * 2.0f,
 			0.0f,
 			99.0f,
-			1.0f,
 			s_slider_value,
 			&slider_value,
 			SH_GUI_CENTER_WIDTH

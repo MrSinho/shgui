@@ -340,7 +340,7 @@ extern uint8_t SH_GUI_CALL shGuiWindowSeparator(ShGui* p_gui);
 extern uint8_t SH_GUI_CALL shGuiWindowInputField(ShGui* p_gui, float scale, char* text, char* hint, ShGuiWidgetFlags flags);
 #endif//0
 
-extern uint8_t SH_GUI_CALL shGuiWindowSliderf(ShGui* p_gui, float extent, float scale, float min, float max, float step, char* hint, float* p_dst, ShGuiWidgetFlags flags);
+extern uint8_t SH_GUI_CALL shGuiWindowSliderf(ShGui* p_gui, float extent, float scale, float min, float max, char* hint, float* p_dst, ShGuiWidgetFlags flags);
 
 
 

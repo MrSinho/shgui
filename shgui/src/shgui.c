@@ -1238,7 +1238,7 @@ uint8_t shGuiWindowSeparator(ShGui* p_gui) {
 	return 1;
 }
 
-uint8_t SH_GUI_CALL shGuiWindowSliderf(ShGui* p_gui, float extent, float scale, float min, float max, float step, char* hint, float* p_dst, ShGuiWidgetFlags flags) {
+uint8_t SH_GUI_CALL shGuiWindowSliderf(ShGui* p_gui, float extent, float scale, float min, float max, char* hint, float* p_dst, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 	shGuiError(p_dst == NULL, "invalid destination memory", return 0);
 
