@@ -9,6 +9,7 @@ extern "C" {
 #include <shvulkan/shVkMemoryInfo.h>
 #include <shvulkan/shVkDrawLoop.h>
 
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 
@@ -234,7 +235,7 @@ int main(void) {
 			SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
 		);
 		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "an email: lmao555@gmail.com", 0);
-		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 1.5f, "|!\"£$%&/=?*@#,.-;:_", 0);
+		shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 1.5f, "|!\"≈Å$%&/=?*@#,.-;:_", 0);
 
 
 
