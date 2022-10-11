@@ -25,7 +25,7 @@ static char* shader_names[SHADER_COUNT] = {
 
 
 
-char* shGuiReadBinary(char* path, uint32_t* p_code_size);
+char* shGuiReadBinary(const char* path, uint32_t* p_code_size);
 
 
 
@@ -66,7 +66,7 @@ int main(void) {
 #endif//_MSC_VER
 
 
-char* shGuiReadBinary(char* path, uint32_t* p_code_size) {
+char* shGuiReadBinary(const char* path, uint32_t* p_code_size) {
 
 	FILE* stream = fopen(path, "rb");
 

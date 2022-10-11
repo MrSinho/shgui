@@ -13,11 +13,6 @@ extern "C" {
 #endif//alignas
 
 
-#ifndef SH_GUI_DEBUG_SHADERS
-#define SH_GUI_DEBUG_SHADERS 0
-#else 
-#define SH_GUI_DEBUG_SHADERS 1
-#endif//SH_GUI_DEBUG
 
 #include "shgui/shgui-call.h"
 #include "shgui/shgui-assert.h"
@@ -309,9 +304,9 @@ static uint8_t SH_GUI_CALL shGuiSetGraphicsQueue(const uint32_t graphics_queue_f
 
 
 
-extern uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, uint32_t max_gui_items);
+extern uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(ShGui* p_gui, const char* vertex_shader_path, const char* fragment_shader_path, uint32_t max_gui_items);
 
-extern uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, uint32_t max_gui_items);
+extern uint8_t SH_GUI_CALL shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, const char* fragment_shader_path, uint32_t max_gui_items);
 
 extern uint8_t SH_GUI_CALL shGuiSetDefaultValues(ShGui* p_gui, ShGuiDefaultValues values, ShGuiInstructions instruction);
 

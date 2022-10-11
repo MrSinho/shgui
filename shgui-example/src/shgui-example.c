@@ -13,10 +13,6 @@ extern "C" {
 
 
 
-//ONLY FOR DEV, COMMENT IF 
-//
-//
-#define SH_GUI_DEBUG_SHADERS 1
 #include <shgui/shgui.h>
 
 #include <string.h>
@@ -109,8 +105,21 @@ int main(void) {
 		p_gui
 	);
 
-	shGuiBuildRegionPipeline(p_gui, MAX_GUI_ITEMS);
-	shGuiBuildTextPipeline(p_gui, MAX_GUI_ITEMS * 5);
+#ifndef NDEBUG
+	shGuiBuildRegionPipeline(p_gui, 
+		"../shaders/bin/shgui-region.vert.spv",
+		"../shaders/bin/shgui-region.frag.spv",
+		MAX_GUI_ITEMS
+	);
+	shGuiBuildTextPipeline(p_gui, 
+		"../shaders/bin/shgui-text.vert.spv",
+		"../shaders/bin/shgui-text.frag.spv",
+		MAX_GUI_ITEMS * 5
+	);
+#else
+	shGuiBuildRegionPipeline(p_gui, NULL, NULL, MAX_GUI_ITEMS);
+	shGuiBuildTextPipeline(p_gui, NULL, NULL, MAX_GUI_ITEMS * 5);
+#endif//NDEBUG
 
 	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_EXTRA_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
 
@@ -160,8 +169,22 @@ int main(void) {
 				//
 				//
 				shGuiDestroyPipelines(p_gui);
-				shGuiBuildRegionPipeline(p_gui, MAX_GUI_ITEMS);
-				shGuiBuildTextPipeline(p_gui, MAX_GUI_ITEMS);
+#ifndef NDEBUG
+				shGuiBuildRegionPipeline(p_gui,
+					"../shaders/bin/shgui-region.vert.spv",
+					"../shaders/bin/shgui-region.frag.spv",
+					MAX_GUI_ITEMS
+				);
+				shGuiBuildTextPipeline(
+					p_gui, 
+					"../shaders/bin/shgui-text.vert.spv",
+					"../shaders/bin/shgui-text.frag.spv",
+					MAX_GUI_ITEMS * 5
+				);
+#else
+				shGuiBuildRegionPipeline(p_gui, NULL, NULL, MAX_GUI_ITEMS);
+				shGuiBuildTextPipeline(p_gui, NULL, NULL, MAX_GUI_ITEMS * 5);
+#endif//NDEBUG
 				shGuiSetDefaultValues(p_gui, p_gui->default_infos.default_values, SH_GUI_RECORD);
 			}
 

@@ -66,7 +66,7 @@ uint8_t shGuiUpdateInputs(ShGui* p_gui) {
 	return 1;
 }
 
-char* shGuiReadBinary(char* path, uint32_t* p_code_size) {
+char* shGuiReadBinary(const char* path, uint32_t* p_code_size) {
 
 	FILE* stream = fopen(path, "rb");
 
@@ -125,7 +125,7 @@ uint32_t shGuiGetAvailableHeap(ShGui* p_gui, uint32_t item_count, uint32_t item_
 }
 
 
-uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, uint32_t max_gui_items) {
+uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, const char* vertex_shader_path, const char* fragment_shader_path, uint32_t max_gui_items) {
 	shGuiError(
 		p_gui == NULL,
 		"invalid gui memory",
@@ -163,22 +163,23 @@ uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, uint32_t max_gui_items) {
 	}//FIXED STATES
 
 	{//SHADER STAGES
-#if SH_GUI_DEBUG_SHADERS
-		uint32_t src_size = 0;
-		char* src = (char*)shGuiReadBinary("../shaders/bin/shgui-region.vert.spv", &src_size);
-		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->region_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->region_infos.graphics_pipeline);
-		free(src);
-		src = (char*)shGuiReadBinary("../shaders/bin/shgui-region.frag.spv", &src_size);
-		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->region_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->region_infos.graphics_pipeline);
-		free(src);
-#else 
-		shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_region_vert_spv), shgui_region_vert_spv, &p_gui->region_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->region_infos.graphics_pipeline);
-		shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_region_frag_spv), shgui_region_frag_spv, &p_gui->region_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->region_infos.graphics_pipeline);
-#endif//SH_GUI_DEBUG_SHADERS
+		if (vertex_shader_path != NULL && fragment_shader_path != NULL) {
+			uint32_t src_size = 0;
+			char* src = (char*)shGuiReadBinary(vertex_shader_path, &src_size);
+			shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->region_infos.graphics_pipeline);
+			shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->region_infos.graphics_pipeline);
+			free(src);
+			src = (char*)shGuiReadBinary(fragment_shader_path, &src_size);
+			shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->region_infos.graphics_pipeline);
+			shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->region_infos.graphics_pipeline);
+			free(src);
+		}
+		else {
+			shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_region_vert_spv), shgui_region_vert_spv, &p_gui->region_infos.graphics_pipeline);
+			shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->region_infos.graphics_pipeline);
+			shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_region_frag_spv), shgui_region_frag_spv, &p_gui->region_infos.graphics_pipeline);
+			shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->region_infos.graphics_pipeline);
+		}
 	}//SHADER STAGES
 
 	{//DESCRIPTORS
@@ -309,7 +310,7 @@ uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, uint32_t max_gui_items) {
 	return 1;
 }
 
-uint8_t shGuiBuildTextPipeline(ShGui* p_gui, uint32_t max_gui_items) {
+uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, const char* fragment_shader_path, uint32_t max_gui_items) {
 	shGuiError(
 		p_gui == NULL,
 		"invalid gui memory",
@@ -352,22 +353,23 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, uint32_t max_gui_items) {
 	}//FIXED STATES
 
 	{//SHADER STAGES
-#if SH_GUI_DEBUG_SHADERS
-		uint32_t src_size = 0;
-		char* src = (char*)shGuiReadBinary("../shaders/bin/shgui-text.vert.spv", &src_size);
-		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->text_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->text_infos.graphics_pipeline);
-		free(src);
-		src = (char*)shGuiReadBinary("../shaders/bin/shgui-text.frag.spv", &src_size);
-		shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->text_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->text_infos.graphics_pipeline);
-		free(src);
-#else
-		shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_text_vert_spv), shgui_text_vert_spv, &p_gui->text_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->text_infos.graphics_pipeline);
-		shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_text_frag_spv), shgui_text_frag_spv, &p_gui->text_infos.graphics_pipeline);
-		shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->text_infos.graphics_pipeline);
-#endif//SH_GUI_DEBUG_SHADERS
+		if (vertex_shader_path != NULL && fragment_shader_path != NULL) {
+			uint32_t src_size = 0;
+			char* src = (char*)shGuiReadBinary(vertex_shader_path, &src_size);
+			shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->text_infos.graphics_pipeline);
+			shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->text_infos.graphics_pipeline);
+			free(src);
+			src = (char*)shGuiReadBinary(fragment_shader_path, &src_size);
+			shPipelineCreateShaderModule(p_gui->core.device, src_size, src, &p_gui->text_infos.graphics_pipeline);
+			shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->text_infos.graphics_pipeline);
+			free(src);
+		}
+		else {
+			shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_text_vert_spv), shgui_text_vert_spv, &p_gui->text_infos.graphics_pipeline);
+			shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_VERTEX_BIT, &p_gui->text_infos.graphics_pipeline);
+			shPipelineCreateShaderModule(p_gui->core.device, sizeof(shgui_text_frag_spv), shgui_text_frag_spv, &p_gui->text_infos.graphics_pipeline);
+			shPipelineCreateShaderStage(p_gui->core.device, VK_SHADER_STAGE_FRAGMENT_BIT, &p_gui->text_infos.graphics_pipeline);
+		}
 	}//SHADER STAGES
 
 	{//DESCRIPTORS
