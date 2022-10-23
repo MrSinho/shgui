@@ -1,10 +1,8 @@
 # shgui
 
 ## Build status
-[![linux_badge](.shci/linux-status.svg)](.shci/linux-log.md)
-[![windows_badge](.shci/windows-status.svg)](.shci/windows-log.md)
-
-![example-0](media/shgui-example-0.png)
+[![linux-status](.shci/linux-status.svg)](.shci/linux-log.md)
+[![windows-status](.shci/windows-status.svg)](.shci/windows-log.md)
 
 ## Features:
 * Widgets
@@ -26,6 +24,9 @@ cd build
 cmake .. -DSH_GUI_BUILD_EXAMPLE=ON
 cmake --build .
 ```
+
+## Binaries and output 
+The compiled binaries are located at the [`bin`](/bin) directory.
 
 ## To do:
 * round char size to 7* 7* 3 bytes
