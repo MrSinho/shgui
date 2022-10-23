@@ -1,8 +1,8 @@
 # shgui
 
 ## Build status
-[![linux-status](.shci/linux-status.svg)](.shci/linux-log.md)
-[![windows-status](.shci/windows-status.svg)](.shci/windows-log.md)
+[![linux-status](.shci/linux-exit_code.svg)](.shci/linux-log.md)
+[![windows-status](.shci/windows-exit_code.svg)](.shci/windows-log.md)
 
 ## Features:
 * Widgets
