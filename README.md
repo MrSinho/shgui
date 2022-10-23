@@ -37,7 +37,3 @@ The compiled binaries are located at the [`bin`](/bin) directory.
 * color picker
 * graph
 * font customization
-
- # Opening issues and contributing
-
-Yesn't
