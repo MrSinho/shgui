@@ -4,6 +4,8 @@
 [![linux-status](.shci/linux-exit_code.svg)](.shci/linux-log.md)
 [![windows-status](.shci/windows-exit_code.svg)](.shci/windows-log.md)
 
+![screenshot](media/shgui-example-0.png)
+
 ## Features:
 * Widgets
     * menu bar
@@ -21,7 +23,7 @@
 cd shgui
 mkdir build
 cd build
-cmake .. -DSH_GUI_BUILD_EXAMPLE=ON
+cmake .. #-DSH_GUI_BUILD_EXAMPLE=ON
 cmake --build .
 ```
 
