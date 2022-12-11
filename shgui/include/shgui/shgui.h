@@ -167,26 +167,24 @@ typedef struct ShGuiCharInfo {
 	alignas(8) float			scale[2];
 	alignas(16) float			priority[4];
 } ShGuiCharInfo;
-SH_VULKAN_GENERATE_DESCRIPTOR_STRUCTURE_MAP(ShGuiCharInfo)
-
-typedef struct ShGuiChar {
-	float*						p_vertices;
-	uint32_t					vertex_count;
-} ShGuiChar;
+//SH_VULKAN_GENERATE_DESCRIPTOR_STRUCTURE_MAP(ShGuiCharInfo)
 
 #ifndef SH_GUI_MAX_CHAR_VERTEX_SIZE 
-#define SH_GUI_MAX_CHAR_VERTEX_SIZE 49 * 3
+#define SH_GUI_MAX_CHAR_VERTEX_SIZE 7 * 7 * 3 * 4
 #endif//SH_GUI_MAX_CHAR_VERTEX_SIZE
 
+typedef struct ShGuiChar {
+	float vertices[SH_GUI_MAX_CHAR_VERTEX_SIZE];
+} ShGuiChar;
 
-#ifndef SH_GUI_TEXT_MAX_CHAR_COUNT
-#define SH_GUI_TEXT_MAX_CHAR_COUNT	1024
-#endif//SH_GUI_TEXT_MAX_CHAR_COUNT
+//#ifndef SH_GUI_TEXT_MAX_CHAR_COUNT
+//#define SH_GUI_TEXT_MAX_CHAR_COUNT	1024
+//#endif//SH_GUI_TEXT_MAX_CHAR_COUNT
 
-typedef struct ShGuiText {
-	char		text[SH_GUI_TEXT_MAX_CHAR_COUNT];
-	ShGuiChar	chars[SH_GUI_TEXT_MAX_CHAR_COUNT];
-} ShGuiText;
+//typedef struct ShGuiText {
+//	char		text[SH_GUI_TEXT_MAX_CHAR_COUNT];
+////	ShGuiChar	chars[SH_GUI_TEXT_MAX_CHAR_COUNT];
+//} ShGuiText;
 
 
 
@@ -195,7 +193,7 @@ typedef struct ShGuiText {
 //
 typedef struct ShGuiItem {
 	ShGuiRegion region;
-	ShGuiText*	p_text;
+	//ShGuiText*	p_text;
 } ShGuiItem;
 
 
@@ -261,25 +259,25 @@ typedef struct ShGui {
 	} region_infos;
 	
 	struct {
-		uint32_t							max_text_items;
-
-		ShGuiCharInfoDescriptorStructureMap	char_info_map;
-		uint32_t							total_char_count;
-
+		
+		ShGuiCharInfo*                      p_char_infos;
+		float*                              p_chars_raw;
+		uint32_t							char_count;
+		uint32_t                            max_char_raw_size;
+		uint32_t                            max_char_info_size;
 
 		VkBuffer							vertex_staging_buffer;
 		VkDeviceMemory						vertex_staging_memory;
 
 		VkBuffer							vertex_buffer;
 		VkDeviceMemory						vertex_memory;
-		uint32_t							vertex_count;
 
-
-		ShGuiText*							p_text_data;
-		uint32_t							text_count;
+		VkBuffer                            char_infos_staging_buffer;
+		VkDeviceMemory                      char_infos_staging_memory;
 
 		ShVkPipeline						graphics_pipeline;
 		ShVkFixedStates						fixed_states;
+
 	} text_infos;
 
 
@@ -287,7 +285,7 @@ typedef struct ShGui {
 
 
 
-extern ShGui* SH_GUI_CALL shGuiInit(ShGuiCore core);
+extern ShGui*  SH_GUI_CALL shGuiInit(ShGuiCore core);
 
 
 

@@ -27,9 +27,12 @@ GLFWwindow* createWindow(const uint32_t width, const uint32_t height, const char
 const char* readBinary(const char* path, uint32_t* p_size);
 
 #define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 800
+#define WINDOW_HEIGHT 600
 
-#define MAX_GUI_ITEMS 528
+#define MAX_GUI_REGIONS 128 //windows, bars, buttons
+#define MAX_GUI_CHARS   1024 //characters
+
+void createWidgets(ShGui* p_gui, float* p_slider_value);
 
 int main(void) {
 	
@@ -111,16 +114,16 @@ int main(void) {
 	shGuiBuildRegionPipeline(p_gui, 
 		"../shaders/bin/shgui-region.vert.spv",
 		"../shaders/bin/shgui-region.frag.spv",
-		MAX_GUI_ITEMS
+		MAX_GUI_REGIONS
 	);
-	shGuiBuildTextPipeline(p_gui, 
+	shGuiBuildTextPipeline(p_gui,
 		"../shaders/bin/shgui-text.vert.spv",
 		"../shaders/bin/shgui-text.frag.spv",
-		MAX_GUI_ITEMS * 5
+		MAX_GUI_CHARS
 	);
 #else
-	shGuiBuildRegionPipeline(p_gui, NULL, NULL, MAX_GUI_ITEMS);
-	shGuiBuildTextPipeline(p_gui, NULL, NULL, MAX_GUI_ITEMS * 5);
+	shGuiBuildRegionPipeline(p_gui, NULL, NULL, MAX_GUI_REGIONS);
+	shGuiBuildTextPipeline(p_gui, NULL, NULL, MAX_GUI_CHARS);
 #endif//NDEBUG
 
 	shGuiSetDefaultValues(p_gui, SH_GUI_THEME_EXTRA_DARK, SH_GUI_INITIALIZE | SH_GUI_RECORD);
@@ -175,17 +178,17 @@ int main(void) {
 				shGuiBuildRegionPipeline(p_gui,
 					"../shaders/bin/shgui-region.vert.spv",
 					"../shaders/bin/shgui-region.frag.spv",
-					MAX_GUI_ITEMS
+					MAX_GUI_REGIONS
 				);
 				shGuiBuildTextPipeline(
 					p_gui, 
 					"../shaders/bin/shgui-text.vert.spv",
 					"../shaders/bin/shgui-text.frag.spv",
-					MAX_GUI_ITEMS * 5
+					MAX_GUI_CHARS
 				);
 #else
-				shGuiBuildRegionPipeline(p_gui, NULL, NULL, MAX_GUI_ITEMS);
-				shGuiBuildTextPipeline(p_gui, NULL, NULL, MAX_GUI_ITEMS * 5);
+				shGuiBuildRegionPipeline(p_gui, NULL, NULL, MAX_GUI_REGIONS);
+				shGuiBuildTextPipeline(p_gui, NULL, NULL, MAX_GUI_CHARS);
 #endif//NDEBUG
 				shGuiSetDefaultValues(p_gui, p_gui->default_infos.default_values, SH_GUI_RECORD);
 			}
@@ -271,11 +274,9 @@ int main(void) {
 			puts("Settings");
 		}
 
-		
-		//shGuiText(p_gui, 25.0f, 0.0f, 0.0f, "WEOIWQUEASKL", SH_GUI_EDGE_BOTTOM);
-		//shGuiText(p_gui, 50.0f, 0.0f, -50.0f, "QWERTY");
-		//shGuiText(p_gui, 100.0f, 0.0f, -150.0f, "QWERTY");
-		//shGuiText(p_gui, 200.0f, 0.0f, -300.0f, "QWERTY");
+
+		createWidgets(p_gui, &slider_value);
+		shGuiText(p_gui, 50.0f, 150.0f, 0.0f, "QWERTY", 0);
 
 
 		
@@ -315,8 +316,6 @@ int main(void) {
 		shVulkanRelease(&core);
 	}//SHVULKAN CODE
 
-
-
 	return 0;
 }
 
@@ -349,6 +348,68 @@ const char* readBinary(const char* path, uint32_t* p_size) {
 	*p_size = code_size;
 	fclose(stream);
 	return code;
+}
+
+void createWidgets(ShGui* p_gui, float* p_slider_value) {
+	shGuiWindow(
+		p_gui,
+		30.0f, 20.0f,
+		0.0f, 0.0f,
+		"Menu",
+		SH_GUI_MOVABLE | SH_GUI_RELATIVE | SH_GUI_RESIZABLE
+	);
+	shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "Menu text", SH_GUI_CENTER_WIDTH);
+	shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "Some info here", 0);
+	shGuiWindowSeparator(p_gui);
+	if (shGuiWindowButton(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 2.0f, "Popup", SH_GUI_CENTER_WIDTH)) {
+		puts("Popup");
+	}
+
+
+
+	shGuiWindow(
+		p_gui,
+		300.0f, 150.0f,
+		-200.0f, -200.0f,
+		"Window",
+		SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
+	);
+	shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 2.0f, "0123456789", SH_GUI_CENTER_WIDTH);
+	shGuiWindowSeparator(p_gui);
+
+	char s_slider_value[3];
+	sprintf(s_slider_value, "%.0f", *p_slider_value);
+	shGuiWindowSliderf(
+		p_gui,
+		100.0f,
+		SH_GUI_WINDOW_TEXT_SIZE * 2.0f,
+		0.0f,
+		99.0f,
+		s_slider_value,
+		p_slider_value,
+		SH_GUI_CENTER_WIDTH
+	);
+
+
+	shGuiWindow(
+		p_gui,
+		350.0f, 100.0f,
+		200.0f, -200.0f,
+		"Another window",
+		SH_GUI_MOVABLE | SH_GUI_PIXELS | SH_GUI_RESIZABLE
+	);
+	shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE, "an email: lmao555@gmail.com", 0);
+	shGuiWindowText(p_gui, SH_GUI_WINDOW_TEXT_SIZE * 1.5f, "|!\"£$%&/=?*@#,.-;:_", 0);
+
+
+
+	shGuiMenuBar(p_gui, SH_GUI_WINDOW_BAR_SIZE * 1.5f, SH_GUI_EDGE_TOP);
+	if (shGuiMenuItem(p_gui, "File", 0)) {
+		puts("File");
+	}
+	if (shGuiMenuItem(p_gui, "Settings", 0)) {
+		puts("Settings");
+	}
 }
 
 #ifdef __cplusplus

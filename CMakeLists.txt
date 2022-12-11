@@ -7,15 +7,17 @@ project(shgui C)
 
 
 
-#SUBDIRECTORIES
-find_package(Vulkan REQUIRED FATAL_ERROR)
+if (NOT TARGET native-export)
+add_subdirectory(externals/native-export/c)
+endif()
+
+if (NOT TARGET shvulkan)
+add_subdirectory(externals/shvulkan)
+endif()
 
 
 
 function(build_shgui)
-if (NOT TARGET shvulkan)
-add_subdirectory(externals/shvulkan)
-endif()
 add_library(shgui 
     shgui/src/shgui.c
 )
@@ -33,9 +35,8 @@ endfunction()
 
 
 function(build_export_shaders)
-add_subdirectory(externals/native-export/c)
 add_executable(export-shaders
-    shaders/export-shaders.c
+    shaders/src/export-shaders.c
 )
 target_link_libraries(export-shaders PUBLIC native-export)
 endfunction()

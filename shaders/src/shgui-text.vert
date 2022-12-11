@@ -13,24 +13,30 @@ layout (push_constant) uniform pushConstant {
 
 
 
-#define TEXT_SCALE_MULTIPLIER 1.0f
+#define TEXT_SCALE_FACTOR 1.0f / 10.0f
+#define TEXT_PIXEL_COUNT (7 * 7)
 
-
-layout (std140, set = 0, binding = 0) uniform textUniform {// dynamic uniform
+struct ShGuiCharInfo {
 	vec2 position;
 	vec2 scale;
 	vec4 priority;
-} utext;
+};
+
+layout (std140, set = 0, binding = 0) buffer _char_infos {// storage buffer
+	ShGuiCharInfo char_infos[];
+} char_infos_buffer;
 
 
 
 void main() {
-	gl_PointSize = utext.scale.x / 10.0f * TEXT_SCALE_MULTIPLIER;
-	gl_Position = pconst.projection * vec4(
-		((vertex_position.xy * utext.scale.x) + utext.position * 2.0f) / pconst.window_size, 
-		0.0f, 1.0f
-		);
-	//gl_Position = pconst.projection * vec4(
-	//	vertex_position.xyz, 1.0f
-	//);
+
+	ShGuiCharInfo char_info = char_infos_buffer.char_infos[gl_VertexIndex / TEXT_PIXEL_COUNT];
+
+	gl_PointSize = char_info.scale.x * TEXT_SCALE_FACTOR;
+
+	gl_Position = vec4(
+		((vertex_position.xy * char_info.scale.x) + char_info.position * 2.0f) / pconst.window_size, 
+		vertex_position.z + char_info.priority.x, 
+		1.0f
+	);
 }

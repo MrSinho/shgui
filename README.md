@@ -31,11 +31,10 @@ cmake --build .
 The compiled binaries are located at the [`bin`](/bin) directory.
 
 ## To do:
-* round char size to 7* 7* 3 bytes
+* items rendering priority
 * menu popup
 * minimize window
 * input field
-* slider
 * color picker
 * graph
 * font customization

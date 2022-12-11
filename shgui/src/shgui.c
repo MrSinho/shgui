@@ -310,14 +310,12 @@ uint8_t shGuiBuildRegionPipeline(ShGui* p_gui, const char* vertex_shader_path, c
 	return 1;
 }
 
-uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, const char* fragment_shader_path, uint32_t max_gui_items) {
+uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, const char* fragment_shader_path, uint32_t max_gui_items) {//max_gui_items is max number of chars
 	shGuiError(
 		p_gui == NULL,
 		"invalid gui memory",
 		return 0
 	);
-
-	p_gui->text_infos.max_text_items = max_gui_items;
 
 	VkSurfaceCapabilitiesKHR surface_capabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -372,38 +370,62 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, con
 		}
 	}//SHADER STAGES
 
+	//
+	//DEFINE BUFFERS SIZE
+	//
+	uint32_t char_infos_size = max_gui_items * sizeof(ShGuiCharInfo);
+	uint32_t chars_raw_size  = max_gui_items * SH_GUI_MAX_CHAR_VERTEX_SIZE;
+
+	//p_gui->text_infos.max_text_items     = max_gui_items;
+	p_gui->text_infos.max_char_info_size = char_infos_size;
+	p_gui->text_infos.max_char_raw_size  = chars_raw_size;
+
 	{//DESCRIPTORS
 	
-		uint32_t text_total_size = shGuiGetAvailableHeap(
-			p_gui,
-			max_gui_items * SH_GUI_TEXT_MAX_CHAR_COUNT,
-			sizeof(ShGuiCharInfo)
-		);
-		uint32_t char_count = text_total_size / sizeof(ShGuiCharInfo);
+		p_gui->text_infos.p_char_infos = calloc(1, char_infos_size);
+		shGuiError(p_gui->text_infos.p_char_infos == NULL, "invalid char infos memory", return 0);
 
-		VkPhysicalDeviceProperties physical_device_properties = { 0 };
-		vkGetPhysicalDeviceProperties(p_gui->core.physical_device, &physical_device_properties);
+		p_gui->text_infos.p_chars_raw = calloc(1, chars_raw_size);
+		shGuiError(p_gui->text_infos.p_chars_raw == NULL, "invalid chars raw memory", return 0);
 
-		p_gui->text_infos.char_info_map = shVkCreateShGuiCharInfoDescriptorStructures(
-			physical_device_properties,
-			char_count
-		);
-
-		
-
-		shPipelineCreateDynamicDescriptorBuffer(
+		//
+		//CHAR INFO STAGING BUFFER
+		//
+		shCreateBuffer(
 			p_gui->core.device,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,// | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			char_infos_size,
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			&p_gui->text_infos.char_infos_staging_buffer
+		);
+		shAllocateMemory(
+			p_gui->core.device,
+			p_gui->core.physical_device,
+			p_gui->text_infos.char_infos_staging_buffer,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			&p_gui->text_infos.char_infos_staging_memory
+		);
+		shBindMemory(
+			p_gui->core.device,
+			p_gui->text_infos.char_infos_staging_buffer,
 			0,
-			sizeof(ShGuiCharInfo),
-			char_count,
+			p_gui->text_infos.char_infos_staging_memory
+		);
+
+		//
+		//CHAR INFO DESCRIPTOR BUFFER
+		//
+		shPipelineCreateDescriptorBuffer(
+			p_gui->core.device,
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			0,
+			char_infos_size,
 			&p_gui->text_infos.graphics_pipeline
 		);
 
 		shPipelineAllocateDescriptorBufferMemory(
 			p_gui->core.device,
 			p_gui->core.physical_device,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			0,
 			&p_gui->text_infos.graphics_pipeline
 		);
@@ -419,7 +441,7 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, con
 			p_gui->core.device,
 			0,
 			0,
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+			VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 			VK_SHADER_STAGE_VERTEX_BIT,
 			&p_gui->text_infos.graphics_pipeline
 		);
@@ -436,12 +458,14 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, con
 			&p_gui->text_infos.graphics_pipeline
 		);
 
-
+		//
+		//COLOR DESCRIPTOR
+		//
 		shPipelineCreateDescriptorBuffer(
 			p_gui->core.device,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			1,
-			sizeof(ShGuiCharInfo),
+			max_gui_items * sizeof(ShGuiCharInfo),
 			&p_gui->text_infos.graphics_pipeline
 		);
 		shPipelineAllocateDescriptorBufferMemory(
@@ -469,13 +493,14 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, con
 		shSetupGraphicsPipeline(p_gui->core.device, p_gui->core.render_pass, p_gui->text_infos.fixed_states, &p_gui->text_infos.graphics_pipeline);
 	}//GRAPHICS PIPELINE
 
-	p_gui->text_infos.p_text_data = calloc(max_gui_items, sizeof(ShGuiText));
-	shGuiError(p_gui->text_infos.p_text_data == NULL, "invalid text data memory", return 0);
-
 	{//VERTEX BUFFER
+
+		//
+		//STAGING BUFFER
+		//
 		shCreateBuffer(
 			p_gui->core.device,
-			SH_GUI_MAX_CHAR_VERTEX_SIZE * max_gui_items,
+			chars_raw_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			&p_gui->text_infos.vertex_staging_buffer
 		);
@@ -493,10 +518,12 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, con
 			p_gui->text_infos.vertex_staging_memory
 		);
 
-
+		//
+		//DST BUFFER
+		//
 		shCreateBuffer(
 			p_gui->core.device, 
-			SH_GUI_MAX_CHAR_VERTEX_SIZE * max_gui_items, 
+			chars_raw_size, 
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			&p_gui->text_infos.vertex_buffer
 		);
@@ -508,6 +535,7 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, con
 			&p_gui->text_infos.vertex_memory
 		);
 		shBindVertexBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_buffer, 0, p_gui->text_infos.vertex_memory);
+
 	}//VERTEX BUFFER
 
 	return 1;
@@ -645,22 +673,27 @@ uint8_t shGuiWriteMemory(ShGui* p_gui, uint8_t record) {
 		}
 	}
 
+	//
+	//WRITE TEXT STAGING MEMORY AND DESCRIPTOR MEMORY
+	//
+	if (p_gui->text_infos.char_count > 0) {
+		shWriteMemory(
+			device,
+			p_gui->text_infos.vertex_staging_memory,
+			0,
+			p_gui->text_infos.max_char_raw_size,
+			p_gui->text_infos.p_chars_raw
+		);
 
-	for (uint32_t text_idx = 0; text_idx < p_gui->text_infos.text_count; text_idx++) {
-		uint32_t text_char_count = (uint32_t)strlen(p_gui->text_infos.p_text_data[text_idx].text);
-		for (uint32_t char_idx = 0; char_idx < text_char_count; char_idx++) {
-			uint32_t vertex_count = p_gui->text_infos.p_text_data[text_idx].chars[char_idx].vertex_count;
-			shWriteMemory(
-				device,
-				p_gui->text_infos.vertex_staging_memory,
-				p_gui->text_infos.vertex_count * 4,//total
-				vertex_count * 4,//local
-				p_gui->text_infos.p_text_data[text_idx].chars[char_idx].p_vertices
-			);
-			p_gui->text_infos.vertex_count += vertex_count;
-		}
+		shWriteMemory(
+			device,
+			p_gui->text_infos.char_infos_staging_memory,
+			0,
+			p_gui->text_infos.max_char_info_size,
+			p_gui->text_infos.p_char_infos
+		);
 	}
-	
+
 	//COPY BUFFERS
 	//
 	//
@@ -682,14 +715,23 @@ uint8_t shGuiWriteMemory(ShGui* p_gui, uint8_t record) {
 			);
 		}
 
-		if (p_gui->text_infos.vertex_count > 0) {
+		if (p_gui->text_infos.char_count > 0) {
 			shCopyBuffer(
 				cmd_buffer,
 				p_gui->text_infos.vertex_staging_buffer,
 				0,
 				0,
-				p_gui->text_infos.vertex_count * 4,
+				p_gui->text_infos.max_char_raw_size,
 				p_gui->text_infos.vertex_buffer
+			);
+
+			shCopyBuffer(
+				cmd_buffer,
+				p_gui->text_infos.char_infos_staging_buffer,
+				0,
+				0,
+				p_gui->text_infos.max_char_info_size,
+				p_gui->text_infos.graphics_pipeline.descriptor_buffers[0]
 			);
 		}
 
@@ -771,50 +813,28 @@ uint8_t shGuiRender(ShGui* p_gui) {
 
 	shPipelineBindDescriptorSets(
 		cmd_buffer,
-		1,
-		1,
+		0,
+		2,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		&p_gui->text_infos.graphics_pipeline
 	);
 
-	uint32_t total_char_idx			= 0;
-	uint32_t total_vertex_idx		= 0;
-	for (uint32_t text_idx			= 0;	text_idx < p_gui->text_infos.text_count; text_idx++) {//to improve: reduce draw calls :(
-		for (uint32_t char_idx		= 0;	char_idx < strlen(p_gui->text_infos.p_text_data[text_idx].text); char_idx++) {
-			ShGuiCharInfo* p_char	=		shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, total_char_idx, 0);
-			
-			shPipelineWriteDynamicDescriptorBufferMemory(
-				device,
-				0,
-				(void*)p_char,
-				&p_gui->text_infos.graphics_pipeline
-			);
 
-			shPipelineBindDynamicDescriptorSet(
-				p_gui->core.cmd_buffer,
-				0,
-				VK_PIPELINE_BIND_POINT_GRAPHICS,
-				&p_gui->text_infos.graphics_pipeline
-			);
-
-			shBindVertexBuffer(
-				cmd_buffer, 
-				0, 
-				total_vertex_idx * 4, 
-				&p_gui->text_infos.vertex_buffer
-			);
-			total_vertex_idx += p_gui->text_infos.p_text_data[text_idx].chars[char_idx].vertex_count;
-
-			shDraw(
-				cmd_buffer, 
-				p_gui->text_infos.p_text_data[text_idx].chars[char_idx].vertex_count / 3
-			);
-			total_char_idx++;
-		}
-	}
-
+	shBindVertexBuffer(
+		cmd_buffer,
+		0,
+		0,
+		&p_gui->text_infos.vertex_buffer
+	);
 
 	shEndPipeline(p_text_pipeline);
+	
+	shDraw(
+		cmd_buffer,
+		p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 3 / 4
+	);
+
+
 
 	//RESET TO DEFAULT
 	//
@@ -829,9 +849,7 @@ uint8_t shGuiRender(ShGui* p_gui) {
 	p_gui->region_infos.region_count = 0;
 	p_gui->region_infos.menus.menu_count = 0;
 
-	p_gui->text_infos.text_count = 0;
-	p_gui->text_infos.total_char_count = 0;
-	p_gui->text_infos.vertex_count = 0;
+	p_gui->text_infos.char_count = 0;
 
 	return 1;
 }
@@ -857,7 +875,6 @@ uint8_t SH_GUI_CALL shGuiRegion(ShGui* p_gui, float width, float height, float p
 				},//raw
 				flags
 			},//region
-			&p_gui->text_infos.p_text_data[p_gui->text_infos.text_count]
 	};
 	
 	if (flags & SH_GUI_PIXELS) {
@@ -1468,22 +1485,21 @@ uint8_t shGuiMenuItem(ShGui* p_gui, char* title, ShGuiWidgetFlags flags) {
 }
 
 #define SH_GUI_LOAD_CHAR(font, char_name, _char)\
-	_char.vertex_count = sizeof(font ## _ ## char_name ## _vertices) / 4;\
-	_char.p_vertices = (float*)(font ## _ ## char_name ## _vertices);\
+	memcpy(_char, font ## _ ## char_name ## _vertices, SH_GUI_MAX_CHAR_VERTEX_SIZE);\
 
 uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_text, ShGuiWidgetFlags flags) {
 	shGuiError(p_gui					== NULL, "invalid gui memory", return 0);
 	shGuiError(s_text					== NULL, "invalid text memory", return 0);
 
-	ShGuiText* p_text					= &p_gui->text_infos.p_text_data[p_gui->text_infos.text_count];
-	strcpy(p_text->text,				s_text);
-
 	float window_size_x					= (float)p_gui->region_infos.fixed_states.scissor.extent.width;
 	float window_size_y					= (float)p_gui->region_infos.fixed_states.scissor.extent.height;
 
+	float* p_chars_raw                  = p_gui->text_infos.p_chars_raw;
+
 	for (uint32_t char_idx				= 0; char_idx < strlen(s_text); char_idx++) {
-		ShGuiCharInfo* p_char_info		= shVkGetShGuiCharInfoDescriptorStructure(p_gui->text_infos.char_info_map, p_gui->text_infos.total_char_count, 0);
 		
+		ShGuiCharInfo* p_char_info = &p_gui->text_infos.p_char_infos[p_gui->text_infos.char_count];
+
 		p_char_info->position[0]	= pos_x + SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, char_idx);
 		p_char_info->position[1]	= -pos_y;
 		p_char_info->scale[0]		= scale;
@@ -1509,235 +1525,232 @@ uint8_t shGuiText(ShGui* p_gui, float scale, float pos_x, float pos_y, char* s_t
 			p_char_info->position[1] += (window_size_y - scale / 4.0f) / 2.0f;
 		}
 
-		p_gui->text_infos.total_char_count++;
-
 		switch (s_text[char_idx]) {
 		case 'q':
 		case 'Q':
-			SH_GUI_LOAD_CHAR(consolas, bigQ, p_text->chars[char_idx]); 
+			SH_GUI_LOAD_CHAR(consolas, bigQ, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]); 
 			break;
 		case 'w':
 		case 'W':
-			SH_GUI_LOAD_CHAR(consolas, bigW, p_text->chars[char_idx]); 
+			SH_GUI_LOAD_CHAR(consolas, bigW, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]); 
 			break;
 		case 'e':
 		case 'E':
-			SH_GUI_LOAD_CHAR(consolas, bigE, p_text->chars[char_idx]); 
+			SH_GUI_LOAD_CHAR(consolas, bigE, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]); 
 			break;
 		case 'r':
 		case 'R':
-			SH_GUI_LOAD_CHAR(consolas, bigR, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigR, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 't':
 		case 'T':
-			SH_GUI_LOAD_CHAR(consolas, bigT, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigT, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'y':
 		case 'Y':
-			SH_GUI_LOAD_CHAR(consolas, bigY, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigY, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'u':
 		case 'U':
-			SH_GUI_LOAD_CHAR(consolas, bigU, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigU, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'i':
 		case 'I':
-			SH_GUI_LOAD_CHAR(consolas, bigI, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigI, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'o':
 		case 'O':
-			SH_GUI_LOAD_CHAR(consolas, bigO, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigO, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'p':
 		case 'P':
-			SH_GUI_LOAD_CHAR(consolas, bigP, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigP, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'a':
 		case 'A':
-			SH_GUI_LOAD_CHAR(consolas, bigA, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigA, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 's':
 		case 'S':
-			SH_GUI_LOAD_CHAR(consolas, bigS, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigS, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'd':
 		case 'D':
-			SH_GUI_LOAD_CHAR(consolas, bigD, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigD, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'f':
 		case 'F':
-			SH_GUI_LOAD_CHAR(consolas, bigF, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigF, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'g':
 		case 'G':
-			SH_GUI_LOAD_CHAR(consolas, bigG, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigG, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'h':
 		case 'H':
-			SH_GUI_LOAD_CHAR(consolas, bigH, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigH, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'j':
 		case 'J':
-			SH_GUI_LOAD_CHAR(consolas, bigJ, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigJ, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'k':
 		case 'K':
-			SH_GUI_LOAD_CHAR(consolas, bigK, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigK, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'l':
 		case 'L':
-			SH_GUI_LOAD_CHAR(consolas, bigL, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigL, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'z':
 		case 'Z':
-			SH_GUI_LOAD_CHAR(consolas, bigZ, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigZ, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'x':
 		case 'X':
-			SH_GUI_LOAD_CHAR(consolas, bigX, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigX, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'c':
 		case 'C':
-			SH_GUI_LOAD_CHAR(consolas, bigC, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigC, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'v':
 		case 'V':
-			SH_GUI_LOAD_CHAR(consolas, bigV, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigV, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'b':
 		case 'B':
-			SH_GUI_LOAD_CHAR(consolas, bigB, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigB, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'n':
 		case 'N':
-			SH_GUI_LOAD_CHAR(consolas, bigN, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigN, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case 'm':
 		case 'M':
-			SH_GUI_LOAD_CHAR(consolas, bigM, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, bigM, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '\\':
-			SH_GUI_LOAD_CHAR(consolas, backslash, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, backslash, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '1':
-			SH_GUI_LOAD_CHAR(consolas, 1, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 1, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '2':
-			SH_GUI_LOAD_CHAR(consolas, 2, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 2, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '3':
-			SH_GUI_LOAD_CHAR(consolas, 3, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 3, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '4':
-			SH_GUI_LOAD_CHAR(consolas, 4, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 4, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '5':
-			SH_GUI_LOAD_CHAR(consolas, 5, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 5, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '6':
-			SH_GUI_LOAD_CHAR(consolas, 6, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 6, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '7':
-			SH_GUI_LOAD_CHAR(consolas, 7, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 7, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '8':
-			SH_GUI_LOAD_CHAR(consolas, 8, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 8, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '9':
-			SH_GUI_LOAD_CHAR(consolas, 9, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 9, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '0':
-			SH_GUI_LOAD_CHAR(consolas, 0, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, 0, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '\'':
-			SH_GUI_LOAD_CHAR(consolas, quote, p_text->chars[char_idx]); 
+			SH_GUI_LOAD_CHAR(consolas, quote, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]); 
 				break;
 		case '|':
-			SH_GUI_LOAD_CHAR(consolas, stick, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, stick, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '!':
-			SH_GUI_LOAD_CHAR(consolas, exclamation, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, exclamation, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '"':
-			SH_GUI_LOAD_CHAR(consolas, double_quote, p_text->chars[char_idx]); 
+			SH_GUI_LOAD_CHAR(consolas, double_quote, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]); 
 			break;
 		case '£':
-			SH_GUI_LOAD_CHAR(consolas, pound, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, pound, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '$':
-			SH_GUI_LOAD_CHAR(consolas, dollar, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, dollar, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '%':
-			SH_GUI_LOAD_CHAR(consolas, percent, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, percent, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '&':
-			SH_GUI_LOAD_CHAR(consolas, and, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, and, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '/':
-			SH_GUI_LOAD_CHAR(consolas, frontslash, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, frontslash, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		//case '(':
-		//	SH_GUI_LOAD_CHAR(consolas, open_round_bracket, p_text->chars[char_idx]);
+		//	SH_GUI_LOAD_CHAR(consolas, open_round_bracket, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 		//	break;
 		//case ')':
-		//	SH_GUI_LOAD_CHAR(consolas, close_round_bracket, p_text->chars[char_idx]);
+		//	SH_GUI_LOAD_CHAR(consolas, close_round_bracket, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 		//	break;
 		case '=':
-			SH_GUI_LOAD_CHAR(consolas, equal, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, equal, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '?':
-			SH_GUI_LOAD_CHAR(consolas, question_mark, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, question_mark, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '+':
-			SH_GUI_LOAD_CHAR(consolas, plus, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, plus, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case ',':
-			SH_GUI_LOAD_CHAR(consolas, comma, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, comma, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '.':
-			SH_GUI_LOAD_CHAR(consolas, dot, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, dot, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '-':
-			SH_GUI_LOAD_CHAR(consolas, dash, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, dash, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '*':
-			SH_GUI_LOAD_CHAR(consolas, star, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, star, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case ';':
-			SH_GUI_LOAD_CHAR(consolas, semicolon, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, semicolon, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case ':':
-			SH_GUI_LOAD_CHAR(consolas, colon, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, colon, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '_':
-			SH_GUI_LOAD_CHAR(consolas, underscore, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, underscore, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		//case '[':
-		//	SH_GUI_LOAD_CHAR(consolas, open_round_bracket, p_text->chars[char_idx]);
+		//	SH_GUI_LOAD_CHAR(consolas, open_round_bracket, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 		//	break;
 		//case ']':
-		//	SH_GUI_LOAD_CHAR(consolas, close_round_bracket, p_text->chars[char_idx]);
+		//	SH_GUI_LOAD_CHAR(consolas, close_round_bracket, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 		//	break;
 		case '@':
-			SH_GUI_LOAD_CHAR(consolas, at, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, at, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		case '#':
-			SH_GUI_LOAD_CHAR(consolas, hash, p_text->chars[char_idx]);
+			SH_GUI_LOAD_CHAR(consolas, hash, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 			break;
 		//case '{':
-		//	SH_GUI_LOAD_CHAR(consolas, open_curly_bracket, p_text->chars[char_idx]);
+		//	SH_GUI_LOAD_CHAR(consolas, open_curly_bracket, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 		//	break;
 		//case '}':
-		//	SH_GUI_LOAD_CHAR(consolas, close_curly_bracket, p_text->chars[char_idx]);
+		//	SH_GUI_LOAD_CHAR(consolas, close_curly_bracket, &p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4]);
 		//	break;
 		default:
-			p_text->chars[char_idx].vertex_count = 1;
-			p_text->chars[char_idx].p_vertices = SH_GUI_EMPTY_CHAR;
+			memset(&p_chars_raw[p_gui->text_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 4], 0, SH_GUI_MAX_CHAR_VERTEX_SIZE);
 			break;
 		}
-	}
 
-	p_gui->text_infos.text_count++;
+		p_gui->text_infos.char_count++;
+	}
 
 	return 1;
 }
@@ -1761,6 +1774,8 @@ uint8_t shGuiDestroyPipelines(ShGui* p_gui) {
 	shClearBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_staging_buffer, p_gui->text_infos.vertex_staging_memory);
 	shClearBufferMemory(p_gui->core.device, p_gui->text_infos.vertex_buffer, p_gui->text_infos.vertex_memory);
 
+	shClearBufferMemory(p_gui->core.device, p_gui->text_infos.char_infos_staging_buffer, p_gui->text_infos.char_infos_staging_memory);
+
 	return 1;
 }
 
@@ -1772,41 +1787,55 @@ uint8_t shGuiRelease(ShGui* p_gui) {
 	shGuiDestroyPipelines(p_gui);
 
 	{
-		ShGuiRegion* p_regions_data				= p_gui->region_infos.p_regions_data;
-		uint8_t* p_regions_overwritten_data		= p_gui->region_infos.p_regions_overwritten_data;
-		uint8_t* p_regions_clicked				= p_gui->region_infos.p_regions_clicked;
-		uint8_t* p_regions_active				= p_gui->region_infos.p_regions_active;
-		uint32_t* p_menu_indices				= p_gui->region_infos.menus.p_menu_indices;
-		uint32_t* p_window_indices				= p_gui->region_infos.windows.p_window_indices;
-		float* p_windows_used_height			= p_gui->region_infos.windows.p_windows_used_height;
-		if (p_regions_data != NULL) {
-			free(p_regions_data);
+		ShGuiRegion** pp_regions_data             = &p_gui->region_infos.p_regions_data;
+		uint8_t**     pp_regions_overwritten_data = &p_gui->region_infos.p_regions_overwritten_data;
+		uint8_t**     pp_regions_clicked          = &p_gui->region_infos.p_regions_clicked;
+		uint8_t**     pp_regions_active           = &p_gui->region_infos.p_regions_active;
+		uint32_t**    pp_menu_indices             = &p_gui->region_infos.menus.p_menu_indices;
+		uint32_t**    pp_window_indices           = &p_gui->region_infos.windows.p_window_indices;
+		float**       pp_windows_used_height      = &p_gui->region_infos.windows.p_windows_used_height;
+		
+		if ((*pp_regions_data) != NULL) {
+			free(*pp_regions_data);
+			(*pp_regions_data) = NULL;
 		}
-		if (p_regions_overwritten_data != NULL) {
-			free(p_regions_overwritten_data);
+		if ((*pp_regions_overwritten_data) != NULL) {
+			free(*pp_regions_overwritten_data);
+			(*pp_regions_overwritten_data) = NULL;
 		}
-		if (p_regions_clicked != NULL) {
-			free(p_regions_clicked);
+		if ((*pp_regions_clicked) != NULL) {
+			free(*pp_regions_clicked);
+			(*pp_regions_clicked) = NULL;
 		}
-		if (p_regions_active != NULL) {
-			free(p_regions_active);
+		if ((*pp_regions_active) != NULL) {
+			free(*pp_regions_active);
+			(*pp_regions_active) = NULL;
 		}
-		if (p_menu_indices != NULL) {
-			free(p_menu_indices);
+		if ((*pp_menu_indices) != NULL) {
+			free(*pp_menu_indices);
+			(*pp_menu_indices) = NULL;
 		}
-		if (p_window_indices != NULL) {
-			free(p_window_indices);
+		if ((*pp_window_indices) != NULL) {
+			free(*pp_window_indices);
+			(*pp_window_indices) = NULL;
 		}
-		if (p_windows_used_height != NULL) {
-			free(p_windows_used_height);
+		if ((*pp_windows_used_height) != NULL) {
+			free(*pp_windows_used_height);
+			(*pp_windows_used_height) = NULL;
 		}
 
-		ShGuiText* p_text_data = p_gui->text_infos.p_text_data;
-		if (p_text_data != NULL) {
-			free(p_gui->text_infos.p_text_data);
+		float**         pp_chars_raw     = &p_gui->text_infos.p_chars_raw;
+		ShGuiCharInfo** pp_char_info     = &p_gui->text_infos.p_char_infos;
+
+		if ((*pp_chars_raw) != NULL) {
+			free(*pp_chars_raw);
+			(*pp_chars_raw) = NULL;
+		}
+		if ((*pp_char_info) != NULL) {
+			free(*pp_char_info);
+			(*pp_char_info) = NULL;
 		}
 
-		shVkReleaseShGuiCharInfoDescriptorStructureMap(&p_gui->text_infos.char_info_map);
 	}
 
 	free(p_gui);
