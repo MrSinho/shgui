@@ -1,8 +1,12 @@
 # shgui
 
-![example-0](media/shgui-example-0.png)
+## Build status
+[![linux-status](.shci/linux-exit_code.svg)](.shci/linux-log.md)
+[![windows-status](.shci/windows-exit_code.svg)](.shci/windows-log.md)
 
-Features:
+![screenshot](media/shgui-example-0.png)
+
+## Features:
 * Widgets
     * menu bar
         * menu item
@@ -14,8 +18,19 @@ Features:
     * text
     * button
 
+## Build from source
+```batch
+cd shgui
+mkdir build
+cd build
+cmake .. #-DSH_GUI_BUILD_EXAMPLE=ON
+cmake --build .
+```
 
-To do:
+## Binaries and output 
+The compiled binaries are located at the [`bin`](/bin) directory.
+
+## To do:
 * round char size to 7* 7* 3 bytes
 * menu popup
 * minimize window
@@ -24,7 +39,3 @@ To do:
 * color picker
 * graph
 * font customization
-
- # Opening issues and contributing
-
-Yesn't
