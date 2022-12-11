@@ -376,7 +376,6 @@ uint8_t shGuiBuildTextPipeline(ShGui* p_gui, const char* vertex_shader_path, con
 	uint32_t char_infos_size = max_gui_items * sizeof(ShGuiCharInfo);
 	uint32_t chars_raw_size  = max_gui_items * SH_GUI_MAX_CHAR_VERTEX_SIZE;
 
-	//p_gui->text_infos.max_text_items     = max_gui_items;
 	p_gui->text_infos.max_char_info_size = char_infos_size;
 	p_gui->text_infos.max_char_raw_size  = chars_raw_size;
 
