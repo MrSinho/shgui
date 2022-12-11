@@ -174,6 +174,7 @@ int main(void) {
 				//
 				//
 				shGuiDestroyPipelines(p_gui);
+				shGuiUnload(p_gui);
 #ifndef NDEBUG
 				shGuiBuildRegionPipeline(p_gui,
 					"../shaders/bin/shgui-region.vert.spv",
@@ -306,6 +307,9 @@ int main(void) {
 
 	}
 
+	shGuiDestroyPipelines(p_gui);
+	shGuiReleaseDefaultValues(p_gui);
+	shGuiUnload(p_gui);
 	shGuiRelease(p_gui);
 
 	{//GLFW CODE

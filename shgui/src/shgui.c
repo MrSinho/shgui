@@ -1778,22 +1778,27 @@ uint8_t shGuiDestroyPipelines(ShGui* p_gui) {
 	return 1;
 }
 
-uint8_t shGuiRelease(ShGui* p_gui) {
+uint8_t SH_GUI_CALL shGuiReleaseDefaultValues(ShGui* p_gui) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 	
-	shClearBufferMemory(p_gui->core.device, p_gui->default_infos.staging_buffer, p_gui->default_infos.staging_memory);
-	
-	shGuiDestroyPipelines(p_gui);
+	return shClearBufferMemory(
+		p_gui->core.device, 
+		p_gui->default_infos.staging_buffer, 
+		p_gui->default_infos.staging_memory
+	);
+}
+
+uint8_t shGuiUnload(ShGui* p_gui) {
 
 	{
-		ShGuiRegion** pp_regions_data             = &p_gui->region_infos.p_regions_data;
-		uint8_t**     pp_regions_overwritten_data = &p_gui->region_infos.p_regions_overwritten_data;
-		uint8_t**     pp_regions_clicked          = &p_gui->region_infos.p_regions_clicked;
-		uint8_t**     pp_regions_active           = &p_gui->region_infos.p_regions_active;
-		uint32_t**    pp_menu_indices             = &p_gui->region_infos.menus.p_menu_indices;
-		uint32_t**    pp_window_indices           = &p_gui->region_infos.windows.p_window_indices;
-		float**       pp_windows_used_height      = &p_gui->region_infos.windows.p_windows_used_height;
-		
+		ShGuiRegion** pp_regions_data = &p_gui->region_infos.p_regions_data;
+		uint8_t** pp_regions_overwritten_data = &p_gui->region_infos.p_regions_overwritten_data;
+		uint8_t** pp_regions_clicked = &p_gui->region_infos.p_regions_clicked;
+		uint8_t** pp_regions_active = &p_gui->region_infos.p_regions_active;
+		uint32_t** pp_menu_indices = &p_gui->region_infos.menus.p_menu_indices;
+		uint32_t** pp_window_indices = &p_gui->region_infos.windows.p_window_indices;
+		float** pp_windows_used_height = &p_gui->region_infos.windows.p_windows_used_height;
+
 		if ((*pp_regions_data) != NULL) {
 			free(*pp_regions_data);
 			(*pp_regions_data) = NULL;
@@ -1823,8 +1828,8 @@ uint8_t shGuiRelease(ShGui* p_gui) {
 			(*pp_windows_used_height) = NULL;
 		}
 
-		float**         pp_chars_raw     = &p_gui->text_infos.p_chars_raw;
-		ShGuiCharInfo** pp_char_info     = &p_gui->text_infos.p_char_infos;
+		float** pp_chars_raw = &p_gui->text_infos.p_chars_raw;
+		ShGuiCharInfo** pp_char_info = &p_gui->text_infos.p_char_infos;
 
 		if ((*pp_chars_raw) != NULL) {
 			free(*pp_chars_raw);
@@ -1836,6 +1841,12 @@ uint8_t shGuiRelease(ShGui* p_gui) {
 		}
 
 	}
+
+	return 1;
+}
+
+uint8_t shGuiRelease(ShGui* p_gui) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
 	free(p_gui);
 

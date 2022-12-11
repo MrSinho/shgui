@@ -170,7 +170,7 @@ typedef struct ShGuiCharInfo {
 //SH_VULKAN_GENERATE_DESCRIPTOR_STRUCTURE_MAP(ShGuiCharInfo)
 
 #ifndef SH_GUI_MAX_CHAR_VERTEX_SIZE 
-#define SH_GUI_MAX_CHAR_VERTEX_SIZE 7 * 7 * 3 * 4
+#define SH_GUI_MAX_CHAR_VERTEX_SIZE (7 * 7 * 3 * 4)
 #endif//SH_GUI_MAX_CHAR_VERTEX_SIZE
 
 typedef struct ShGuiChar {
@@ -349,6 +349,10 @@ extern uint8_t SH_GUI_CALL shGuiWriteMemory(ShGui* p_gui, uint8_t record);
 extern uint8_t SH_GUI_CALL shGuiRender(ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiDestroyPipelines(ShGui* p_gui);
+
+extern uint8_t SH_GUI_CALL shGuiReleaseDefaultValues(ShGui* p_gui);
+
+extern uint8_t SH_GUI_CALL shGuiUnload(ShGui* p_gui);
 
 extern uint8_t SH_GUI_CALL shGuiRelease(ShGui* p_gui);
 
