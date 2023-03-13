@@ -32,10 +32,11 @@ The compiled binaries are located at the [`bin`](/bin) directory.
 
 ## Issues:
 * scaling the UI is ok
-* chaging the window size will mess up everything
+* changing the window size will mess up the menu bar
 
 ## To do:
-* items rendering priority
+* heap cleanup
+* native export library implementation fix
 * menu popup
 * minimize window
 * input field
