@@ -351,8 +351,10 @@ typedef struct ShGui {
 	uint32_t*          p_gui_items;
 } ShGui;
 
+#define shAllocateGui() ((ShGui*)calloc(1, sizeof(ShGui)))
 
-extern ShGui* SH_GUI_CALL shGuiInit(
+extern uint8_t shGuiInit(
+	ShGui*    p_gui,
 	ShGuiCore core
 );
 

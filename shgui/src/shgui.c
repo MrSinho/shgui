@@ -17,13 +17,15 @@
 
 
 
-ShGui* shGuiInit(
+uint8_t shGuiInit(
+	ShGui*    p_gui,
 	ShGuiCore core
 ) {
-	ShGui* p_gui = (ShGui*)calloc(1, sizeof(ShGui));
-	shGuiError(p_gui == NULL, "invalid gui memory", return NULL);
-	memcpy(&p_gui->core, &core, sizeof(ShGuiCore));
-	return p_gui;
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+	
+	p_gui->core = core;
+	
+	return 1;
 }
 
 uint8_t shGuiSetSurface(
@@ -70,6 +72,7 @@ uint32_t shGuiGetAvailableHeap(
 	VkPhysicalDeviceMemoryBudgetPropertiesEXT host_memory_budget          = { 0 };
 
 	uint8_t r = 1;
+
 	r = r && shGetMemoryType(
 		device, physical_device,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
@@ -83,8 +86,8 @@ uint32_t shGuiGetAvailableHeap(
 	
 	shGuiError(r == 0, "failed reading host memory budget properties", return 0);
 
-	uint32_t                                  device_memory_type_index      = 0;
-	uint32_t                                  device_available_video_memory = 0;
+	uint32_t                                  device_memory_type_index      =   0;
+	uint32_t                                  device_available_video_memory =   0;
 	VkPhysicalDeviceMemoryBudgetPropertiesEXT device_memory_budget          = { 0 };
 
 	r = r && shGetMemoryType(
@@ -175,6 +178,7 @@ uint8_t shGuiAllocateMemory(
 	uint32_t max_chars_total_raw_size = shGuiGetAvailableHeap(
 		p_gui, max_char_count, sizeof(ShGuiCharRaw) + sizeof(ShGuiCharVertexRaw)
 	);
+
 	uint32_t _max_char_count = max_chars_total_raw_size / (sizeof(ShGuiCharRaw) + sizeof(ShGuiCharVertexRaw));
 
 	p_char_infos->max_char_count                       = _max_char_count;
@@ -239,20 +243,25 @@ char* shGuiReadBinary(
 ) {
 	shGuiError(path == NULL, "invalid file path", return 0);
 
-	FILE* stream = fopen(path, "rb");
+	FILE*    stream    = NULL;
+	char*    code      = NULL;
+	uint32_t code_size = 0;
+
+	stream = fopen(path, "rb");
 
 	shGuiError(stream == NULL, "invalid file stream memory", return NULL);
 
 	fseek(stream, 0, SEEK_END);
-	uint32_t code_size = ftell(stream);
+	code_size = ftell(stream);
 	fseek(stream, 0, SEEK_SET);
 
 	shGuiError(code_size == 0, "file is empty", return NULL);
 
-	char* code = (char*)malloc(code_size);
+	code = (char*)malloc(code_size);
 	shGuiError(code == NULL, "invalid code memory", return NULL);
 
 	fread(code, code_size, 1, stream);
+	
 	(p_code_size != NULL) && (*p_code_size = code_size);
 
 	fclose(stream);
@@ -399,7 +408,7 @@ uint8_t shGuiBuildRegionPipeline(
 
 	if (vertex_shader_path != NULL && fragment_shader_path != NULL) {
 		uint32_t src_size = 0;
-		char* src = (char*)shGuiReadBinary(vertex_shader_path, &src_size);
+		char*    src      = (char*)shGuiReadBinary(vertex_shader_path, &src_size);
 		
 		shGuiError(src == NULL, "invalid shader source memory", return 0);
 
@@ -538,7 +547,7 @@ uint8_t shGuiBuildCharPipeline(
 
 	if (vertex_shader_path != NULL && fragment_shader_path != NULL) {
 		uint32_t src_size = 0;
-		char* src = (char*)shGuiReadBinary(vertex_shader_path, &src_size);
+		char*    src      = (char*)shGuiReadBinary(vertex_shader_path, &src_size);
 		
 		shGuiError(src == NULL, "invalid shader source memory", return 0);
 
@@ -785,9 +794,9 @@ uint8_t shGuiReleaseMemory(
 	shGuiError(dst_buffer     == NULL, "invalid destination buffer memory", return 0);
 	shGuiError(dst_memory     == NULL, "invalid destination device memory", return 0);
 
-	uint8_t r = 0;
+	uint8_t r = 1;
 
-	r =      shClearBufferMemory(device, staging_buffer, staging_memory);
+	r = r && shClearBufferMemory(device, staging_buffer, staging_memory);
 	r = r && shClearBufferMemory(device, dst_buffer,     dst_memory);
 
 	shGuiError(r == 0, "failed releasing memory", return 0);
@@ -927,6 +936,43 @@ uint8_t shGuiRelease(
 	shGuiDestroyPipelineResources(p_gui);
 	shGuiDestroyPipelines(p_gui);
 
+	shGuiError(p_gui->region_infos.p_regions_raw                    == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_menus_region_indices           == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_windows_region_indices         == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_windows_used_height            == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_regions_raw_write_flags        == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_regions_clicked                == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_cursor_on_regions              == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_moving_regions                 == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_right_resizing_regions         == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_left_resizing_regions          == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_top_resizing_regions           == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_bottom_resizing_regions        == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_windows_slider_buttons_offsets == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_bottom_resizing_regions        == NULL, "invalid memory", return 0);
+
+	free(p_gui->region_infos.p_regions_raw);
+	free(p_gui->region_infos.p_menus_region_indices);
+	free(p_gui->region_infos.p_windows_region_indices);
+	free(p_gui->region_infos.p_windows_used_height);
+	free(p_gui->region_infos.p_regions_raw_write_flags);
+	free(p_gui->region_infos.p_regions_clicked);
+	free(p_gui->region_infos.p_cursor_on_regions);
+	free(p_gui->region_infos.p_moving_regions);
+	free(p_gui->region_infos.p_right_resizing_regions);
+	free(p_gui->region_infos.p_left_resizing_regions);
+	free(p_gui->region_infos.p_top_resizing_regions);
+	free(p_gui->region_infos.p_bottom_resizing_regions);
+	free(p_gui->region_infos.p_windows_slider_buttons_offsets);
+
+	shGuiError(p_gui->char_infos.p_chars_raw             == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->char_infos.p_chars_raw_write_flags == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->char_infos.p_chars_vertex_raw      == NULL, "invalid memory", return 0);
+
+	free(p_gui->char_infos.p_chars_raw);
+	free(p_gui->char_infos.p_chars_raw_write_flags);
+	free(p_gui->char_infos.p_chars_vertex_raw);
+
 	return 1;
 }
 
@@ -990,7 +1036,7 @@ uint8_t shGuiUpdateInputs(ShGui* p_gui) {
 		}
 	}
 
-	memcpy(p_gui->inputs.last.last_key_events, p_gui->inputs.p_key_events, sizeof(ShGuiKeyEvents));
+	memcpy(p_gui->inputs.last.last_key_events,   p_gui->inputs.p_key_events, sizeof(ShGuiKeyEvents));
 	memcpy(p_gui->inputs.last.last_mouse_events, p_gui->inputs.p_mouse_events, sizeof(ShGuiMouseEvents));
 
 	return 1;
@@ -1006,7 +1052,7 @@ uint8_t shGuiSetDefaultValues(
 	shGuiError(p_gui == NULL,                           "invalid gui memory",           return 0);
 	shGuiError(flags >= SH_GUI_DEFAULT_VALUES_MAX_ENUM, "invalid default values flags", return 0);
 
-	p_gui->default_values.flags            = flags;
+	p_gui->default_values.flags = flags;
 
 	shguivec4* p_dst_default_region_color      = &p_gui->default_values.default_region_raw_values.color;
 	shguivec4* p_dst_default_region_edge_color = &p_gui->default_values.default_region_raw_values.edge_color;
@@ -1121,7 +1167,7 @@ uint8_t shGuiRegion(
 	uint32_t        region_count  =  p_gui->region_infos.region_count;
 	ShGuiRegionRaw* p_region_raw  = &p_gui->region_infos.p_regions_raw[region_count];
 
-	ShGuiRegionRaw region_raw    = {
+	ShGuiRegionRaw region_raw = {
 		first_position,
 		first_scale,
 		first_color,
@@ -1158,29 +1204,7 @@ uint8_t shGuiRegion(
 
 	ShGuiRegionRawWriteFlags* p_region_written = &p_gui->region_infos.p_regions_raw_write_flags[p_gui->region_infos.region_count];
 
-	//if (((*p_region_written) & SH_GUI_REGION_RAW_X_POSITION) == 0) {
-	//	p_region_raw->position.x = region_raw.position.x;
-	//}
-	//if (((*p_region_written) & SH_GUI_REGION_RAW_Y_POSITION) == 0) {
-	//	p_region_raw->position.y = region_raw.position.y;
-	//}
-	//if (((*p_region_written) & SH_GUI_REGION_RAW_X_SCALE) == 0) {
-	//	p_region_raw->scale.x = region_raw.scale.x;
-	//}
-	//if (((*p_region_written) & SH_GUI_REGION_RAW_Y_SCALE) == 0) {
-	//	p_region_raw->scale.y = region_raw.scale.y;
-	//}
-	//if (((*p_region_written) & SH_GUI_REGION_RAW_COLOR) == 0) {
-	//	p_region_raw->color = region_raw.color;
-	//}
-	//if (((*p_region_written) & SH_GUI_REGION_RAW_EDGE_COLOR) == 0) {
-	//	p_region_raw->edge_color = region_raw.edge_color;
-	//}
-	//if (((*p_region_written) & SH_GUI_REGION_RAW_PRIORITY) == 0) {
-	//	p_region_raw->priority = region_raw.priority;
-	//}
-
-	if ((*p_region_written) == 0) {//don't get why the code above messes up something
+	if ((*p_region_written) == 0) {
 		(*p_region_raw) = region_raw;
 	}
 
@@ -1190,8 +1214,7 @@ uint8_t shGuiRegion(
 	uint8_t resizing_bottom = 0;
 
 	float delta_time = (float)*p_gui->inputs.p_delta_time;
-
-	float priority = p_region_raw->priority;
+	float priority   = p_region_raw->priority;
 
 	if (flags & SH_GUI_RESIZABLE) {
 		float limit_left         = p_region_raw->position.x - p_region_raw->scale.x / 2.0f;
@@ -1225,13 +1248,13 @@ uint8_t shGuiRegion(
 			float dx = SH_GUI_WINDOW_CURSOR_RESIZE_SPEED * d_cursor_pos_x * delta_time;//to left is negative
 			float dy = SH_GUI_WINDOW_CURSOR_RESIZE_SPEED * d_cursor_pos_y * delta_time;//to bottom is negative
 
-			uint8_t width_ok  = p_region_raw->scale.x > SH_GUI_MIN_REGION_WIDTH;
-			uint8_t height_ok = p_region_raw->scale.y > SH_GUI_MIN_REGION_HEIGHT;
-
-			resizing_left     = horizontal_left  || p_gui->region_infos.p_left_resizing_regions[region_count];
-			resizing_right    = horizontal_right || p_gui->region_infos.p_right_resizing_regions[region_count];
-			resizing_top      = vertical_top     || p_gui->region_infos.p_top_resizing_regions[region_count];
-			resizing_bottom   = vertical_bottom  || p_gui->region_infos.p_bottom_resizing_regions[region_count];
+			uint8_t width_ok                 = p_region_raw->scale.x > SH_GUI_MIN_REGION_WIDTH;
+			uint8_t height_ok                = p_region_raw->scale.y > SH_GUI_MIN_REGION_HEIGHT;
+							                
+			resizing_left                    = horizontal_left  || p_gui->region_infos.p_left_resizing_regions[region_count];
+			resizing_right                   = horizontal_right || p_gui->region_infos.p_right_resizing_regions[region_count];
+			resizing_top                     = vertical_top     || p_gui->region_infos.p_top_resizing_regions[region_count];
+			resizing_bottom                  = vertical_bottom  || p_gui->region_infos.p_bottom_resizing_regions[region_count];
 
 			uint8_t left_confirm_to_left     = (dx < 0.0f);
 			uint8_t left_confirm_to_right    = (dx > 0.0f && width_ok);
@@ -1246,51 +1269,51 @@ uint8_t shGuiRegion(
 			uint8_t bottom_confirm_to_bottom = (dy < 0.0f);
 
 
-			uint8_t confirm_to_top    = dy < 0.0f && p_region_raw->scale.y < SH_GUI_MIN_REGION_HEIGHT;
-			uint8_t confirm_to_bottom = dy < 0.0f && p_region_raw->scale.y < SH_GUI_MIN_REGION_HEIGHT;
+			uint8_t confirm_to_top           = dy < 0.0f && p_region_raw->scale.y < SH_GUI_MIN_REGION_HEIGHT;
+			uint8_t confirm_to_bottom        = dy < 0.0f && p_region_raw->scale.y < SH_GUI_MIN_REGION_HEIGHT;
 
 			if (resizing_left && left_confirm_to_right) {
 				p_region_raw->scale.x -= dx;
-				p_gui->region_infos.p_left_resizing_regions[region_count] = 1;
 				(*p_region_written) |= SH_GUI_REGION_RAW_X_SCALE;
+				p_gui->region_infos.p_left_resizing_regions[region_count] = 1;
 			}
 			else if (resizing_left && left_confirm_to_left) {
 				p_region_raw->scale.x -= dx;
-				p_gui->region_infos.p_left_resizing_regions[region_count] = 1;
 				(*p_region_written) |= SH_GUI_REGION_RAW_X_SCALE;
+				p_gui->region_infos.p_left_resizing_regions[region_count] = 1;
 			}
 
 			if (resizing_right && right_confirm_to_left) {
 				p_region_raw->scale.x += dx;
-				p_gui->region_infos.p_right_resizing_regions[region_count] = 1;
 				(*p_region_written) |= SH_GUI_REGION_RAW_X_SCALE;
+				p_gui->region_infos.p_right_resizing_regions[region_count] = 1;
 			}
 			else if (resizing_right && right_confirm_to_right) {
 				p_region_raw->scale.x += dx;
-				p_gui->region_infos.p_right_resizing_regions[region_count] = 1;
 				(*p_region_written) |= SH_GUI_REGION_RAW_X_SCALE;
+				p_gui->region_infos.p_right_resizing_regions[region_count] = 1;
 			}
 
 			if (resizing_top && top_confirm_to_top) {
 				p_region_raw->scale.y += dy;
-				p_gui->region_infos.p_top_resizing_regions[region_count] = 1;
 				(*p_region_written) |= SH_GUI_REGION_RAW_Y_SCALE;
+				p_gui->region_infos.p_top_resizing_regions[region_count] = 1;
 			}
 			else if (resizing_top && top_confirm_to_bottom) {
 				p_region_raw->scale.y += dy;
-				p_gui->region_infos.p_top_resizing_regions[region_count] = 1;
 				(*p_region_written) |= SH_GUI_REGION_RAW_Y_SCALE;
+				p_gui->region_infos.p_top_resizing_regions[region_count] = 1;
 			}
 
 			if (resizing_bottom && bottom_confirm_to_top) {
 				p_region_raw->scale.y -= dy;
-				p_gui->region_infos.p_bottom_resizing_regions[region_count] = 1;
 				(*p_region_written) |= SH_GUI_REGION_RAW_Y_SCALE;
+				p_gui->region_infos.p_bottom_resizing_regions[region_count] = 1;
 			}
 			else if (resizing_bottom && bottom_confirm_to_bottom) {
 				p_region_raw->scale.y -= dy;
-				p_gui->region_infos.p_bottom_resizing_regions[region_count] = 1;
 				(*p_region_written) |= SH_GUI_REGION_RAW_Y_SCALE;
+				p_gui->region_infos.p_bottom_resizing_regions[region_count] = 1;
 			}
 			
 		}
@@ -1834,11 +1857,6 @@ uint8_t shGuiItem(
 		region_flags,
 		input_flags
 	);
-	
-	//if (pressed) {
-	//	shGuiSetRegionsPriority(p_gui, SH_GUI_REGION_PRIORITY);
-	//	shGuiSetRegionPriority(p_gui, region_idx, SH_GUI_SELECTED_REGION_PRIORITY);
-	//}
 
 	if (text != NULL) {
 
@@ -2335,19 +2353,8 @@ uint8_t shGuiWindowSliderf(
 		SH_GUI_REGION_RAW_PRIORITY
 	);
 
-	//shGuiSetRegionPriority(p_gui, line_region_idx, SH_GUI_ITEMS_PRIORITY);
-
-	uint32_t button_region_idx = p_gui->region_infos.region_count;
-	float    button_offset_x   = 0.0f;
-
-	//if (p_dst != NULL) {
-	//	slider_handle_offset_x = -extent / 2.0f + (float)(*p_dst) / (float)(max)*extent;
-	//}
-	//else {
-	//	slider_handle_offset_x = -extent / 2.0f + (float)(max) * extent;
-	//
-	//}
-
+	float           button_offset_x     =  0.0f;
+	uint32_t        button_region_idx   =  p_gui->region_infos.region_count;
 	ShGuiRegionRaw* p_button_region_raw = &p_gui->region_infos.p_regions_raw[button_region_idx];
 
 	uint32_t first_char_idx = p_gui->char_infos.char_count;
@@ -2368,17 +2375,7 @@ uint8_t shGuiWindowSliderf(
 		text_color
 	);
 
-	float slider_handle_offset_x = 0.0f;
-	
-
-	
-	//p_gui->region_infos.p_regions_data[slider_handle_region_idx].raw.position[1] = p_gui->region_infos.p_regions_data[line_region_idx].raw.position[1];
-	//p_gui->region_infos.p_regions_data[slider_handle_region_idx].raw.position[0] = p_gui->region_infos.p_regions_data[line_region_idx].raw.position[0] + slider_handle_offset_x;
-	//
-	//r = r && shGuiSetRegionPriority(p_gui, slider_handle_region_idx, SH_GUI_TEXT_PRIORITY + 0.1f);
-	//
 	float cursor_dx = 0.0f;
-
 
 	if (pressed) {
 		float cursor_x = (float)*p_gui->inputs.p_cursor_pos_x;
@@ -2405,7 +2402,7 @@ uint8_t shGuiWindowSliderf(
 
 	}
 	else {
-		region_write_src.position.x = window_region_raw.position.x + p_gui->region_infos.p_windows_slider_buttons_offsets[button_region_idx];//aaaaaaaaaa
+		region_write_src.position.x = window_region_raw.position.x + p_gui->region_infos.p_windows_slider_buttons_offsets[button_region_idx];
 	}
 
 	if (
@@ -2509,8 +2506,6 @@ uint8_t shGuiMenuBar(
 		0
 	);
 
-	//shGuiSetRegionPriority(p_gui, bar_region_idx, SH_GUI_REGION_PRIORITY);
-
 	p_gui->region_infos.menu_count++;
 
 	return 1;
@@ -2528,18 +2523,15 @@ uint8_t shGuiMenuItem(
 	shGuiError(p_gui == NULL, "invalid gui memory",   return 0);
 	shGuiError(title == NULL, "invalid title memory", return 0);
 
-	float width                         = 10.0f;//%
-	ShGuiWidgetFlags additional_flags   = SH_GUI_PIXELS;
+	float width                         =  10.0f;//%
+	ShGuiWidgetFlags additional_flags   =  SH_GUI_PIXELS;
 	
-
+	uint32_t        bar_count           =  p_gui->region_infos.menu_count - 1;
+	uint32_t        bar_idx             =  p_gui->region_infos.p_menus_region_indices[bar_count];
+	ShGuiRegionRaw* bar_region_raw      = &p_gui->region_infos.p_regions_raw[bar_idx];
 	
-	
-	uint32_t bar_count             = p_gui->region_infos.menu_count - 1;
-	uint32_t bar_idx               = p_gui->region_infos.p_menus_region_indices[bar_count];
-	ShGuiRegionRaw* bar_region_raw = &p_gui->region_infos.p_regions_raw[bar_idx];
-	
-	uint32_t last_region_idx       = p_gui->region_infos.region_count - 1;
-	ShGuiRegionRaw last_region_raw = p_gui->region_infos.p_regions_raw[last_region_idx];
+	uint32_t       last_region_idx      =  p_gui->region_infos.region_count - 1;
+	ShGuiRegionRaw last_region_raw      =  p_gui->region_infos.p_regions_raw[last_region_idx];
 
 	width = (strlen(title) + 1.0f) * SH_GUI_CHAR_DISTANCE_OFFSET * text_scale / 4.0f;//in pixels
 
@@ -2635,37 +2627,8 @@ uint8_t shGuiMenuItem(
 		}
 	}
 
-	
-
-	//if (flags & SH_GUI_EDGE_TOP || flags & SH_GUI_EDGE_BOTTOM) {
-	//
-	//	float bar_corner_left          = -bar_region_raw->scale.x / 2.0f;
-	//	float last_region_corner_left  = p_gui->region_infos.p_regions_raw[last_region_idx].position.x - p_gui->region_infos.p_regions_raw[last_region_idx].scale.x / 2.0f;
-	//	float last_region_corner_right = p_gui->region_infos.p_regions_raw[last_region_idx].position.x + p_gui->region_infos.p_regions_raw[last_region_idx].scale.x / 2.0f;
-	//	item_scale.x                   = width;
-	//	item_scale.y                   = bar_region_raw->scale.y;
-	//	if (last_region_idx == bar_idx) {
-	//		item_position.x = bar_corner_left + item_scale.x / 2.0f;
-	//	}
-	//	else {
-	//		item_position.x = last_region_corner_right + item_scale.x / 2.0f;
-	//	}
-	//	//item_position.y = bar_region_raw->position.y;
-	//}
-	//else if (flags & SH_GUI_EDGE_LEFT || flags && SH_GUI_EDGE_RIGHT) {
-	//	item_scale.x     = width;
-	//	item_scale.y     = text_size;
-	//	//item_position.x = bar_region_raw->position.x;
-	//	item_position.y = (-bar_region_raw->scale.y + item_scale.y) / 2.0f;
-	//}
-	//else {
-	//	return 0;
-	//}
-
-	uint32_t item_region_idx = p_gui->region_infos.region_count;
-
-	uint32_t first_char_idx = p_gui->char_infos.char_count;
-
+	uint32_t        item_region_idx     = p_gui->region_infos.region_count;
+	uint32_t        first_char_idx      = p_gui->char_infos.char_count;
 	ShGuiRegionRaw* p_button_region_raw = &p_gui->region_infos.p_regions_raw[item_region_idx];
 
 	uint8_t pressed = shGuiItem(
@@ -2684,7 +2647,7 @@ uint8_t shGuiMenuItem(
 		text_color
 	);
 
-	ShGuiRegionRaw region_write_src = {///////nope
+	ShGuiRegionRaw region_write_src = {
 		(shguivec2){ 0 },
 		(shguivec2){ 0 },
 		(shguivec4){ 0 },
@@ -2714,8 +2677,6 @@ uint8_t shGuiMenuItem(
 		&chars_write_src,
 		SH_GUI_CHAR_RAW_PRIORITY
 	);
-
-	
 
 	return pressed;
 }

@@ -436,7 +436,9 @@ int main(void) {
 		swapchain_image_count
 	};
 	
-	ShGui* p_gui = shGuiInit(gui_core);
+	ShGui* p_gui = shAllocateGui();
+	
+	shGuiInit(p_gui, gui_core);
 
 	shGuiAllocateMemory(p_gui, 1024, 1024);
 
