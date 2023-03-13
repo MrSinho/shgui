@@ -444,17 +444,31 @@ int main(void) {
 
 	shGuiAllocatePipelineResources(p_gui, SWAPCHAIN_IMAGE_COUNT);
 
+#ifndef NDEBUG
 	shGuiBuildRegionPipeline(
 		p_gui, 
 		"../shaders/bin/shgui-region.vert.spv", 
 		"../shaders/bin/shgui-region.frag.spv"
 	);
-	
 	shGuiBuildCharPipeline(
-		p_gui, 
+		p_gui,
 		"../shaders/bin/shgui-char.vert.spv",
 		"../shaders/bin/shgui-char.frag.spv"
 	);
+#else
+	shGuiBuildRegionPipeline(
+		p_gui,
+		NULL,
+		NULL
+	);
+	shGuiBuildCharPipeline(
+		p_gui,
+		NULL,
+		NULL
+	);
+#endif//NDEBUG
+
+	
 
 	double d_cursor_pos_x = 0.0f;
 	double d_cursor_pos_y = 0.0f;
