@@ -9,7 +9,7 @@ extern "C" {
 #include <stdint.h>
 
 
-static const int8_t shgui_region_vert_spv[4220] = {
+static const int8_t _SH_GUI_REGION_VERT_SPV[4220] = {
 	0x3,
 	0x2,
 	0x23,
@@ -4232,7 +4232,7 @@ static const int8_t shgui_region_vert_spv[4220] = {
 	0x0
 };
 
-static const int8_t shgui_region_frag_spv[3100] = {
+static const int8_t _SH_GUI_REGION_FRAG_SPV[3100] = {
 	0x3,
 	0x2,
 	0x23,
@@ -7335,7 +7335,7 @@ static const int8_t shgui_region_frag_spv[3100] = {
 	0x0
 };
 
-static const int8_t shgui_text_vert_spv[2644] = {
+static const int8_t _SH_GUI_CHAR_VERT_SPV[2644] = {
 	0x3,
 	0x2,
 	0x23,
@@ -9982,7 +9982,7 @@ static const int8_t shgui_text_vert_spv[2644] = {
 	0x0
 };
 
-static const int8_t shgui_text_frag_spv[772] = {
+static const int8_t _SH_GUI_CHAR_FRAG_SPV[772] = {
 	0x3,
 	0x2,
 	0x23,

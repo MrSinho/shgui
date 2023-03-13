@@ -30,6 +30,10 @@ cmake --build .
 ## Binaries and output 
 The compiled binaries are located at the [`bin`](/bin) directory.
 
+## Issues:
+* scaling the UI is ok
+* chaging the window size will mess up everything
+
 ## To do:
 * items rendering priority
 * menu popup
@@ -37,4 +41,7 @@ The compiled binaries are located at the [`bin`](/bin) directory.
 * input field
 * color picker
 * graph
-* font customization
+* loading bar
+* color matrix
+* texture loader
+* font customization (too much for me)
