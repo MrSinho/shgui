@@ -32,8 +32,8 @@ uint8_t shGuiSetSurface(
 	ShGui*       p_gui,
 	VkSurfaceKHR surface
 ) {
-	shGuiError(p_gui   == NULL, "invalid gui memory",     return 0);
-	shGuiError(surface == NULL, "invalid surface memory", return 0);
+	shGuiError(p_gui   == NULL,           "invalid gui memory",     return 0);
+	shGuiError(surface == VK_NULL_HANDLE, "invalid surface memory", return 0);
 
 	p_gui->core.surface = surface;
 
@@ -44,8 +44,8 @@ uint8_t shGuiSetRenderpass(
 	ShGui*       p_gui,
 	VkRenderPass renderpass
 ) {
-	shGuiError(p_gui      == NULL, "invalid gui memory",     return 0);
-	shGuiError(renderpass == NULL, "invalid surface memory", return 0);
+	shGuiError(p_gui      == NULL,           "invalid gui memory",     return 0);
+	shGuiError(renderpass == VK_NULL_HANDLE, "invalid surface memory", return 0);
 		
 	p_gui->core.render_pass = renderpass;
 
@@ -64,8 +64,8 @@ uint32_t shGuiGetAvailableHeap(
 	VkDevice         device          = p_gui->core.device;
 	VkPhysicalDevice physical_device = p_gui->core.physical_device;
 
-	shGuiError(device          == NULL, "invalid device memory",          return 0);
-	shGuiError(physical_device == NULL, "invalid physical device memory", return 0);
+	shGuiError(device          == VK_NULL_HANDLE, "invalid device memory",          return 0);
+	shGuiError(physical_device == VK_NULL_HANDLE, "invalid physical device memory", return 0);
 
 	uint32_t                                  host_memory_type_index      = 0;
 	uint32_t                                  host_available_video_memory = 0;
@@ -131,8 +131,8 @@ uint8_t shGuiAllocateMemory(
 	VkPhysicalDevice physical_device = p_gui->core.physical_device;
 
 
-	shGuiError(device          == NULL, "invalid device memory",          return 0);
-	shGuiError(physical_device == NULL, "invalid physical device memory", return 0);
+	shGuiError(device          == VK_NULL_HANDLE, "invalid device memory",          return 0);
+	shGuiError(physical_device == VK_NULL_HANDLE, "invalid physical device memory", return 0);
 
 	ShGuiRegionInfos* p_region_infos = &p_gui->region_infos;
 	ShGuiCharInfos*   p_char_infos   = &p_gui->char_infos;
@@ -158,21 +158,21 @@ uint8_t shGuiAllocateMemory(
 														        
 	p_region_infos->p_windows_slider_buttons_offsets             = calloc(4, p_region_infos->max_region_count);
 														        
-	shGuiError(p_region_infos->p_regions_raw                    == NULL, "invalid regions raw memory",                    return 0);
-	shGuiError(p_region_infos->p_regions_raw_write_flags        == NULL, "invalid regions write flags memory",            return 0);
-	shGuiError(p_region_infos->p_regions_clicked                == NULL, "invalid regions clicked memory",                return 0);
-	shGuiError(p_region_infos->p_cursor_on_regions              == NULL, "invalid cursor on regions memory",              return 0);
-	shGuiError(p_region_infos->p_windows_region_indices         == NULL, "invalid menu indices memory",                   return 0);
-	shGuiError(p_region_infos->p_windows_region_indices         == NULL, "invalid menu indices memory",                   return 0);
-	shGuiError(p_region_infos->p_windows_used_height            == NULL, "invalid menu indices memory",                   return 0);
+	shGuiError(p_region_infos->p_regions_raw                    == VK_NULL_HANDLE, "invalid regions raw memory",                    return 0);
+	shGuiError(p_region_infos->p_regions_raw_write_flags        == VK_NULL_HANDLE, "invalid regions write flags memory",            return 0);
+	shGuiError(p_region_infos->p_regions_clicked                == VK_NULL_HANDLE, "invalid regions clicked memory",                return 0);
+	shGuiError(p_region_infos->p_cursor_on_regions              == VK_NULL_HANDLE, "invalid cursor on regions memory",              return 0);
+	shGuiError(p_region_infos->p_windows_region_indices         == VK_NULL_HANDLE, "invalid menu indices memory",                   return 0);
+	shGuiError(p_region_infos->p_windows_region_indices         == VK_NULL_HANDLE, "invalid menu indices memory",                   return 0);
+	shGuiError(p_region_infos->p_windows_used_height            == VK_NULL_HANDLE, "invalid menu indices memory",                   return 0);
 														        														  
-	shGuiError(p_region_infos->p_moving_regions                 == NULL, "invalid moving regions bits memory",            return 0);
-	shGuiError(p_region_infos->p_left_resizing_regions          == NULL, "invalid left resizing regions bits memory",     return 0);
-	shGuiError(p_region_infos->p_right_resizing_regions         == NULL, "invalid right resizing regions bits memory",    return 0);
-	shGuiError(p_region_infos->p_top_resizing_regions           == NULL, "invalid top resizing regions bits memory",      return 0);
-	shGuiError(p_region_infos->p_bottom_resizing_regions        == NULL, "invalid bottom resizing regions bits memory",   return 0);
+	shGuiError(p_region_infos->p_moving_regions                 == VK_NULL_HANDLE, "invalid moving regions bits memory",            return 0);
+	shGuiError(p_region_infos->p_left_resizing_regions          == VK_NULL_HANDLE, "invalid left resizing regions bits memory",     return 0);
+	shGuiError(p_region_infos->p_right_resizing_regions         == VK_NULL_HANDLE, "invalid right resizing regions bits memory",    return 0);
+	shGuiError(p_region_infos->p_top_resizing_regions           == VK_NULL_HANDLE, "invalid top resizing regions bits memory",      return 0);
+	shGuiError(p_region_infos->p_bottom_resizing_regions        == VK_NULL_HANDLE, "invalid bottom resizing regions bits memory",   return 0);
 	
-	shGuiError(p_region_infos->p_windows_slider_buttons_offsets == NULL, "invalid windows slider buttons offsets memory", return 0);
+	shGuiError(p_region_infos->p_windows_slider_buttons_offsets == VK_NULL_HANDLE, "invalid windows slider buttons offsets memory", return 0);
 
 
 	uint32_t max_chars_total_raw_size = shGuiGetAvailableHeap(
@@ -189,9 +189,9 @@ uint8_t shGuiAllocateMemory(
 	p_char_infos->p_chars_vertex_raw                   = calloc(1,                              p_char_infos->max_chars_vertex_raw_size);
 	p_char_infos->p_chars_raw_write_flags              = calloc(sizeof(ShGuiCharRawWriteFlags), p_char_infos->max_char_count);
 
-	shGuiError(p_char_infos->p_chars_raw             == NULL, "invalid chars raw memory",         return 0);
-	shGuiError(p_char_infos->p_chars_vertex_raw      == NULL, "invalid chars vertex raw memory",  return 0);
-	shGuiError(p_char_infos->p_chars_raw_write_flags == NULL, "invalid chars write flags memory", return 0);
+	shGuiError(p_char_infos->p_chars_raw             == VK_NULL_HANDLE, "invalid chars raw memory",         return 0);
+	shGuiError(p_char_infos->p_chars_vertex_raw      == VK_NULL_HANDLE, "invalid chars vertex raw memory",  return 0);
+	shGuiError(p_char_infos->p_chars_raw_write_flags == VK_NULL_HANDLE, "invalid chars write flags memory", return 0);
 
 	uint32_t staging_buffer_size = SH_GUI_STAGING_BUFFER_SIZE(p_region_infos->max_region_count, p_char_infos->max_char_count);
 	uint32_t dst_buffer_size     = SH_GUI_DST_BUFFER_SIZE(p_region_infos->max_region_count, p_char_infos->max_char_count);
@@ -353,11 +353,11 @@ uint8_t shGuiBuildRegionPipeline(
 	ShGuiRegionInfos* p_region_infos    = &p_gui->region_infos;
 	ShVkPipeline*     p_region_pipeline = &p_gui->region_pipeline;
 
-	shGuiError(device                  == NULL, "invalid device memory",          return 0);
-	shGuiError(physical_device         == NULL, "invalid physical device memory", return 0);
-	shGuiError(surface                 == NULL, "invalid surface memory",         return 0);
-	shGuiError(renderpass              == NULL, "invalid renderpass memory",      return 0);
-	shGuiError(framebuffer_count       == 0,    "invalid framebuffer count",      return 0);
+	shGuiError(device                  == VK_NULL_HANDLE, "invalid device memory",          return 0);
+	shGuiError(physical_device         == VK_NULL_HANDLE, "invalid physical device memory", return 0);
+	shGuiError(surface                 == VK_NULL_HANDLE, "invalid surface memory",         return 0);
+	shGuiError(renderpass              == VK_NULL_HANDLE, "invalid renderpass memory",      return 0);
+	shGuiError(framebuffer_count       == 0,              "invalid framebuffer count",      return 0);
 
 	uint8_t r = 1;
 
@@ -410,7 +410,7 @@ uint8_t shGuiBuildRegionPipeline(
 		uint32_t src_size = 0;
 		char*    src      = (char*)shGuiReadBinary(vertex_shader_path, &src_size);
 		
-		shGuiError(src == NULL, "invalid shader source memory", return 0);
+		shGuiError(src == VK_NULL_HANDLE, "invalid shader source memory", return 0);
 
 		r = r && shPipelineCreateShaderModule(
 			device, src_size, src, 
@@ -425,7 +425,7 @@ uint8_t shGuiBuildRegionPipeline(
 		free(src);
 		src = (char*)shGuiReadBinary(fragment_shader_path, &src_size);
 		
-		shGuiError(src == NULL, "invalid shader source memory", return 0);
+		shGuiError(src == VK_NULL_HANDLE, "invalid shader source memory", return 0);
 
 		r = r && shPipelineCreateShaderModule(
 			device, src_size, src, 
@@ -484,10 +484,10 @@ uint8_t shGuiBuildCharPipeline(
 	ShGuiCharInfos*   p_char_infos      = &p_gui->char_infos;
 	ShVkPipeline*     p_char_pipeline   = &p_gui->char_pipeline;
 
-	shGuiError(device            == NULL, "invalid device memory",          return 0);
-	shGuiError(physical_device   == NULL, "invalid physical device memory", return 0);
-	shGuiError(surface           == NULL, "invalid surface memory",         return 0);
-	shGuiError(renderpass        == NULL, "invalid renderpass memory",      return 0);
+	shGuiError(device            == VK_NULL_HANDLE, "invalid device memory",          return 0);
+	shGuiError(physical_device   == VK_NULL_HANDLE, "invalid physical device memory", return 0);
+	shGuiError(surface           == VK_NULL_HANDLE, "invalid surface memory",         return 0);
+	shGuiError(renderpass        == VK_NULL_HANDLE, "invalid renderpass memory",      return 0);
 	shGuiError(framebuffer_count == 0,    "invalid framebuffer count",      return 0);
 
 	uint8_t r = 1;
@@ -634,7 +634,7 @@ uint8_t shGuiDestroyPipelines(
 	ShVkPipeline*     p_region_pipeline = &p_gui->region_pipeline;
 	ShVkPipeline*     p_char_pipeline   = &p_gui->char_pipeline;
 
-	shGuiError(device            == NULL, "invalid device memory",     return 0);
+	shGuiError(device            == VK_NULL_HANDLE, "invalid device memory",     return 0);
 	shGuiError(framebuffer_count == 0,    "invalid framebuffer count", return 0);
 
 	uint8_t r = 1;
@@ -661,8 +661,8 @@ uint8_t shGuiWriteMemory(
 	VkCommandBuffer transfer_cmd_buffer,
 	uint8_t         begin_cmd_buffer
 ) {
-	shGuiError(p_gui               == NULL, "invalid gui memory",            return 0);
-	shGuiError(transfer_cmd_buffer == NULL, "invalid command buffer memory", return 0);
+	shGuiError(p_gui               == NULL,           "invalid gui memory",            return 0);
+	shGuiError(transfer_cmd_buffer == VK_NULL_HANDLE, "invalid command buffer memory", return 0);
 
 	VkDevice        device         = p_gui->core.device;
 	VkQueue         queue          = p_gui->core.graphics_queue;
@@ -671,12 +671,12 @@ uint8_t shGuiWriteMemory(
 	VkBuffer        dst_buffer     = p_gui->dst_buffer;
 	VkDeviceMemory  dst_memory     = p_gui->dst_memory;
 
-	shGuiError(device            == NULL, "invalid device memory",             return 0);
-	shGuiError(queue             == NULL, "invalid queue memory",              return 0);
-	shGuiError(staging_buffer    == NULL, "invalid staging buffer memory",     return 0);
-	shGuiError(staging_memory    == NULL, "invalid staging device memory",     return 0);
-	shGuiError(dst_buffer        == NULL, "invalid destination buffer memory", return 0);
-	shGuiError(dst_memory        == NULL, "invalid destination device memory", return 0);
+	shGuiError(device            == VK_NULL_HANDLE, "invalid device memory",             return 0);
+	shGuiError(queue             == VK_NULL_HANDLE, "invalid queue memory",              return 0);
+	shGuiError(staging_buffer    == VK_NULL_HANDLE, "invalid staging buffer memory",     return 0);
+	shGuiError(staging_memory    == VK_NULL_HANDLE, "invalid staging device memory",     return 0);
+	shGuiError(dst_buffer        == VK_NULL_HANDLE, "invalid destination buffer memory", return 0);
+	shGuiError(dst_memory        == VK_NULL_HANDLE, "invalid destination device memory", return 0);
 
 	uint32_t regions_write_offset          = SH_GUI_REGIONS_RAW_DST_OFFSET;
 	uint32_t regions_write_size            = SH_GUI_REGIONS_RAW_DST_SIZE(p_gui->region_infos.max_region_count);
@@ -687,12 +687,18 @@ uint8_t shGuiWriteMemory(
 	
 	uint32_t buffer_write_size             = SH_GUI_DST_BUFFER_SIZE(p_gui->region_infos.max_region_count, p_gui->char_infos.max_char_count);
 
+	shGuiError(
+		buffer_write_size == 0,
+		"invalid write size",
+		return 0
+	);
+
 	uint8_t r = 1;
 
-	VkFence fence = NULL;
+	VkFence fence = VK_NULL_HANDLE;
 	r = r && shCreateFences(device, 1, 1, &fence);
 
-	shVkError(fence == NULL, "invalid fence memory", return 0);
+	shVkError(fence == VK_NULL_HANDLE, "invalid fence memory", return 0);
 
 	r = r && shWriteMemory(
 		device, staging_memory, 
@@ -732,9 +738,9 @@ uint8_t shGuiWriteMemory(
 		r = r && shEndCommandBuffer(transfer_cmd_buffer);
 		r = r && shQueueSubmit(
 			1, &transfer_cmd_buffer, queue,
-			fence, 0, NULL, 
+			fence, 0, VK_NULL_HANDLE, 
 			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			0, NULL
+			0, VK_NULL_HANDLE
 		);
 		r = r && shWaitForFences(
 			device, 1, &fence, 1, UINT64_MAX
@@ -788,11 +794,11 @@ uint8_t shGuiReleaseMemory(
 	VkBuffer       dst_buffer     = p_gui->dst_buffer;
 	VkDeviceMemory dst_memory     = p_gui->dst_memory;
 
-	shGuiError(device         == NULL, "invalid device memory",             return 0);
-	shGuiError(staging_buffer == NULL, "invalid staging buffer memory",     return 0);
-	shGuiError(staging_memory == NULL, "invalid staging device memory",     return 0);
-	shGuiError(dst_buffer     == NULL, "invalid destination buffer memory", return 0);
-	shGuiError(dst_memory     == NULL, "invalid destination device memory", return 0);
+	shGuiError(device         == VK_NULL_HANDLE, "invalid device memory",             return 0);
+	shGuiError(staging_buffer == VK_NULL_HANDLE, "invalid staging buffer memory",     return 0);
+	shGuiError(staging_memory == VK_NULL_HANDLE, "invalid staging device memory",     return 0);
+	shGuiError(dst_buffer     == VK_NULL_HANDLE, "invalid destination buffer memory", return 0);
+	shGuiError(dst_memory     == VK_NULL_HANDLE, "invalid destination device memory", return 0);
 
 	uint8_t r = 1;
 
@@ -816,8 +822,8 @@ uint8_t shGuiRender(
 	ShVkPipeline* p_region_pipeline = &p_gui->region_pipeline;
 	ShVkPipeline* p_char_pipeline   = &p_gui->char_pipeline; 
 
-	shGuiError(device     == NULL, "invalid device memory",             return 0);
-	shGuiError(dst_buffer == NULL, "invalid destination buffer memory", return 0);
+	shGuiError(device     == VK_NULL_HANDLE, "invalid device memory",             return 0);
+	shGuiError(dst_buffer == VK_NULL_HANDLE, "invalid destination buffer memory", return 0);
 
 	float push_constant_data[18] = {
 		1.0f, 0.0f, 0.0f, 0.0f,
@@ -842,7 +848,7 @@ uint8_t shGuiRender(
 		cmd_buffer, 
 		swapchain_image_idx,
 		1, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		0, NULL, 
+		0, NULL,
 		&p_gui->pipeline_pool,
 		p_region_pipeline
 	);
@@ -870,7 +876,7 @@ uint8_t shGuiRender(
 		cmd_buffer, 
 		swapchain_image_idx + 2,
 		1, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		0, NULL, 
+		0, NULL,
 		&p_gui->pipeline_pool, p_char_pipeline
 	);
 
@@ -936,20 +942,20 @@ uint8_t shGuiRelease(
 	shGuiDestroyPipelineResources(p_gui);
 	shGuiDestroyPipelines(p_gui);
 
-	shGuiError(p_gui->region_infos.p_regions_raw                    == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_menus_region_indices           == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_windows_region_indices         == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_windows_used_height            == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_regions_raw_write_flags        == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_regions_clicked                == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_cursor_on_regions              == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_moving_regions                 == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_right_resizing_regions         == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_left_resizing_regions          == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_top_resizing_regions           == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_bottom_resizing_regions        == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_windows_slider_buttons_offsets == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->region_infos.p_bottom_resizing_regions        == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_regions_raw                    == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_menus_region_indices           == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_windows_region_indices         == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_windows_used_height            == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_regions_raw_write_flags        == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_regions_clicked                == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_cursor_on_regions              == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_moving_regions                 == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_right_resizing_regions         == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_left_resizing_regions          == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_top_resizing_regions           == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_bottom_resizing_regions        == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_windows_slider_buttons_offsets == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->region_infos.p_bottom_resizing_regions        == VK_NULL_HANDLE, "invalid memory", return 0);
 
 	free(p_gui->region_infos.p_regions_raw);
 	free(p_gui->region_infos.p_menus_region_indices);
@@ -965,9 +971,9 @@ uint8_t shGuiRelease(
 	free(p_gui->region_infos.p_bottom_resizing_regions);
 	free(p_gui->region_infos.p_windows_slider_buttons_offsets);
 
-	shGuiError(p_gui->char_infos.p_chars_raw             == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->char_infos.p_chars_raw_write_flags == NULL, "invalid memory", return 0);
-	shGuiError(p_gui->char_infos.p_chars_vertex_raw      == NULL, "invalid memory", return 0);
+	shGuiError(p_gui->char_infos.p_chars_raw             == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->char_infos.p_chars_raw_write_flags == VK_NULL_HANDLE, "invalid memory", return 0);
+	shGuiError(p_gui->char_infos.p_chars_vertex_raw      == VK_NULL_HANDLE, "invalid memory", return 0);
 
 	free(p_gui->char_infos.p_chars_raw);
 	free(p_gui->char_infos.p_chars_raw_write_flags);
@@ -986,14 +992,14 @@ uint8_t shGuiLinkInputs(
 	ShGuiMouseEvents mouse_events, 
 	double*          p_delta_time
 ) {
-	shGuiError(p_gui           == NULL, "invalid gui memory",           return 0);
-	shGuiError(p_window_width  == NULL, "invalid window width memory",  return 0);
-	shGuiError(p_window_height == NULL, "invalid window height memory", return 0);
-	shGuiError(p_cursor_pos_x  == NULL, "invalid cursor pos x memory",  return 0);
-	shGuiError(p_cursor_pos_y  == NULL, "invalid cursor pos y memory",  return 0);
-	shGuiError(key_events      == NULL, "invalid key events memory",    return 0);
-	shGuiError(mouse_events    == NULL, "invalid mouse events memory",  return 0);
-	shGuiError(p_delta_time    == NULL, "invalid delta time memory",    return 0);
+	shGuiError(p_gui           == VK_NULL_HANDLE, "invalid gui memory",           return 0);
+	shGuiError(p_window_width  == VK_NULL_HANDLE, "invalid window width memory",  return 0);
+	shGuiError(p_window_height == VK_NULL_HANDLE, "invalid window height memory", return 0);
+	shGuiError(p_cursor_pos_x  == VK_NULL_HANDLE, "invalid cursor pos x memory",  return 0);
+	shGuiError(p_cursor_pos_y  == VK_NULL_HANDLE, "invalid cursor pos y memory",  return 0);
+	shGuiError(key_events      == VK_NULL_HANDLE, "invalid key events memory",    return 0);
+	shGuiError(mouse_events    == VK_NULL_HANDLE, "invalid mouse events memory",  return 0);
+	shGuiError(p_delta_time    == VK_NULL_HANDLE, "invalid delta time memory",    return 0);
 
 	ShGuiInputs inputs = {
 		p_window_width,
@@ -1061,19 +1067,19 @@ uint8_t shGuiSetDefaultValues(
 	if (flags == SH_GUI_NO_THEME) {
 		
 		shGuiError(
-			p_default_region_color == NULL,
+			p_default_region_color == VK_NULL_HANDLE,
 			"invalid default region color memory",
 			return 0
 		);
 
 		shGuiError(
-			p_default_region_edge_color == NULL,
+			p_default_region_edge_color == VK_NULL_HANDLE,
 			"invalid default region edge color memory",
 			return 0
 		);
 
 		shGuiError(
-			p_default_char_color == NULL,
+			p_default_char_color == VK_NULL_HANDLE,
 			"invalid default char color memory",
 			return 0
 		);
@@ -1480,6 +1486,22 @@ uint8_t shGuiOverwriteRegions(
 	return 1;
 }
 
+uint8_t shGuiTextLineCount(
+	const char* s_text,
+	uint32_t*   p_count
+) {
+	shGuiError(s_text  == VK_NULL_HANDLE, "invalid text memory",            return 0);
+	shGuiError(p_count == VK_NULL_HANDLE, "invalid line line count memory", return 0);
+
+	(*p_count) = 1;
+
+	for (uint32_t char_idx = 0; char_idx < strlen(s_text); char_idx++) {
+		(s_text[char_idx] == '\n') && ((*p_count)++);
+	}
+
+	return 1;
+}
+
 uint8_t shGuiText(
 	ShGui*           p_gui,
 	shguivec2        first_position, 
@@ -1498,6 +1520,11 @@ uint8_t shGuiText(
 	ShGuiCharRaw*       p_chars_raw        = p_gui->char_infos.p_chars_raw;
 	ShGuiCharVertexRaw* p_chars_vertex_raw = p_gui->char_infos.p_chars_vertex_raw;
 
+	float               x_offset           = 0.0f;
+	float               y_offset           = 0.0f;
+
+	float               max_x_offset       = x_offset;
+	float               min_y_offset       = y_offset;
 
 	for (uint32_t char_idx = 0; char_idx < strlen(s_text); char_idx++) {
 		
@@ -1508,8 +1535,8 @@ uint8_t shGuiText(
 		float*        p_char_vertex_raw =  p_gui->char_infos.p_chars_vertex_raw[char_count];
 		
 		if ((char_written & SH_GUI_CHAR_RAW_POSITION) == 0) {
-			p_char_raw->position.x = first_position.x + SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, first_scale, char_idx);
-			p_char_raw->position.y = first_position.y;//invert in shader
+			p_char_raw->position.x = first_position.x + x_offset;
+			p_char_raw->position.y = first_position.y + y_offset;
 		}
 		if ((char_written & SH_GUI_CHAR_RAW_SCALE) == 0) {
 			p_char_raw->scale = first_scale;
@@ -1521,26 +1548,10 @@ uint8_t shGuiText(
 			p_char_raw->color = first_color;
 		}
 
-		if (flags & SH_GUI_CENTER_WIDTH) {
-			p_char_raw->position.x -= SH_GUI_CENTER_TEXT_WIDTH(s_text, first_scale) / 2.0f;
+		x_offset += SH_GUI_CHAR_X_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, first_scale);
+		if (x_offset > max_x_offset) {
+			max_x_offset = x_offset;
 		}
-		else if (flags & SH_GUI_EDGE_LEFT) {
-			p_char_raw->position.x -= window_size_x / 2.0f;
-		}
-		else if (flags & SH_GUI_EDGE_RIGHT) {
-			p_char_raw->position.x += window_size_x / 2.0f - SH_GUI_CENTER_TEXT_WIDTH(s_text, first_scale);
-		}
-
-		if (flags & SH_GUI_CENTER_HEIGHT) {
-			p_char_raw->position.y += first_scale / 2.0f;
-		}
-		else if (flags & SH_GUI_EDGE_TOP) {
-			p_char_raw->position.y -= (window_size_y - first_scale) / 2.0f;
-		}
-		else if (flags & SH_GUI_EDGE_BOTTOM) {
-			p_char_raw->position.y += (window_size_y - first_scale / 4.0f) / 2.0f;
-		}
-
 
 		switch (s_text[char_idx]) {
 		case 'q':
@@ -1761,6 +1772,12 @@ uint8_t shGuiText(
 			//case '}':
 			//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_close_curly_bracket_vertices);
 			//	break;
+		case '\n':
+			x_offset  = 0.0f;
+			y_offset -= p_char_raw->scale;
+			if (y_offset < min_y_offset) {
+				min_y_offset = y_offset;
+			}
 		default:
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, SH_GUI_NO_CHAR);
 			break;
@@ -1768,6 +1785,48 @@ uint8_t shGuiText(
 
 		p_gui->char_infos.char_count++;
 	}
+
+	for (uint32_t char_idx = 0; char_idx < strlen(s_text); char_idx++) {
+		
+		ShGuiCharRaw* p_char_raw = &p_gui->char_infos.p_chars_raw[char_idx];
+		
+		if (flags & SH_GUI_CENTER_WIDTH) {
+			p_char_raw->position.x -= max_x_offset / 2.0f;
+		}
+		if (flags & SH_GUI_EDGE_LEFT) {
+			p_char_raw->position.x -= (window_size_x - max_x_offset) / 2.0f - SH_GUI_CHAR_DISTANCE_OFFSET;
+		}
+		if (flags & SH_GUI_EDGE_RIGHT) {
+			p_char_raw->position.x += (window_size_x - max_x_offset) / 2.0f - SH_GUI_CHAR_DISTANCE_OFFSET;
+		}
+
+		if (flags & SH_GUI_CENTER_HEIGHT) {
+			p_char_raw->position.y -= min_y_offset / 2.0f - SH_GUI_CHAR_DISTANCE_OFFSET;
+		}
+		if (flags & SH_GUI_EDGE_TOP) {
+			p_char_raw->position.y += (window_size_y + min_y_offset) / 2.0f - SH_GUI_CHAR_DISTANCE_OFFSET;
+		}
+		if (flags & SH_GUI_EDGE_BOTTOM) {
+			p_char_raw->position.y -= window_size_y / 2.0f + min_y_offset - SH_GUI_CHAR_DISTANCE_OFFSET;
+		}
+
+	}
+
+	return 1;
+}
+
+uint8_t shGuiColorMatrix(
+	ShGui*     p_gui,
+	uint32_t   matrix_width,
+	uint32_t   matrix_height,
+	shguivec4* p_colors
+) {
+	shGuiError(p_gui         == NULL, "invalid gui memory",    return 0);
+	shGuiError(p_colors      == NULL, "invalid colors memory", return 0);
+	shGuiError(matrix_width  == 0,    "invalid matrix width",  return 0);
+	shGuiError(matrix_height == 0,    "invalid matrix height", return 0);
+	
+
 
 	return 1;
 }
@@ -1778,8 +1837,8 @@ uint8_t shGuiOverwriteChar(
 	ShGuiCharRaw*          p_src_data,
 	ShGuiCharRawWriteFlags flags
 ) {
-	shGuiError(p_gui      == NULL, "invalid gui memory",      return 0);
-	shGuiError(p_src_data == NULL, "invalid src data memory", return 0);
+	shGuiError(p_gui      == VK_NULL_HANDLE, "invalid gui memory",      return 0);
+	shGuiError(p_src_data == VK_NULL_HANDLE, "invalid src data memory", return 0);
 
 	ShGuiCharRaw*           p_char_raw             = &p_gui->char_infos.p_chars_raw            [char_idx];
 	ShGuiCharRawWriteFlags* p_char_raw_write_flags = &p_gui->char_infos.p_chars_raw_write_flags[char_idx];
@@ -1809,7 +1868,7 @@ uint8_t shGuiOverwriteChars(
 	ShGuiCharRaw*          p_src_data,
 	ShGuiCharRawWriteFlags flags
 ) {
-	shGuiError(p_gui      == NULL, "invalid gui memory",      return 0);
+	shGuiError(p_gui      == NULL, "invalid gui memory", return 0);
 	shGuiError(p_src_data == NULL, "invalid src data memory", return 0);
 
 	shGuiError(
@@ -1846,7 +1905,7 @@ uint8_t shGuiItem(
 	ShGuiRegionRaw*	p_region_raw = &p_gui->region_infos.p_regions_raw[region_idx];
 
 	uint8_t pressed = shGuiRegion(
-		p_gui, 
+		p_gui,
 		position,
 		scale,
 		region_color,
@@ -1858,11 +1917,16 @@ uint8_t shGuiItem(
 		input_flags
 	);
 
-	if (text != NULL) {
+	if (text != VK_NULL_HANDLE) {
+
+		uint32_t line_count = 0;
+		shGuiTextLineCount(
+			text, &line_count
+		);
 
 		shguivec2 text_position = {
-			p_region_raw->position.x - p_region_raw->scale.x / 2.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET,
-			p_region_raw->position.y - SH_GUI_WINDOW_TEXT_BORDER_OFFSET,
+			p_region_raw->position.x - SH_GUI_CHAR_FINAL_X_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, text_scale, strlen(text)) / 2.0f + SH_GUI_CHAR_DISTANCE_OFFSET / 2.0f,
+			p_region_raw->position.y - SH_GUI_CHAR_FINAL_Y_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, line_count, text_scale)   / 2.0f + SH_GUI_CHAR_DISTANCE_OFFSET,
 		};
 
 		shGuiText(
@@ -2048,6 +2112,7 @@ uint8_t shGuiWindowText(
 
 	float*         p_used_height     = &p_gui->region_infos.p_windows_used_height[window_count - 1];
 
+	uint32_t first_char_idx          = p_gui->char_infos.char_count;
 
 	shguivec2 text_position = {
 		window_position.x - window_scale.x / 2.0f + SH_GUI_WINDOW_TEXT_BORDER_OFFSET,
@@ -2055,10 +2120,8 @@ uint8_t shGuiWindowText(
 	};
 
 	if (flags & SH_GUI_CENTER_WIDTH) {
-		float chars_offset = text != NULL 
-			                 ? SH_GUI_CENTER_TEXT_WIDTH(text, scale)
-			                 : 0.0f;
-		text_position.x    = window_position.x- chars_offset / 2.0f;
+		float chars_offset = SH_GUI_CHAR_FINAL_X_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, strlen(text) - 1);
+		text_position.x    = window_position.x - chars_offset / 2.0f;
 	}
 
 	(*p_used_height) += scale + SH_GUI_WINDOW_ITEMS_OFFSET;
@@ -2070,6 +2133,27 @@ uint8_t shGuiWindowText(
 		scale,
 		text,
 		0
+	);
+
+	float char_priority   = SH_GUI_ITEM_TEXT_PRIORITY;
+
+	if (window_region_raw.priority == SH_GUI_SELECTED_REGION_PRIORITY) {
+		char_priority   = SH_GUI_SELECTED_ITEM_TEXT_PRIORITY;
+	}
+
+	ShGuiCharRaw chars_write_src = {
+		(shguivec2){ 0 },
+		0.0f,
+		char_priority,
+		(shguivec4){ 0 }
+	};
+
+	shGuiOverwriteChars(
+		p_gui,
+		first_char_idx,
+		(uint32_t)strlen(text),
+		&chars_write_src,
+		SH_GUI_CHAR_RAW_PRIORITY
 	);
 
 	return 1;
@@ -2099,7 +2183,7 @@ uint8_t shGuiWindowButton(
 
 
 	shguivec2 button_scale = {
-		text != NULL ? SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, strlen(text)) + SH_GUI_WINDOW_TEXT_BORDER_OFFSET : 50.0f,
+		text != VK_NULL_HANDLE ? SH_GUI_CHAR_FINAL_X_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, strlen(text)) + SH_GUI_WINDOW_TEXT_BORDER_OFFSET : 50.0f,
 		scale + SH_GUI_WINDOW_TEXT_BORDER_OFFSET
 	};
 
@@ -2168,7 +2252,7 @@ uint8_t shGuiWindowButton(
 		SH_GUI_REGION_RAW_POSITION | 
 		SH_GUI_REGION_RAW_PRIORITY
 	);
-	if (text != NULL) {
+	if (text != VK_NULL_HANDLE) {
 		shGuiOverwriteChars(
 			p_gui,
 			first_char_idx,
@@ -2283,7 +2367,7 @@ uint8_t shGuiWindowSliderf(
 
 
 	shguivec2 button_scale = {
-		hint != NULL ? SH_GUI_CHAR_FINAL_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, strlen(hint)) + SH_GUI_WINDOW_TEXT_BORDER_OFFSET : 50.0f,
+		hint != VK_NULL_HANDLE ? SH_GUI_CHAR_FINAL_X_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale, strlen(hint)) + SH_GUI_WINDOW_TEXT_BORDER_OFFSET : 50.0f,
 		scale
 	};
 
@@ -2374,6 +2458,9 @@ uint8_t shGuiWindowSliderf(
 		scale,
 		text_color
 	);
+
+	float rail_factor = (p_button_region_raw->position.x - window_region_raw.position.x) / rail_scale.x + 0.5f;
+	(*p_dst)          = rail_factor * (max - min) + min;
 
 	float cursor_dx = 0.0f;
 
@@ -2520,7 +2607,7 @@ uint8_t shGuiMenuItem(
 	shguivec4        text_color,
 	ShGuiWidgetFlags anchor_flags
 ) {
-	shGuiError(p_gui == NULL, "invalid gui memory",   return 0);
+	shGuiError(p_gui == NULL,           "invalid gui memory",   return 0);
 	shGuiError(title == NULL, "invalid title memory", return 0);
 
 	float width                         =  10.0f;//%

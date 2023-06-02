@@ -77,7 +77,7 @@ typedef int8_t  ShGuiMouseEvents          [SH_GUI_MOUSE_LAST + 1];
 typedef enum ShGuiMouseButton {
 	SH_GUI_LEFT_MOUSE_BUTTON  = 0,
 	SH_GUI_RIGHT_MOUSE_BUTTON = 1,
-	SH_GUI_NO_MOUSE_BUTTON    = UINT8_MAX
+	SH_GUI_NO_MOUSE_BUTTON
 } ShGuiMouseButton;
 
 	          
@@ -149,12 +149,17 @@ static  const shguivec4 _SH_GUI_VEC4_ZERO = SH_GUI_STRUCTURE_ZERO;
 #define SH_GUI_VEC4_COPY(dst, src) (((dst).x = (src).x) && ((dst).y = (src).y) && ((dst).z = (src).z) && ((dst).w = (src).w))
 
 
-#define SH_GUI_COLOR_BLACK (shguivec4){ 0.0f }
-#define SH_GUI_COLOR_WHITE (shguivec4){ 1.0f, 1.0f, 1.0f, 1.0f }
-#define SH_GUI_COLOR_RED   (shguivec4){ 1.0f, 0.0f, 0.0f, 1.0f }
-#define SH_GUI_COLOR_GREEN (shguivec4){ 0.0f, 1.0f, 0.0f, 1.0f }
-#define SH_GUI_COLOR_BLUE  (shguivec4){ 0.0f, 0.0f, 1.0f, 1.0f }
+#define SH_GUI_COLOR_BLACK   (shguivec4){ 0.0f }
+#define SH_GUI_COLOR_WHITE   (shguivec4){ 1.0f, 1.0f, 1.0f, 1.0f }
+#define SH_GUI_COLOR_RED     (shguivec4){ 1.0f, 0.0f, 0.0f, 1.0f }
+#define SH_GUI_COLOR_GREEN   (shguivec4){ 0.0f, 1.0f, 0.0f, 1.0f }
+#define SH_GUI_COLOR_BLUE    (shguivec4){ 0.0f, 0.0f, 1.0f, 1.0f }
+							 
+#define SH_GUI_COLOR_YELLOW  (shguivec4){1.0f, 1.0f, 0.0f }
+#define SH_GUI_COLOR_CYAN    (shguivec4){0.0f, 1.0f, 1.0f }
+#define SH_GUI_COLOR_MAGENTA (shguivec4){1.0f, 0.0f, 1.0f }
 
+#define SH_GUI_COLOR_GREY    (shguivec4){ 0.5f, 0.5f, 0.5f }
 
 
 typedef enum ShGuiDefaultValuesFlags {
@@ -299,6 +304,14 @@ typedef struct ShGuiItem {
 	uint32_t  char_count;
 	uint32_t* p_char_indices;
 } ShGuiItem;
+
+
+#define SH_GUI_POPUP_VAR(id)    uint8_t sh_gui_popup_var_ ## id = 0;
+#define SH_GUI_OPEN_POPUP(id)   sh_gui_popup_var_ ## id = 1; 
+#define SH_GUI_CLOSE_POPUP(id)  sh_gui_popup_var_ ## id = 0; 
+#define SH_GUI_SWITCH_POPUP(id) sh_gui_popup_var_ ## id = !sh_gui_popup_var_ ## id;
+#define SH_GUI_CHECK_POPUP(id)  if (sh_gui_popup_var_ ## id) { 
+#define SH_GUI_END_POPUP()      }
 
 #define SH_GUI_REGION_VERT_SPV _SH_GUI_REGION_VERT_SPV
 #define SH_GUI_REGION_FRAG_SPV _SH_GUI_REGION_FRAG_SPV
@@ -468,6 +481,7 @@ typedef enum ShGuiWidgetFlags {
 	SH_GUI_RELATIVE              = 1 <<  9,
 	SH_GUI_MINIMIZABLE           = 1 << 10,
 	SH_GUI_RESIZABLE             = 1 << 11,
+	SH_GUI_POPUP                 = 1 << 12,
 	SH_GUI_WIDGET_FLAGS_MAX_ENUM
 } ShGuiWidgetFlags;
 
@@ -495,18 +509,26 @@ typedef enum ShGuiWriteFlags {
 
 #define SH_GUI_CHAR_DISTANCE_OFFSET           3.0f
 #define SH_GUI_SEPARATOR_OFFSET               5.0f
-#define SH_GUI_CHAR_FINAL_OFFSET(\
+#define SH_GUI_CHAR_X_OFFSET(\
+	char_distance_offset,\
+	scale\
+)\
+	(((float)char_distance_offset) / 4.0f * ((float)scale))
+#define SH_GUI_CHAR_Y_OFFSET(\
+	char_distance_offset,\
+	line_count,\
+	scale\
+)\
+	(((float)scale) * ((float)line_count))
+
+#define SH_GUI_CHAR_FINAL_X_OFFSET(\
 	char_distance_offset,\
 	scale,\
 	char_idx\
 )\
 	((float)char_distance_offset) / 4.0f * ((float)scale) * ((float)char_idx)
-#define SH_GUI_CENTER_TEXT_WIDTH(\
-	text,\
-	scale\
-)\
-	strlen(text) * SH_GUI_CHAR_DISTANCE_OFFSET * scale / 4.0f
-
+#define SH_GUI_CHAR_FINAL_Y_OFFSET\
+	SH_GUI_CHAR_Y_OFFSET 
 
 extern uint8_t SH_GUI_CALL shGuiLinkInputs(
 	ShGui*           p_gui,
@@ -561,6 +583,19 @@ extern uint8_t SH_GUI_CALL shGuiOverwriteRegion(
 	ShGuiRegionRawWriteFlags flags
 );
 
+extern uint8_t SH_GUI_CALL shGuiOverwriteRegions(
+	ShGui*                   p_gui,
+	uint32_t                 first_region,
+	uint32_t                 region_count,
+	ShGuiRegionRaw*          p_src_data,
+	ShGuiRegionRawWriteFlags flags
+);
+
+extern uint8_t SH_GUI_CALL shGuiTextLineCount(
+	const char* s_text,
+	uint32_t*   p_count
+);
+
 extern uint8_t SH_GUI_CALL shGuiText(
 	ShGui*           p_gui,
 	shguivec2        first_position, 
@@ -570,12 +605,11 @@ extern uint8_t SH_GUI_CALL shGuiText(
 	ShGuiWidgetFlags flags
 );
 
-extern uint8_t SH_GUI_CALL shGuiOverwriteRegions(
-	ShGui*                   p_gui,
-	uint32_t                 first_region,
-	uint32_t                 region_count,
-	ShGuiRegionRaw*          p_src_data,
-	ShGuiRegionRawWriteFlags flags
+extern uint8_t SH_GUI_CALL shGuiColorMatrix(
+	ShGui* p_gui,
+	uint32_t   matrix_width,
+	uint32_t   matrix_height,
+	shguivec4* p_colors
 );
 
 extern uint8_t SH_GUI_CALL shGuiOverwriteChar(
@@ -592,6 +626,7 @@ extern uint8_t SH_GUI_CALL shGuiOverwriteChars(
 	ShGuiCharRaw*          p_src_data,
 	ShGuiCharRawWriteFlags flags
 );
+
 
 extern uint8_t SH_GUI_CALL shGuiItem(
 	ShGui*           p_gui, 
