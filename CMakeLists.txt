@@ -43,15 +43,39 @@ endfunction()
 
 
 
-function(build_shgui_example)
+function(build_shgui_app)
+if (NOT TARGET glfw)
 add_subdirectory(externals/glfw)
+endif()
+add_library(shgui-app
+    shgui-app/src/shgui-app.c
+)
+target_include_directories(
+    shgui-app PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/shgui-app/include
+)
+target_link_libraries(shgui-app PUBLIC 
+    shgui shvulkan glfw
+)
+set_target_properties(shgui-app shgui shvulkan glfw PROPERTIES 
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+)
+endfunction()
+
+
+
+function(build_shgui_example)
+if (NOT TARGET glfw)
+add_subdirectory(externals/glfw)
+endif()
 add_executable(shgui-example 
     shgui-example/src/shgui-example.c
 )
 target_link_libraries(shgui-example PUBLIC 
-    shgui shvulkan glfw
+    shgui shgui-app shvulkan glfw
 )
-set_target_properties(shgui-example shvulkan glfw PROPERTIES 
+set_target_properties(shgui-example shgui-app shvulkan glfw PROPERTIES 
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 )
@@ -67,6 +91,7 @@ option(SH_GUI_BUILD_EXAMPLE OFF)
 function(main)
 build_shgui()
 build_export_shaders()
+build_shgui_app()
 
 if(SH_GUI_BUILD_EXAMPLE)
 build_shgui_example()
