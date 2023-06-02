@@ -30,19 +30,15 @@ cmake --build .
 ## Binaries and output 
 The compiled binaries are located at the [`bin`](/bin) directory.
 
-## Issues:
-* scaling the UI is ok
-* changing the window size will mess up the menu bar
+## Bugs:
+* Popup macro system is working, but clicking on the new region messes up priority values
 
 ## To do:
-* heap cleanup
-* native export library implementation fix
-* menu popup
+* input field --> listen for key inputs, render chars if input field is selected, return string on confirmation
+* shGuiRegionColorMatrix / shGuiWindowColorMatrix 
+* graphs
 * minimize window
-* input field
-* color picker
-* graph
 * loading bar
-* color matrix
 * texture loader
-* font customization (too much for me)
+* checkbox
+* font customization (too much for me, i'm fine with my pixel characters)
