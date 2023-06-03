@@ -160,8 +160,6 @@ int main(void) {
 		);
 		SH_GUI_END_POPUP()
 
-		
-
 		shGuiAppUpdate(p_app);
 	}
 	

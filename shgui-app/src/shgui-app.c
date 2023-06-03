@@ -809,10 +809,6 @@ uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
 				shCreateFramebuffer(device, p_app->renderpass, SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT, image_views, _width, _height, 1, &p_app->framebuffers[i]);
 			}
 
-			if (swapchain_image_count == 2 && p_app->swapchain_image_idx != 0) {//start from swaphain image idx 0
-				p_app->swapchain_image_idx = 0;
-			}
-
 			shGuiDestroyPipelines(p_gui);
 			shGuiSetSurface(p_gui, p_app->surface);
 			shGuiSetRenderpass(p_gui, p_app->renderpass);
@@ -930,7 +926,6 @@ uint8_t SH_GUI_CALL shGuiAppUpdate(
 	);
 
 	p_app->swapchain_image_idx = (p_app->swapchain_image_idx + 1) % p_app->swapchain_image_count;
-
 
 	return 1;
 }

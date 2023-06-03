@@ -4,7 +4,7 @@
 [![linux-status](.shci/linux-exit_code.svg)](.shci/linux-log.md)
 [![windows-status](.shci/windows-exit_code.svg)](.shci/windows-log.md)
 
-![screenshot](media/shgui-example-0.png)
+![screenshot](media/shgui-example-1.png)
 
 ## Features:
 * Widgets
@@ -17,6 +17,7 @@
         * change cursor default icons
     * text
     * button
+    * popup
 
 ## Build from source
 ```batch
