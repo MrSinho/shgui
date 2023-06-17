@@ -400,7 +400,7 @@ extern char* SH_GUI_CALL shGuiReadBinary(
 
 extern uint8_t SH_GUI_CALL shGuiAllocatePipelineResources(
 	ShGui*   p_gui,
-	uint32_t framebuffer_count
+	uint32_t swapchain_image_count
 );
 
 extern uint8_t SH_GUI_CALL shGuiBuildRegionPipeline(
