@@ -58,7 +58,7 @@ typedef struct ShGuiCore {
 	VkSurfaceKHR     surface;
 	VkRenderPass     render_pass;
 	uint32_t         sample_count;
-	uint32_t         framebuffer_count;
+	uint32_t         swapchain_image_count;
 } ShGuiCore;
 
 

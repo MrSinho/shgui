@@ -345,19 +345,19 @@ uint8_t shGuiBuildRegionPipeline(
 ) {
 	shGuiError(p_gui == NULL, "invalid gui memory",   return 0);
 
-	VkDevice          device            = p_gui->core.device;
-	VkPhysicalDevice  physical_device   = p_gui->core.physical_device;
-	VkSurfaceKHR      surface           = p_gui->core.surface;
-	VkRenderPass      renderpass        = p_gui->core.render_pass;
-	uint32_t          framebuffer_count = p_gui->core.framebuffer_count;
-	ShGuiRegionInfos* p_region_infos    = &p_gui->region_infos;
-	ShVkPipeline*     p_region_pipeline = &p_gui->region_pipeline;
+	VkDevice          device                = p_gui->core.device;
+	VkPhysicalDevice  physical_device       = p_gui->core.physical_device;
+	VkSurfaceKHR      surface               = p_gui->core.surface;
+	VkRenderPass      renderpass            = p_gui->core.render_pass;
+	uint32_t          swapchain_image_count = p_gui->core.swapchain_image_count;
+	ShGuiRegionInfos* p_region_infos        = &p_gui->region_infos;
+	ShVkPipeline* p_region_pipeline         = &p_gui->region_pipeline;
 
-	shGuiError(device                  == VK_NULL_HANDLE, "invalid device memory",          return 0);
-	shGuiError(physical_device         == VK_NULL_HANDLE, "invalid physical device memory", return 0);
-	shGuiError(surface                 == VK_NULL_HANDLE, "invalid surface memory",         return 0);
-	shGuiError(renderpass              == VK_NULL_HANDLE, "invalid renderpass memory",      return 0);
-	shGuiError(framebuffer_count       == 0,              "invalid framebuffer count",      return 0);
+	shGuiError(device                == VK_NULL_HANDLE, "invalid device memory",          return 0);
+	shGuiError(physical_device       == VK_NULL_HANDLE, "invalid physical device memory", return 0);
+	shGuiError(surface               == VK_NULL_HANDLE, "invalid surface memory",         return 0);
+	shGuiError(renderpass            == VK_NULL_HANDLE, "invalid renderpass memory",      return 0);
+	shGuiError(swapchain_image_count == 0,              "invalid swapchain image count",  return 0);
 
 	uint8_t r = 1;
 
@@ -392,7 +392,7 @@ uint8_t shGuiBuildRegionPipeline(
 	);
 
 	r = r && shPipelineCreateInputAssembly(
-		VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 
+		VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
 		VK_FALSE, p_region_pipeline
 	);
 
@@ -401,63 +401,63 @@ uint8_t shGuiBuildRegionPipeline(
 	);
 
 	r = r && shPipelineSetPushConstants(
-		VK_SHADER_STAGE_VERTEX_BIT, 
-		0, 80, 
+		VK_SHADER_STAGE_VERTEX_BIT,
+		0, 80,
 		p_region_pipeline
 	);
 
 	if (vertex_shader_path != NULL && fragment_shader_path != NULL) {
 		uint32_t src_size = 0;
-		char*    src      = (char*)shGuiReadBinary(vertex_shader_path, &src_size);
-		
+		char* src = (char*)shGuiReadBinary(vertex_shader_path, &src_size);
+
 		shGuiError(src == VK_NULL_HANDLE, "invalid shader source memory", return 0);
 
 		r = r && shPipelineCreateShaderModule(
-			device, src_size, src, 
+			device, src_size, src,
 			p_region_pipeline
 		);
 
 		r = r && shPipelineCreateShaderStage(
-			VK_SHADER_STAGE_VERTEX_BIT, 
+			VK_SHADER_STAGE_VERTEX_BIT,
 			p_region_pipeline
 		);
-		
+
 		free(src);
 		src = (char*)shGuiReadBinary(fragment_shader_path, &src_size);
-		
+
 		shGuiError(src == VK_NULL_HANDLE, "invalid shader source memory", return 0);
 
 		r = r && shPipelineCreateShaderModule(
-			device, src_size, src, 
+			device, src_size, src,
 			p_region_pipeline
 		);
 		r = r && shPipelineCreateShaderStage(
-			VK_SHADER_STAGE_FRAGMENT_BIT, 
+			VK_SHADER_STAGE_FRAGMENT_BIT,
 			p_region_pipeline
 		);
-		
+
 		free(src);
 	}
 	else {
 		r = r && shPipelineCreateShaderModule(
-			device, sizeof(SH_GUI_REGION_VERT_SPV), 
+			device, sizeof(SH_GUI_REGION_VERT_SPV),
 			(char*)SH_GUI_REGION_VERT_SPV, p_region_pipeline
 		);
 		r = r && shPipelineCreateShaderStage(
 			VK_SHADER_STAGE_VERTEX_BIT, p_region_pipeline
 		);
 		r = r && shPipelineCreateShaderModule(
-			device, sizeof(SH_GUI_REGION_FRAG_SPV), 
+			device, sizeof(SH_GUI_REGION_FRAG_SPV),
 			(char*)SH_GUI_REGION_FRAG_SPV, p_region_pipeline
 		);
 		r = r && shPipelineCreateShaderStage(
-			VK_SHADER_STAGE_FRAGMENT_BIT, 
+			VK_SHADER_STAGE_FRAGMENT_BIT,
 			p_region_pipeline
 		);
 	}
 
 	r = r && shPipelineCreateLayout(
-		device, 0, framebuffer_count, &p_gui->pipeline_pool, p_region_pipeline
+		device, 0, swapchain_image_count, &p_gui->pipeline_pool, p_region_pipeline
 	);
 
 	r = r && shSetupGraphicsPipeline(
@@ -476,19 +476,19 @@ uint8_t shGuiBuildCharPipeline(
 ) {
 	shGuiError(p_gui          == NULL, "invalid gui memory", return 0);
 
-	VkDevice          device            = p_gui->core.device;
-	VkPhysicalDevice  physical_device   = p_gui->core.physical_device;
-	VkSurfaceKHR      surface           = p_gui->core.surface;
-	VkRenderPass      renderpass        = p_gui->core.render_pass;
-	uint32_t          framebuffer_count = p_gui->core.framebuffer_count;
-	ShGuiCharInfos*   p_char_infos      = &p_gui->char_infos;
-	ShVkPipeline*     p_char_pipeline   = &p_gui->char_pipeline;
+	VkDevice          device                = p_gui->core.device;
+	VkPhysicalDevice  physical_device       = p_gui->core.physical_device;
+	VkSurfaceKHR      surface               = p_gui->core.surface;
+	VkRenderPass      renderpass            = p_gui->core.render_pass;
+	uint32_t          swapchain_image_count = p_gui->core.swapchain_image_count;
+	ShGuiCharInfos*   p_char_infos          = &p_gui->char_infos;
+	ShVkPipeline*     p_char_pipeline       = &p_gui->char_pipeline;
 
-	shGuiError(device            == VK_NULL_HANDLE, "invalid device memory",          return 0);
-	shGuiError(physical_device   == VK_NULL_HANDLE, "invalid physical device memory", return 0);
-	shGuiError(surface           == VK_NULL_HANDLE, "invalid surface memory",         return 0);
-	shGuiError(renderpass        == VK_NULL_HANDLE, "invalid renderpass memory",      return 0);
-	shGuiError(framebuffer_count == 0,    "invalid framebuffer count",      return 0);
+	shGuiError(device                == VK_NULL_HANDLE, "invalid device memory",                     return 0);
+	shGuiError(physical_device       == VK_NULL_HANDLE, "invalid physical device memory",            return 0);
+	shGuiError(surface               == VK_NULL_HANDLE, "invalid surface memory",                    return 0);
+	shGuiError(renderpass            == VK_NULL_HANDLE, "invalid renderpass memory",                 return 0);
+	shGuiError(swapchain_image_count == 0,              "invalid swapchain image framebuffer count", return 0);
 
 	uint8_t r = 1;
 
@@ -596,7 +596,7 @@ uint8_t shGuiBuildCharPipeline(
 	}
 
 	r = r && shPipelineCreateLayout(
-		device, framebuffer_count, framebuffer_count, &p_gui->pipeline_pool, p_char_pipeline
+		device, swapchain_image_count, swapchain_image_count, &p_gui->pipeline_pool, p_char_pipeline//?
 	);
 
 	r = r && shSetupGraphicsPipeline(device, renderpass, p_char_pipeline);
@@ -629,13 +629,11 @@ uint8_t shGuiDestroyPipelines(
 ) {
 	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
 
-	VkDevice          device            =  p_gui->core.device;
-	uint32_t          framebuffer_count =  p_gui->core.framebuffer_count;
-	ShVkPipeline*     p_region_pipeline = &p_gui->region_pipeline;
-	ShVkPipeline*     p_char_pipeline   = &p_gui->char_pipeline;
+	VkDevice          device                 =  p_gui->core.device;
+	ShVkPipeline*     p_region_pipeline      = &p_gui->region_pipeline;
+	ShVkPipeline*     p_char_pipeline        = &p_gui->char_pipeline;
 
-	shGuiError(device            == VK_NULL_HANDLE, "invalid device memory",     return 0);
-	shGuiError(framebuffer_count == 0,    "invalid framebuffer count", return 0);
+	shGuiError(device == VK_NULL_HANDLE, "invalid device memory",         return 0);
 
 	uint8_t r = 1;
 
