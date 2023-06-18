@@ -223,7 +223,7 @@ ShGuiApp* shGuiCreateApp(
 		&swapchain_image_format,//p_image_format
 		SH_GUI_APP_SWAPCHAIN_IMAGE_COUNT,//swapchain_image_count
 		swapchain_image_sharing_mode,//image_sharing_mode
-		0,//vsync
+		1,//vsync
 		&swapchain_image_count,
 		&swapchain//p_swapchain
 	);
@@ -744,7 +744,7 @@ uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
 				&swapchain_image_format,
 				swapchain_image_count,
 				swapchain_image_sharing_mode,
-				0,
+				1,
 				&swapchain_image_count,
 				&p_app->swapchain
 			);
