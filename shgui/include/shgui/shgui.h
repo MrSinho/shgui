@@ -634,7 +634,7 @@ extern uint8_t SH_GUI_CALL shGuiItem(
 	shguivec2        scale,
 	shguivec4        region_color,
 	shguivec4        region_edge_color,
-	uint8_t          move_mouse_button,
+	ShGuiMouseButton move_mouse_button,
 	shguivec2        offset_region_center,
 	shguivec2        offset_region_scale,
 	ShGuiWidgetFlags region_flags,
