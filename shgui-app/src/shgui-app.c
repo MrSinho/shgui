@@ -49,9 +49,9 @@ ShGuiApp* shGuiCreateApp(
 	uint32_t width  = window_width;
 	uint32_t height = window_height;
 
-	uint32_t    instance_extension_count = 0;
-	GLFWwindow* window                   = glfwCreateWindow(width, height, application_name, NULL, NULL);
-	char**      pp_instance_extensions   = glfwGetRequiredInstanceExtensions(&instance_extension_count);
+	uint32_t     instance_extension_count = 0;
+	GLFWwindow*  window                   = glfwCreateWindow(width, height, application_name, NULL, NULL);
+	const char** pp_instance_extensions   = glfwGetRequiredInstanceExtensions(&instance_extension_count);
 
 
 	VkInstance                       instance                                     = NULL;
@@ -733,6 +733,8 @@ uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
 			shDestroyImageViews(device, 1, &p_app->input_color_image_view);
 
 			glfwCreateWindowSurface(instance, window, NULL, &p_app->surface);
+			uint8_t graphics_supported = 0;
+			shGetPhysicalDeviceSurfaceSupport(physical_device, p_app->graphics_queue_family_index, p_app->surface, &graphics_supported);//always true
 			shGetPhysicalDeviceSurfaceCapabilities(physical_device, p_app->surface, &p_app->surface_capabilities);
 			shCreateSwapchain(
 				device,
