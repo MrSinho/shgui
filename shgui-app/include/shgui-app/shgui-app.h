@@ -7,6 +7,9 @@ extern "C" {
 
 
 #include <shgui/shgui.h>
+
+#define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #define SH_GUI_APP_SWAPCHAIN_IMAGE_COUNT       2
