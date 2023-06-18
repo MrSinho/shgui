@@ -1701,9 +1701,9 @@ uint8_t shGuiText(
 		case '"':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_double_quote_vertices);
 			break;
-		case '£':
-			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_pound_vertices);
-			break;
+		//case '£'://multi char character
+		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_pound_vertices);
+		//	break;
 		case '$':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_dollar_vertices);
 			break;
