@@ -811,6 +811,9 @@ uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
 				shCreateFramebuffer(device, p_app->renderpass, SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT, image_views, _width, _height, 1, &p_app->framebuffers[i]);
 			}
 
+			shResetSemaphores(device, 1, &p_app->current_image_acquired_semaphore);
+			shResetSemaphores(device, 1, &p_app->current_graphics_queue_finished_semaphore);
+
 			shGuiDestroyPipelines(p_gui);
 			shGuiSetSurface(p_gui, p_app->surface);
 			shGuiSetRenderpass(p_gui, p_app->renderpass);
