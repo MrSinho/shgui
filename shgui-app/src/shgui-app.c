@@ -516,7 +516,7 @@ ShGuiApp* shGuiCreateApp(
 
 
 
-	shGuiAllocateMemory(p_gui, 2048, 1024);
+	shGuiAllocateMemory(p_gui);
 
 	shGuiAllocatePipelineResources(p_gui, swapchain_image_count);
 

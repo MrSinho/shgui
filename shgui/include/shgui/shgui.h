@@ -229,32 +229,34 @@ typedef struct ShGuiRegionRaw {
 static  const ShGuiRegionRaw _SH_GUI_NO_REGION = SH_GUI_STRUCTURE_ZERO;
 #define SH_GUI_NO_REGION     _SH_GUI_NO_REGION
 
+#define SH_GUI_MAX_REGION_COUNT 1024
+#define SH_GUI_MAX_REGIONS_RAW_SIZE (SH_GUI_MAX_REGION_COUNT * sizeof(ShGuiRegionRaw))
+
 typedef struct ShGuiRegionInfos {
 	float                     region_scale_factor;
 	//regions = bars + menus + buttons + windows    
-	uint32_t                  max_region_count;
-	uint32_t                  max_regions_raw_size;
-	ShGuiRegionRaw*           p_regions_raw;
-	//menus
-	uint32_t                  menu_count;
-	uint32_t*                 p_menus_region_indices;
-	//windows       
-	uint32_t                  window_count;
-	uint32_t*                 p_windows_region_indices;
-	float*                    p_windows_used_height;
+	ShGuiRegionRaw            regions_raw                   [SH_GUI_MAX_REGION_COUNT];
+	//menus											        
+	uint32_t                  menu_count;			        
+	uint32_t                  menus_region_indices          [SH_GUI_MAX_REGION_COUNT];
+	//windows       								        
+	uint32_t                  window_count;			        
+	uint32_t                  windows_region_indices        [SH_GUI_MAX_REGION_COUNT];
+	float                     windows_used_height           [SH_GUI_MAX_REGION_COUNT];
 	//region conditions
 	uint32_t                  region_count;
-	ShGuiRegionRawWriteFlags* p_regions_raw_write_flags;
+	ShGuiRegionRawWriteFlags  regions_raw_write_flags       [SH_GUI_MAX_REGION_COUNT];
 
-	uint8_t*                  p_regions_clicked;          
-	uint8_t*                  p_cursor_on_regions;        
-	uint8_t*                  p_moving_regions;
-	uint8_t*                  p_right_resizing_regions;
-	uint8_t*                  p_left_resizing_regions;
-	uint8_t*                  p_top_resizing_regions;
-	uint8_t*                  p_bottom_resizing_regions;
-	float*                    p_windows_slider_buttons_offsets;
-	uint8_t                   cursor_on_regions;
+	uint8_t                  regions_clicked                [SH_GUI_MAX_REGION_COUNT];
+	uint8_t                  cursor_on_regions              [SH_GUI_MAX_REGION_COUNT];
+	uint8_t                  moving_regions                 [SH_GUI_MAX_REGION_COUNT];
+	uint8_t                  right_resizing_regions         [SH_GUI_MAX_REGION_COUNT];
+	uint8_t                  left_resizing_regions          [SH_GUI_MAX_REGION_COUNT];
+	uint8_t                  top_resizing_regions           [SH_GUI_MAX_REGION_COUNT];
+	uint8_t                  bottom_resizing_regions        [SH_GUI_MAX_REGION_COUNT];
+	float                    windows_slider_buttons_offsets [SH_GUI_MAX_REGION_COUNT];
+
+	uint8_t                  cursor_on_any_region;
 } ShGuiRegionInfos;
 
 
@@ -286,24 +288,18 @@ typedef struct ShGuiCharRaw {
 	shguivec4 color;
 } ShGuiCharRaw;
 
+#define SH_GUI_MAX_CHAR_COUNT            2048
+#define SH_GUI_MAX_CHARS_RAW_SIZE        (SH_GUI_MAX_CHAR_COUNT * sizeof(ShGuiCharRaw))
+#define SH_GUI_MAX_CHARS_VERTEX_RAW_SIZE (SH_GUI_MAX_CHAR_COUNT * sizeof(ShGuiCharVertexRaw))
+
 typedef struct ShGuiCharInfos {
 	float                   char_scale_factor;
-	uint32_t                max_char_count;
-	uint32_t                max_chars_raw_size;
-	uint32_t                max_chars_vertex_raw_size;
 	uint32_t                char_count;
-	ShGuiCharRaw*           p_chars_raw;
-	ShGuiCharVertexRaw*     p_chars_vertex_raw;
-	ShGuiCharRawWriteFlags* p_chars_raw_write_flags;
+	ShGuiCharRaw            chars_raw             [SH_GUI_MAX_CHAR_COUNT];
+	ShGuiCharVertexRaw      chars_vertex_raw      [SH_GUI_MAX_CHAR_COUNT];
+	ShGuiCharRawWriteFlags  chars_raw_write_flags [SH_GUI_MAX_CHAR_COUNT];
 } ShGuiCharInfos;
 
-
-typedef struct ShGuiItem {
-	uint32_t  region_count;
-	uint32_t* p_region_indices;
-	uint32_t  char_count;
-	uint32_t* p_char_indices;
-} ShGuiItem;
 
 
 #define SH_GUI_POPUP_VAR(id)    uint8_t sh_gui_popup_var_ ## id = 0;
@@ -388,9 +384,7 @@ extern uint32_t SH_GUI_CALL shGuiGetAvailableHeap(
 );
 
 extern uint8_t SH_GUI_CALL shGuiAllocateMemory(
-	ShGui*   p_gui,
-	uint32_t max_region_count,
-	uint32_t max_char_count
+	ShGui*   p_gui
 );
 
 extern char* SH_GUI_CALL shGuiReadBinary(
