@@ -26,7 +26,6 @@ int main(void) {
 
 		shGuiResetInputs(p_gui);
 
-
 		shGuiText(
 			p_gui,
 			SH_GUI_VEC2_ZERO,
