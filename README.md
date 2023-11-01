@@ -2,6 +2,12 @@
 
 ### DO NOT DOWNLOAD IT'S CURRENTLY BUGGED AF, I SHOULD DEBUG THE SOURCE CODE IN ORDER TO FIX THE LIBRARY BUT I DON'T THINK I'M EVER GOING TO DO SO.
 
+# More realistic:
+* render only characters on screen (font system using txt file)
+* make console system --> for custom commands to application, and default commands for UI vars (text, numbers, ecc.)
+   e.g. setTextByID, setTextByName, ecc.
+* BASTA così, carino e "semplice"
+
 ## Build status
 [![linux-status](.shci/linux-exit_code.svg)](.shci/linux-log.md)
 [![windows-status](.shci/windows-exit_code.svg)](.shci/windows-log.md)
