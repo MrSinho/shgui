@@ -1,8 +1,5 @@
 # shgui
 
-### DO NOT DOWNLOAD IT'S CURRENTLY BUGGED AF, I SHOULD DEBUG THE SOURCE CODE IN ORDER TO FIX THE LIBRARY BUT I DON'T THINK I'M EVER GOING TO DO SO.
-
-# More realistic:
 A simple and lightweight UI and console system for Vulkan applications written completely in C
 
 * render only characters on screen (font system using txt file)
@@ -17,17 +14,13 @@ A simple and lightweight UI and console system for Vulkan applications written c
 ![screenshot](media/shgui-example-1.png)
 
 ## Features:
-* Widgets
-    * menu bar
-        * menu item
-    * window
+* Only two raw widgets available for rendering:
+    * regions
         * highlight edge
         * movable
         * input conditions
         * change cursor default icons
     * text
-    * button
-    * popup
 
 ## Build from source
 ```batch

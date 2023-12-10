@@ -93,7 +93,7 @@ typedef struct ShGuiApp {
 	float                            cursor_pos_y;
 					                 
 	ShGuiKeyEvents                   key_events;
-	ShGuiMouseEvents                 mouse_events;
+	ShGuiKeyEvents                   last_key_events;
 					                 
 	double                           last_time;
 	double                           delta_time;

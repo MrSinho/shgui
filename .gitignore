@@ -55,3 +55,7 @@ dkms.conf
 .vscode/*
 build/*
 bin/*
+
+docs/html
+docs/latex
+docs/xml

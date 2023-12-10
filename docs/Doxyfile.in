@@ -1,0 +1,25 @@
+PROJECT_NAME           = "shgui"
+PROJECT_BRIEF          = simple and lightweight UI and console system for Vulkan applications written completely in C
+PROJECT_NUMBER         = ${SH_GUI_VERSION}
+PROJECT_LOGO           = 
+
+PROJECT_BRIEF          = "shgui by mrsinho"
+USE_MDFILE_AS_MAINPAGE = ${SH_GUI_ROOT_DIR}/README.md
+
+OUTPUT_DIRECTORY       = docs
+INPUT                  = ${SH_GUI_ROOT_DIR}/shgui/include ${SH_GUI_ROOT_DIR}/README.md
+RECURSIVE              = YES
+EXTRACT_ALL            = YES
+HAVE_DOT               = NO
+HIDE_UNDOC_MEMBERS     = YES
+GENERATE_HTML          = YES
+GENERATE_XML           = YES
+GENERATE_LATEX         = YES
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = YES
+OPTIMIZE_OUTPUT_FOR_C  = YES
+STRIP_CODE_COMMENTS    = NO
+
+HTML_EXTRA_STYLESHEET  = ${SH_GUI_ROOT_DIR}/docs/doxygen-awesome-css/doxygen-awesome.css ${SH_GUI_ROOT_DIR}/docs/doxygen-awesome-css/doxygen-awesome-sidebar-only.css
+HTML_EXTRA_FILES       = ${SH_GUI_ROOT_DIR}/docs/doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js ${SH_GUI_ROOT_DIR}/docs/doxygen-awesome-css/doxygen-awesome-interactive-toc.js ${SH_GUI_ROOT_DIR}/docs/doxygen-awesome-css/doxygen-awesome-paragraph-link.js ${SH_GUI_ROOT_DIR}/docs/doxygen-awesome-css/doxygen-awesome-tabs.js

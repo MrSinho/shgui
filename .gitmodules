@@ -7,3 +7,9 @@
 [submodule "externals/native-export"]
 	path = externals/native-export
 	url = https://github.com/mrsinho/native-export.git
+[submodule "docs/doxygen-awesome-css"]
+	path = docs/doxygen-awesome-css
+	url = https://github.com/jothepro/doxygen-awesome-css
+[submodule ".shci/shci"]
+	path = .shci/shci
+	url = https://github.com/mrsinho/shci

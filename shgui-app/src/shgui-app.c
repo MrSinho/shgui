@@ -15,6 +15,7 @@ extern "C" {
 #include <memory.h>
 
 
+
 ShGuiApp* shGuiCreateApp(
 	uint32_t    window_width,
 	uint32_t    window_height,
@@ -536,8 +537,10 @@ ShGuiApp* shGuiCreateApp(
 	shGuiLinkInputs(
 		p_gui,
 		&p_app->width, &p_app->height, 
-		&p_app->cursor_pos_x, &p_app->cursor_pos_y,
-		p_app->key_events, p_app->mouse_events,
+		&p_app->cursor_pos_x,
+		&p_app->cursor_pos_y,
+		p_app->key_events,
+		p_app->last_key_events,
 		&p_app->delta_time
 	);
 
@@ -653,32 +656,6 @@ uint8_t shGuiAppRunning(
 	uint8_t running = !glfwWindowShouldClose(p_app->window);
 
 	glfwPollEvents();
-
-	double now = glfwGetTime();
-	p_app->delta_time = now - p_app->last_time;
-	p_app->last_time = now;
-
-	for (uint32_t key_idx = 0; key_idx < SH_GUI_KEY_LAST + 1; key_idx++) {
-		p_app->key_events[key_idx] = glfwGetKey(p_app->window, key_idx);
-}
-	for (uint32_t mouse_button_idx = 0; mouse_button_idx < SH_GUI_MOUSE_LAST + 1; mouse_button_idx++) {
-		p_app->mouse_events[mouse_button_idx] = glfwGetMouseButton(p_app->window, mouse_button_idx);
-	}
-
-	glfwGetCursorPos(p_app->window, &p_app->d_cursor_pos_x, &p_app->d_cursor_pos_y);
-
-	p_app->cursor_pos_x =  (float)p_app->d_cursor_pos_x - ((float)(p_app->width) / 2.0f);
-	p_app->cursor_pos_y = -(float)p_app->d_cursor_pos_y + ((float)(p_app->height) / 2.0f);
-
-	int cursors[5] = {
-		GLFW_CURSOR_NORMAL,
-		GLFW_HRESIZE_CURSOR,
-		GLFW_VRESIZE_CURSOR,
-		GLFW_RESIZE_NESW_CURSOR,
-		GLFW_RESIZE_NWSE_CURSOR
-	};
-	GLFWcursor* cursor = glfwCreateStandardCursor(cursors[p_app->gui.inputs.active_cursor]);
-	glfwSetCursor(p_app->window, cursor);
 
 	return running;
 }
@@ -819,13 +796,13 @@ uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
 			shGuiSetRenderpass(p_gui, p_app->renderpass);
 			shGuiBuildRegionPipeline(
 				p_gui,
-				"../shaders/bin/shgui-region.vert.spv",
-				"../shaders/bin/shgui-region.frag.spv"
+				NULL,
+				NULL
 			);
 			shGuiBuildCharPipeline(
 				p_gui,
-				"../shaders/bin/shgui-char.vert.spv",
-				"../shaders/bin/shgui-char.frag.spv"
+				NULL,
+				NULL
 			);
 		}
 	}
@@ -849,14 +826,15 @@ uint8_t SH_GUI_CALL shGuiAppUpdate(
 	shGuiUpdateInputs(p_gui);
 	shGuiSubmitInputs(p_gui);
 
-
+	uint8_t swapchain_suboptimal = 0;
 	shAcquireSwapchainImage(
-		device,//device
-		p_app->swapchain,//swapchain
-		UINT64_MAX,//timeout_ns
-		p_app->current_image_acquired_semaphore,//acquired_signal_semaphore
-		NULL,//acquired_signal_fence
-		&p_app->swapchain_image_idx//p_swapchain_image_index
+		device,                                  //device
+		p_app->swapchain,                        //swapchain
+		UINT64_MAX,                              //timeout_ns
+		p_app->current_image_acquired_semaphore, //acquired_signal_semaphore
+		NULL,                                    //acquired_signal_fence
+		&p_app->swapchain_image_idx,             //p_swapchain_image_index
+		&swapchain_suboptimal                    //p_swapchain_suboptimal
 	);
 
 	VkCommandBuffer cmd_buffer = p_app->graphics_cmd_buffers[p_app->swapchain_image_idx];
