@@ -38,12 +38,12 @@ target_link_libraries(shgui-example PUBLIC
 )
 
 if (WIN32)
-set_target_properties(shgui-example shgui-app shgui shvulkan glfw PROPERTIES 
+set_target_properties(shgui-example shgui-app PROPERTIES 
     ARCHIVE_OUTPUT_DIRECTORY ${SH_GUI_BINARIES_DIR}/windows
     RUNTIME_OUTPUT_DIRECTORY ${SH_GUI_BINARIES_DIR}/windows
 )
 else()
-set_target_properties(shgui-example shgui-app shgui shvulkan glfw PROPERTIES 
+set_target_properties(shgui-example shgui-app PROPERTIES 
     ARCHIVE_OUTPUT_DIRECTORY ${SH_GUI_BINARIES_DIR}/linux
     RUNTIME_OUTPUT_DIRECTORY ${SH_GUI_BINARIES_DIR}/linux
 )

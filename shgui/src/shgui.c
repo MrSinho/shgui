@@ -4,6 +4,7 @@
 
 
 #include "shgui/shgui.h"
+#include "shgui/shgui-font.h"
 
 #include <shvulkan/shVulkan.h>
 #include <string.h>
@@ -249,7 +250,7 @@ uint8_t shGuiAllocatePipelineResources(
 		framebuffer_count * 2,             //descriptor_set_unit_count
 		p_pipeline_pool                    //p_pipeline_pool
 	);
-
+	
 	r = r && shPipelinePoolSetDescriptorBufferInfos(
 		0,                             //first_descriptor
 		framebuffer_count,             //descriptor_count
@@ -258,7 +259,7 @@ uint8_t shGuiAllocatePipelineResources(
 		SH_GUI_REGIONS_RAW_DST_SIZE,   //buffer_size
 		p_pipeline_pool                //p_pipeline_pool
 	);
-
+	
 	r = r && shPipelinePoolSetDescriptorBufferInfos(
 		framebuffer_count,           //first_descriptor
 		framebuffer_count,           //descriptor_count
@@ -267,13 +268,38 @@ uint8_t shGuiAllocatePipelineResources(
 		SH_GUI_CHARS_RAW_DST_SIZE,   //buffer_size
 		p_pipeline_pool              //p_pipeline_pool
 	);
-
+	
 	r = r && shPipelinePoolUpdateDescriptorSetUnits(
 		device,                //device
 		0,                     //first_descriptor_set_unit
 		framebuffer_count * 2, //descriptor_set_unit_count
 		p_pipeline_pool        //p_pipeline_pool
 	);
+
+	//r = r && shPipelinePoolAllocateDescriptorSets(
+	//	device, 0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+	//	0, framebuffer_count * 2, p_pipeline_pool
+	//);
+	//
+	//r = r && shPipelinePoolSetDescriptorSetBufferInfos(
+	//	0, framebuffer_count,
+	//	p_gui->dst_buffer,
+	//	SH_GUI_REGIONS_RAW_DST_OFFSET,
+	//	SH_GUI_REGIONS_RAW_DST_SIZE,
+	//	p_pipeline_pool
+	//);
+	//
+	//r = r && shPipelinePoolSetDescriptorSetBufferInfos(
+	//	framebuffer_count, framebuffer_count,
+	//	p_gui->dst_buffer,
+	//	SH_GUI_CHARS_RAW_DST_OFFSET,
+	//	SH_GUI_CHARS_RAW_DST_SIZE,
+	//	p_pipeline_pool
+	//);
+	//
+	//r = r && shPipelinePoolUpdateDescriptorSets(
+	//	device, 0, framebuffer_count * 2, p_pipeline_pool
+	//);
 
 	shGuiError(
 		r == 0,
@@ -336,7 +362,7 @@ uint8_t shGuiBuildRegionPipeline(
 	r = r && shPipelineColorBlendSettings(
 		0,
 		0,
-		0,
+		1,
 		p_region_pipeline
 	);
 
@@ -470,7 +496,7 @@ uint8_t shGuiBuildCharPipeline(
 	r = r && shPipelineColorBlendSettings(
 		0,
 		0,
-		0,
+		1,
 		p_char_pipeline
 	);
 
@@ -784,7 +810,8 @@ uint8_t shGuiRender(
 		(float)(*p_gui->inputs.p_window_height)
 	};
 
-	uint8_t r = 1;
+	uint8_t r            = 1;
+	uint8_t set_bindings = 0;
 
 	r = r && shBindPipeline(
 		cmd_buffer, 
@@ -795,16 +822,27 @@ uint8_t shGuiRender(
 	r = r && shPipelinePushConstants(cmd_buffer, push_constant_data, p_region_pipeline);
 
 	r = r && shPipelineBindDescriptorSetUnits(
-		cmd_buffer,                                                //cmd_buffer
-		0,                                                         //first_descriptor_set
-		(swapchain_image_idx * p_gui->core.swapchain_image_count), //first_descriptor_set_unit_idx
-		1,                                                         //descriptor_set_unit_count
-		VK_PIPELINE_BIND_POINT_GRAPHICS,                           //bind_point
-		0,                                                         //dynamic_descriptors_count
-		NULL,                                                      //p_dynamic_offsets
-		&p_gui->pipeline_pool,                                     //p_pipeline_pool
-		p_region_pipeline                                          //p_pipeline
+		cmd_buffer,                      //cmd_buffer
+		0,                               //first_descriptor_set
+		swapchain_image_idx,             //first_descriptor_set_unit_idx
+		1,                               //descriptor_set_unit_count
+		VK_PIPELINE_BIND_POINT_GRAPHICS, //bind_point
+		0,                               //dynamic_descriptors_count
+		VK_NULL_HANDLE,                  //p_dynamic_offsets
+		&p_gui->pipeline_pool,           //p_pipeline_pool
+		p_region_pipeline                //p_pipeline
 	);
+
+	//shPipelineBindDescriptorSets(
+	//	cmd_buffer,
+	//	swapchain_image_idx,
+	//	1, VK_PIPELINE_BIND_POINT_GRAPHICS,
+	//	0, NULL,
+	//	&p_gui->pipeline_pool,
+	//	p_region_pipeline
+	//);
+
+	set_bindings++;
 
 	r = r && shDraw(
 		cmd_buffer, 
@@ -826,17 +864,26 @@ uint8_t shGuiRender(
 	);
 
 	r = r && shPipelineBindDescriptorSetUnits(
-		cmd_buffer,                                                    //cmd_buffer
-		0,                                                             //first_descriptor_set
-		(swapchain_image_idx * p_gui->core.swapchain_image_count) + 1, //first_descriptor_set_unit_idx
-		1,                                                             //descriptor_set_unit_count
-		VK_PIPELINE_BIND_POINT_GRAPHICS,                               //bind_point
-		0,                                                             //dynamic_descriptors_count
-		NULL,                                                          //p_dynamic_offsets
-		&p_gui->pipeline_pool,                                         //p_pipeline_pool
-		p_char_pipeline                                                //p_pipeline
+		cmd_buffer,                                                               //cmd_buffer
+		0,                                                                        //first_descriptor_set
+		(p_gui->core.swapchain_image_count * set_bindings) + swapchain_image_idx, //first_descriptor_set_unit_idx
+		1,                                                                        //descriptor_set_unit_count
+		VK_PIPELINE_BIND_POINT_GRAPHICS,                                          //bind_point
+		0,                                                                        //dynamic_descriptors_count
+		VK_NULL_HANDLE,                                                           //p_dynamic_offsets
+		&p_gui->pipeline_pool,                                                    //p_pipeline_pool
+		p_char_pipeline                                                           //p_pipeline
 	);
 
+	set_bindings++;
+
+	//shPipelineBindDescriptorSets(
+	//	cmd_buffer,
+	//	(p_gui->core.swapchain_image_count * set_bindings) + swapchain_image_idx,
+	//	1, VK_PIPELINE_BIND_POINT_GRAPHICS,
+	//	0, NULL,
+	//	&p_gui->pipeline_pool, p_char_pipeline
+	//);
 
 	VkDeviceSize vertex_raw_offset = SH_GUI_CHARS_VERTEX_RAW_DST_OFFSET;
 	r = r && shBindVertexBuffers(
@@ -845,7 +892,7 @@ uint8_t shGuiRender(
 	
 	r = r && shDraw(
 		cmd_buffer,
-		p_gui->char_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_SIZE / 3 / 4, 0,
+		p_gui->char_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_COUNT, 0,
 		1, 0
 	);
 
@@ -943,7 +990,7 @@ uint8_t shGuiRegion(
 	ShGui*           p_gui,
 	shguivec2        position_zero,
 	shguivec2        scale_zero,
-	shguivec4        color_zero,
+	shguivec4        fill_color_zero,
 	shguivec4        edge_color_zero,
 	ShGuiWidgetFlags flags
 ) {
@@ -958,7 +1005,7 @@ uint8_t shGuiRegion(
 	ShGuiRegionRaw region_raw = {
 		position_zero,
 		scale_zero,
-		color_zero,
+		fill_color_zero,
 		(shguivec3) { edge_color_zero.x, edge_color_zero.y, edge_color_zero.z },
 		SH_GUI_REGION_Z_PRIORITY
 	};
@@ -990,11 +1037,29 @@ uint8_t shGuiRegion(
 		region_raw.position.y -= (window_size_y - region_raw.scale.y) / 2.0f;
 	}
 
-	ShGuiRegionRawWriteFlags* p_region_written = &p_gui->region_infos.regions_raw_write_flags[p_gui->region_infos.region_count];
-
-	if ((*p_region_written) == SH_GUI_REGION_RAW_WRITE_NONE) {
-		(*p_region_raw) = region_raw;
-	}
+	ShGuiRegionRawWriteFlags region_written = p_gui->region_infos.regions_raw_write_flags[p_gui->region_infos.region_count];
+	
+	if ((region_written & SH_GUI_REGION_RAW_WRITE_X_POSITION) == 0) {
+		p_region_raw->position.x = region_raw.position.x;
+	} 
+	if ((region_written & SH_GUI_REGION_RAW_WRITE_Y_POSITION) == 0) {
+		p_region_raw->position.y = region_raw.position.y;
+	} 
+	if ((region_written & SH_GUI_REGION_RAW_WRITE_X_SCALE   ) == 0) {
+		p_region_raw->scale.x = region_raw.scale.x;
+	} 
+	if ((region_written & SH_GUI_REGION_RAW_WRITE_Y_SCALE   ) == 0) {
+		p_region_raw->scale.y = region_raw.scale.y;
+	} 
+	if ((region_written & SH_GUI_REGION_RAW_WRITE_COLOR     ) == 0) {
+		p_region_raw->color = region_raw.color;
+	} 
+	if ((region_written & SH_GUI_REGION_RAW_WRITE_EDGE_COLOR) == 0) {
+		p_region_raw->edge_color = region_raw.edge_color;
+	} 
+	if ((region_written & SH_GUI_REGION_RAW_WRITE_Z_PRIORITY) == 0) {
+		p_region_raw->z_priority = region_raw.z_priority;
+	} 
 
 	p_gui->region_infos.region_count++;
 
@@ -1082,7 +1147,7 @@ uint8_t shGuiTextLineCount(
 uint8_t shGuiText(
 	ShGui*           p_gui,
 	shguivec2        position_zero, 
-	shguivec4        first_color,
+	shguivec4        fill_color,
 	float            scale_zero_pixels,
 	char*            s_text,
 	ShGuiWidgetFlags flags
@@ -1097,25 +1162,29 @@ uint8_t shGuiText(
 	ShGuiCharRaw*       chars_raw        = p_gui->char_infos.chars_raw;
 	ShGuiCharVertexRaw* chars_vertex_raw = p_gui->char_infos.chars_vertex_raw;
 
-	float               x_offset         = 0.0f;
-	float               y_offset         = 0.0f;
+	float               x_offset         = 0.0f;//current char x offset, see loop
+	float               x_occupied       = 0.0f;//total x space occupied
+	float               blank_h_space    = 0.0f;//blank horizontal space between one char and the other
 
-	float               max_x_offset     = x_offset;
-	float               min_y_offset     = y_offset;
+	float               y_offset         = 0.0f;//current char y offset, see loop
+	float               y_occupied       = 0.0f;//total y space occupied
+	float               blank_v_space    = 0.0f;//blank vertical space between one char and the other
 
+	uint8_t             new_line           = 1;
+	uint32_t            line_idx           = 0;
+	uint32_t            line_char_idx      = 0;
+
+	uint32_t            max_chars_in_line  = 0;
+	uint32_t            current_line_chars = 0;
 
 	for (uint32_t char_idx = 0; char_idx < strlen(s_text); char_idx++) {
 		
-		ShGuiCharRawWriteFlags char_written = p_gui->char_infos.chars_raw_write_flags[char_idx];
+		uint32_t               char_count        =  p_gui->char_infos.char_count;
+		ShGuiCharRaw*          p_char_raw        = &p_gui->char_infos.chars_raw[char_count];
+		float*                 p_char_vertex_raw =  p_gui->char_infos.chars_vertex_raw[char_count];
+		ShGuiCharRawWriteFlags char_written      =  p_gui->char_infos.chars_raw_write_flags[char_count];
 
-		uint32_t      char_count        =  p_gui->char_infos.char_count;
-		ShGuiCharRaw* p_char_raw        = &p_gui->char_infos.chars_raw       [char_count];
-		float*        p_char_vertex_raw =  p_gui->char_infos.chars_vertex_raw[char_count];
-		
-		if ((char_written & SH_GUI_CHAR_RAW_WRITE_POSITION) == 0) {
-			p_char_raw->position.x = position_zero.x + x_offset;
-			p_char_raw->position.y = position_zero.y + y_offset;
-		}
+
 		if ((char_written & SH_GUI_CHAR_RAW_WRITE_SCALE) == 0) {
 			p_char_raw->scale = scale_zero_pixels;
 		}
@@ -1123,271 +1192,318 @@ uint8_t shGuiText(
 			p_char_raw->z_priority = SH_GUI_TEXT_Z_PRIORITY;
 		}
 		if ((char_written & SH_GUI_CHAR_RAW_WRITE_COLOR) == 0) {
-			p_char_raw->color = first_color;
+			p_char_raw->color = fill_color;
 		}
 
-		x_offset += SH_GUI_CHAR_X_OFFSET(SH_GUI_CHAR_DISTANCE_OFFSET, scale_zero_pixels);
-		if (x_offset > max_x_offset) {
-			max_x_offset = x_offset;
+		blank_h_space = p_char_raw->scale / 7.0f; //blank horizontal space between characters
+		blank_v_space = p_char_raw->scale / 2.5f; //blank vertical space between characters
+
+		//- line_idx to get rid of the \n character x offset
+		x_offset      = (float)(!new_line) * (float)(line_char_idx - line_idx) * (3.0f * blank_h_space + p_char_raw->scale);
+		y_offset      =             -1.0f  * (float)(line_idx                ) * (3.0f * blank_v_space + p_char_raw->scale);
+
+		if (new_line) {
+			new_line           = 0;
+			current_line_chars = 0;
+		}
+		else {
+			current_line_chars++;
+		}
+
+		if (current_line_chars > max_chars_in_line) {
+			max_chars_in_line = current_line_chars;
+		}
+
+		if ((char_written & SH_GUI_CHAR_RAW_WRITE_X_POSITION) == 0) {
+			p_char_raw->position.x = position_zero.x + x_offset; //pivot on left vertex
+		}
+		if ((char_written & SH_GUI_CHAR_RAW_WRITE_Y_POSITION) == 0) {
+			p_char_raw->position.y = position_zero.y + y_offset; //pivot on line 0
 		}
 
 		switch (s_text[char_idx]) {
-		//case 'q':
-		//case 'Q':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigQ_vertices);
-		//	break;
-		//case 'w':
-		//case 'W':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigW_vertices);
-		//	break;
-		//case 'e':
-		//case 'E':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigE_vertices);
-		//	break;
-		//case 'r':
-		//case 'R':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigR_vertices);
-		//	break;
-		//case 't':
-		//case 'T':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigT_vertices);
-		//	break;
-		//case 'y':
-		//case 'Y':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigY_vertices);
-		//	break;
-		//case 'u':
-		//case 'U':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigU_vertices);
-		//	break;
-		//case 'i':
-		//case 'I':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigI_vertices);
-		//	break;
-		//case 'o':
-		//case 'O':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigO_vertices);
-		//	break;
-		//case 'p':
-		//case 'P':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigP_vertices);
-		//	break;
-		//case 'a':
-		//case 'A':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigA_vertices);
-		//	break;
-		//case 's':
-		//case 'S':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigS_vertices);
-		//	break;
-		//case 'd':
-		//case 'D':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigD_vertices);
-		//	break;
-		//case 'f':
-		//case 'F':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigF_vertices);
-		//	break;
-		//case 'g':
-		//case 'G':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigG_vertices);
-		//	break;
-		//case 'h':
-		//case 'H':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigH_vertices);
-		//	break;
-		//case 'j':
-		//case 'J':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigJ_vertices);
-		//	break;
-		//case 'k':
-		//case 'K':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigK_vertices);
-		//	break;
-		//case 'l':
-		//case 'L':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigL_vertices);
-		//	break;
-		//case 'z':
-		//case 'Z':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigZ_vertices);
-		//	break;
-		//case 'x':
-		//case 'X':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigX_vertices);
-		//	break;
-		//case 'c':
-		//case 'C':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigC_vertices);
-		//	break;
-		//case 'v':
-		//case 'V':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigV_vertices);
-		//	break;
-		//case 'b':
-		//case 'B':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigB_vertices);
-		//	break;
-		//case 'n':
-		//case 'N':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigN_vertices);
-		//	break;
-		//case 'm':
-		//case 'M':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_bigM_vertices);
-		//	break;
-		//case '\\':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_backslash_vertices);
-		//	break;
-		//case '1':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_1_vertices);
-		//	break;
-		//case '2':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_2_vertices);
-		//	break;
-		//case '3':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_3_vertices);
-		//	break;
-		//case '4':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_4_vertices);
-		//	break;
-		//case '5':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_5_vertices);
-		//	break;
-		//case '6':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_6_vertices);
-		//	break;
-		//case '7':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_7_vertices);
-		//	break;
-		//case '8':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_8_vertices);
-		//	break;
-		//case '9':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_9_vertices);
-		//	break;
-		//case '0':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_0_vertices);
-		//	break;
-		//case '\'':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_quote_vertices);
-		//	break;
-		//case '|':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_stick_vertices);
-		//	break;
-		//case '!':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_exclamation_vertices);
-		//	break;
-		//case '"':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_double_quote_vertices);
-		//	break;
-		////case '£'://multi char character
-		////	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_pound_vertices);
-		////	break;
-		//case '$':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_dollar_vertices);
-		//	break;
-		//case '%':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_percent_vertices);
-		//	break;
-		//case '&':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_and_vertices);
-		//	break;
-		//case '/':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_frontslash_vertices);
-		//	break;
-		//	//case '(':
-		//	//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_open_round_bracket_vertices);
-		//	//	break;
-		//	//case ')':
-		//	//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_close_round_bracket_vertices);
-		//	//	break;
-		//case '=':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_equal_vertices);
-		//	break;
-		//case '?':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_question_mark_vertices);
-		//	break;
-		//case '+':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_plus_vertices);
-		//	break;
-		//case ',':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_comma_vertices);
-		//	break;
-		//case '.':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_dot_vertices);
-		//	break;
+		case 'a':
+		case 'A':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_A]);
+			break;
+		case 'B':
+		case 'b':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_B]);
+			break;
+		case 'C':
+		case 'c':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_C]);
+			break;
+		case 'D':
+		case 'd':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_D]);
+			break;
+		case 'E':
+		case 'e':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_E]);
+			break;
+		case 'F':
+		case 'f':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_F]);
+			break;
+		case 'G':
+		case 'g':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_G]);
+			break;
+		case 'H':
+		case 'h':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_H]);
+			break;
+		case 'I':
+		case 'i':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_I]);
+			break;
+		case 'J':
+		case 'j':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_J]);
+			break;
+		case 'K':
+		case 'k':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_K]);
+			break;
+		case 'L':
+		case 'l':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_L]);
+			break;
+		case 'M':
+		case 'm':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_M]);
+			break;
+		case 'N':
+		case 'n':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_N]);
+			break;
+		case 'O':
+		case 'o':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_O]);
+			break;
+		case 'P':
+		case 'p':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_P]);
+			break;
+		case 'Q':
+		case 'q':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_Q]);
+			break;
+		case 'R':
+		case 'r':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_R]);
+			break;
+		case 'S':
+		case 's':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_S]);
+			break;
+		case 'T':
+		case 't':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_T]);
+			break;
+		case 'U':
+		case 'u':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_U]);
+			break;
+		case 'V':
+		case 'v':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_V]);
+			break;
+		case 'W':
+		case 'w':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_W]);
+			break;
+		case 'X':
+		case 'x':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_X]);
+			break;
+		case 'Y':
+		case 'y':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_Y]);
+			break;
+		case 'Z':
+		case 'z':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_Z]);
+			break;
+		case '0':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_0]);
+			break;
+		case '1':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_1]);
+			break;
+		case '2':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_2]);
+			break;
+		case '3':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_3]);
+			break;
+		case '4':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_4]);
+			break;
+		case '5':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_5]);
+			break;
+		case '6':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_6]);
+			break;
+		case '7':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_7]);
+			break;
+		case '8':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_8]);
+			break;
+		case '9':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_9]);
+			break;
+		case ' ':
+			p_char_raw->z_priority = SH_GUI_OUT_OF_CANVAS_Z_PRIORITY;
+			break;
+		case '\t':
+			//manage tab
+			p_char_raw->z_priority = SH_GUI_OUT_OF_CANVAS_Z_PRIORITY;
+			break;
+		case '.':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_PERIOD]);
+			break;
+		case ',':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_COMMA]);
+			break;
+		case '!':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_EXCLAMATION]);
+			break;
+		case '?':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_QUESTION]);
+			break;
+		case ':':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_COLON]);
+			break;
+		case ';':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_SEMICOLON]);
+			break;
+		case '/':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_FORWARD_SLASH]);
+			break;
+		case '\\':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_BACKSLASH]);
+			break;
+		case '_':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_UNDERSCORE]);
+			break;
+		case '-':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_HYPHEN]);
+			break;
+		case '|':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_VERTICAL_BAR]);
+			break;
+		case '&':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_AMPERSAND]);
+			break;
+		case '%':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_PERCENT]);
+			break;
+		case '$':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_DOLLAR]);
+			break;
+		case '#':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_HASH]);
+			break;
+		case '@':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_AT]);
+			break;
+		case '\'':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_SINGLE_QUOTE]);
+			break;
+		case '"':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_DOUBLE_QUOTE]);
+			break;
+		case '+':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_PLUS]);
+			break;
 		//case '-':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_dash_vertices);
+		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_MINUS]);
 		//	break;
-		//case '*':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_star_vertices);
-		//	break;
-		//case ';':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_semicolon_vertices);
-		//	break;
-		//case ':':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_colon_vertices);
-		//	break;
-		//case '_':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_underscore_vertices);
-		//	break;
-		//	//case '[':
-		//	//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_open_round_bracket_vertices);
-		//	//	break;
-		//	//case ']':
-		//	//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_close_round_bracket_vertices);
-		//	//	break;
-		//case '@':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_at_vertices);
-		//	break;
-		//case '#':
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_hash_vertices);
-		//	break;
-			//case '{':
-			//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_open_curly_bracket_vertices);
-			//	break;
-			//case '}':
-			//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, consolas_close_curly_bracket_vertices);
-			//	break;
-		//case '\n':
-		//	x_offset  = 0.0f;
-		//	y_offset -= p_char_raw->scale;
-		//	if (y_offset < min_y_offset) {
-		//		min_y_offset = y_offset;
-		//	}
-		//default:
-		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, SH_GUI_NO_CHAR);
-		//	break;
+		case '*':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_ASTERISK]);
+			break;
+		case '=':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_EQUALS]);
+			break;
+		case '<':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_LESS_THAN]);
+			break;
+		case '>':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_GREATER_THAN]);
+			break;
+		case '(':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_LEFT_PAREN]);
+				break;
+		case ')':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_RIGHT_PAREN]);
+				break;
+		case '[':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_LEFT_BRACKET]);
+				break;
+		case ']':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_RIGHT_BRACKET]);
+				break;
+		case '^':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_TILDE]);
+				break;
+		case '`':
+			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_GRAVE_ACCENT]);
+			break;
+		case '\n':
+			new_line = 1;
+			line_idx++;
+			line_char_idx = 0;
+			p_char_raw->z_priority = SH_GUI_OUT_OF_CANVAS_Z_PRIORITY;
+			break;
+		default:
+			p_char_raw->z_priority = SH_GUI_OUT_OF_CANVAS_Z_PRIORITY;
+			break;
 		}
 
+		float x_occupied_correction_sum = -p_char_raw->scale / 40.0f;
+		float y_occupied_correction_sum =  p_char_raw->scale /  1.6f;
+
+		             //slightly different than y_occupied
+		x_occupied = max_chars_in_line * (3.0f * blank_h_space + p_char_raw->scale) + p_char_raw->scale + x_occupied_correction_sum;
+		y_occupied = y_offset + p_char_raw->scale + y_occupied_correction_sum;
+
 		p_gui->char_infos.char_count++;
+		line_char_idx++;	
 	}
 
 	for (uint32_t char_idx = 0; char_idx < strlen(s_text); char_idx++) {
 		
-		ShGuiCharRaw* p_char_raw = &p_gui->char_infos.chars_raw[char_idx];
-		
+
+		uint32_t char_count    = p_gui->char_infos.char_count;
+		uint32_t char_mesh_idx = char_count - ((uint32_t)strlen(s_text) - char_idx);
+
+		ShGuiCharRaw* p_char_raw = &p_gui->char_infos.chars_raw[char_mesh_idx];
+
 		if (flags & SH_GUI_CENTER_WIDTH) {
-			p_char_raw->position.x -= max_x_offset / 2.0f;
+			float center_correction_sum  = p_char_raw->scale / 1.5f;
+			p_char_raw->position.x      -= x_occupied        /  2.0f - center_correction_sum;//not precise for some reason
 		}
 		if (flags & SH_GUI_EDGE_LEFT) {
-			p_char_raw->position.x -= (window_size_x - max_x_offset) / 2.0f - SH_GUI_CHAR_DISTANCE_OFFSET;
+			p_char_raw->position.x -= window_size_x - blank_h_space;
 		}
 		if (flags & SH_GUI_EDGE_RIGHT) {
-			p_char_raw->position.x += (window_size_x - max_x_offset) / 2.0f - SH_GUI_CHAR_DISTANCE_OFFSET;
+			p_char_raw->position.x += window_size_x - x_occupied;//max_x_offset already includes x_step_0
 		}
-
+		
 		if (flags & SH_GUI_CENTER_HEIGHT) {
-			p_char_raw->position.y -= min_y_offset / 2.0f - SH_GUI_CHAR_DISTANCE_OFFSET;
-		}
-		if (flags & SH_GUI_EDGE_TOP) {
-			p_char_raw->position.y += (window_size_y + min_y_offset) / 2.0f - SH_GUI_CHAR_DISTANCE_OFFSET;
+			float center_correction_sum  = p_char_raw->scale / 16.0f;
+			p_char_raw->position.y      -= y_occupied        /  2.0f - center_correction_sum;//not precise for some reason
 		}
 		if (flags & SH_GUI_EDGE_BOTTOM) {
-			p_char_raw->position.y -= window_size_y / 2.0f + min_y_offset - SH_GUI_CHAR_DISTANCE_OFFSET;
+			p_char_raw->position.y -= window_size_y + y_offset;
 		}
-
+		if (flags & SH_GUI_EDGE_TOP) {
+			p_char_raw->position.y += window_size_y - y_occupied + y_offset;
+		}
 	}
 
 	return 1;

@@ -23,6 +23,7 @@ endif()
 
 add_library(shgui 
     ${SH_GUI_ROOT_DIR}/shgui/src/shgui.c
+    ${SH_GUI_ROOT_DIR}/shgui/src/shgui-font.c
 )
 
 target_include_directories(shgui PUBLIC 

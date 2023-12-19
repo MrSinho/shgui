@@ -67,7 +67,7 @@ extern "C" {
 
 
 /*
-* @brief Macro used to define an empty C struct with the shgui api.
+* @brief Macro used to define an empty C struct with the `shgui` api.
 */
 #define SH_GUI_STRUCTURE_ZERO { 0 }
 
@@ -75,9 +75,9 @@ extern "C" {
 
 /**
 * @struct ShGuiCore
-* @brief Represents the core Vulkan components for the shgui library.
+* @brief Represents the core Vulkan components for the `shgui` library.
 *
-* The @ref ShGuiCore structure encapsulates essential Vulkan components required by the shgui library for rendering and GUI operations. It includes the Vulkan device, physical device, graphics queue information, rendering surface, render pass, and other relevant settings.
+* The @ref ShGuiCore structure encapsulates essential Vulkan components required by the `shgui` library for rendering and GUI operations. It includes the Vulkan device, physical device, graphics queue information, rendering surface, render pass, and other relevant settings.
 */
 typedef struct ShGuiCore {
 	VkDevice         device;                      /**< Vulkan logical device.             */
@@ -93,9 +93,9 @@ typedef struct ShGuiCore {
 
 
 /**
-* @brief The last valid key event code in the shgui library.
+* @brief The last valid key event code in the `shgui` library.
 *
-* This constant represents the highest valid key event code within the shgui library. Key event codes are typically used to identify and handle keyboard input in shgui applications.
+* This constant represents the highest valid key event code within the `shgui` library. Key event codes are typically used to identify and handle keyboard input in `shgui` applications.
 */
 #define SH_GUI_KEY_LAST 348
 
@@ -103,7 +103,7 @@ typedef struct ShGuiCore {
 
 /**
 * @typedef ShGuiKeyEvents
-* @brief A memory block to represent and store shgui key events.
+* @brief A memory block to represent and store `shgui` key events.
 */
 typedef int8_t ShGuiKeyEvents[SH_GUI_KEY_LAST + 1];
 
@@ -126,7 +126,7 @@ typedef uint32_t ShGui_UTF32_Char;
 
 /**
 * @enum ShGuiInputFlags
-* @brief Flags for shgui input handling. These flags help control how input events, such as clicks and key presses, are processed.
+* @brief Flags for `shgui` input handling. These flags help control how input events, such as clicks and key presses, are processed.
 */
 typedef enum ShGuiInputFlags {
 	SH_GUI_CLICK_ONCE     = 1 << 0, /**< Single click event.                              */
@@ -140,9 +140,9 @@ typedef enum ShGuiInputFlags {
 
 /**
 * @struct ShGuiInputs
-* @brief Represents shgui input data.
+* @brief Represents `shgui` input data.
 *
-* The `ShGuiInputs` structure encapsulates various input data used in shgui applications, including window dimensions, key events, and a system-submitted character. It is designed to help manage and process input-related information.
+* The `ShGuiInputs` structure encapsulates various input data used in `shgui` applications, including window dimensions, key events, and a system-submitted character. It is designed to help manage and process input-related information.
 */
 typedef struct ShGuiInputs {
     uint32_t*        p_window_width;        /**< Pointer to the window's width.                      */
@@ -158,7 +158,7 @@ typedef struct ShGuiInputs {
 * @struct shguivec2
 * @brief Represents a 2D vector with two float components.
 *
-* The `shguivec2` structure is used to represent 2D vectors with `x` and `y` components. It is commonly employed in shgui applications for various 2D operations.
+* The `shguivec2` structure is used to represent 2D vectors with `x` and `y` components. It is commonly employed in `shgui` applications for various 2D operations.
 */
 typedef struct shguivec2 {
 	float x; /**< The x-component of the 2D vector.*/
@@ -169,7 +169,7 @@ typedef struct shguivec2 {
 * @struct shguivec3
 * @brief Represents a 3D vector with three float components.
 *
-* The `shguivec3` structure is used to represent 3D vectors with `x`, `y`, and `z` components. It is typically utilized in shgui applications for various 3D operations.
+* The `shguivec3` structure is used to represent 3D vectors with `x`, `y`, and `z` components. It is typically utilized in `shgui` applications for various 3D operations.
 */
 typedef struct shguivec3 {
 	float x; /**< The x-component of the 3D vector.*/
@@ -181,7 +181,7 @@ typedef struct shguivec3 {
 * @struct shguivec4
 * @brief Represents a 4D vector with four float components.
 *
-* The `shguivec4` structure is used to represent 4D vectors with `x`, `y`, `z`, and `w` components. It is commonly employed in shgui applications for various 4D operations.
+* The `shguivec4` structure is used to represent 4D vectors with `x`, `y`, `z`, and `w` components. It is commonly employed in `shgui` applications for various 4D operations.
 */
 typedef struct shguivec4 {
 	float x; /**< The x-component of the 4D vector.*/
@@ -290,25 +290,25 @@ static const shguivec4 _SH_GUI_VEC4_ZERO = SH_GUI_STRUCTURE_ZERO;
 
 /**
 * @struct ShGuiRegionRaw
-* @brief Represents raw data for a shgui region.
+* @brief Represents raw data for a `shgui` region.
 *
-* The `ShGuiRegionRaw` structure is used to represent raw data for a shgui region. It includes the following properties:
+* The `ShGuiRegionRaw` structure is used to represent raw data for a `shgui` region. It includes the following properties:
 */
 typedef struct ShGuiRegionRaw {
 	shguivec2 position;   /**< The @ref shguivec2 position of the region.                                                       */
 	shguivec2 scale;      /**< The @ref shguivec2 scale of the region.                                                          */
 	shguivec4 color;      /**< The @ref shguivec4 color of the region.                                                          */
 	shguivec3 edge_color; /**< The @ref shguivec3 edge color of the region.                                                     */
-    float     z_priority; /**< The priority of the region over other shgui widgets. Smaller values represent a higher priority. */
+    float     z_priority; /**< The priority of the region over other `shgui` widgets. Smaller values represent a higher priority. */
 } ShGuiRegionRaw;
 
 /**
-* @brief Maximum number of regions supported in a shgui application.
+* @brief Maximum number of regions supported in a `shgui` application.
 */
 #define SH_GUI_MAX_REGION_COUNT 1024
 
 /**
-* @brief Maximum size in bytes for raw region data in a shgui application.
+* @brief Maximum size in bytes for raw region data in a `shgui` application.
 */
 #define SH_GUI_MAX_REGIONS_RAW_SIZE (SH_GUI_MAX_REGION_COUNT * sizeof(ShGuiRegionRaw))
 
@@ -316,21 +316,21 @@ typedef struct ShGuiRegionRaw {
 
 /**
  * @enum ShGuiRegionRawWriteFlags
- * @brief Flags for specifying raw write operations on shgui regions.
+ * @brief Flags for specifying raw write operations on `shgui` regions.
  *
- * The `ShGuiRegionRawWriteFlags` enumeration defines a set of flags used to specify raw write operations on shgui regions. These flags indicate which properties of a region should be updated during the write operation.
+ * The `ShGuiRegionRawWriteFlags` enumeration defines a set of flags used to specify raw write operations on `shgui` regions. These flags indicate which properties of a region should be updated during the write operation.
  */
 typedef enum ShGuiRegionRawWriteFlags {
     SH_GUI_REGION_RAW_WRITE_NONE         = 0,                                                                       /**< No raw write operation.                          */
-    SH_GUI_REGION_RAW_WRITE_X_POSITION   = 1 << 0,                                                                  /**< Write the X-position property of a shgui region. */
-    SH_GUI_REGION_RAW_WRITE_Y_POSITION   = 1 << 1,                                                                  /**< Write the Y-position property of a shgui region. */
-    SH_GUI_REGION_RAW_WRITE_POSITION     = SH_GUI_REGION_RAW_WRITE_X_POSITION | SH_GUI_REGION_RAW_WRITE_Y_POSITION, /**< Write both X and Y positions of a shgui region.  */
-    SH_GUI_REGION_RAW_WRITE_X_SCALE      = 1 << 2,                                                                  /**< Write the X-scale property of a shgui region.    */
-    SH_GUI_REGION_RAW_WRITE_Y_SCALE      = 1 << 3,                                                                  /**< Write the Y-scale property of a shgui region.    */
-    SH_GUI_REGION_RAW_WRITE_SCALE        = SH_GUI_REGION_RAW_WRITE_X_SCALE | SH_GUI_REGION_RAW_WRITE_Y_SCALE,       /**< Write both X and Y scales of a shgui region.     */
-    SH_GUI_REGION_RAW_WRITE_COLOR        = 1 << 4,                                                                  /**< Write the color property of a shgui region.      */
-    SH_GUI_REGION_RAW_WRITE_EDGE_COLOR   = 1 << 5,                                                                  /**< Write the edge color property of a shgui region. */
-    SH_GUI_REGION_RAW_WRITE_Z_PRIORITY   = 1 << 6,                                                                  /**< Write the Z-priority property of a shgui region. */
+    SH_GUI_REGION_RAW_WRITE_X_POSITION   = 1 << 0,                                                                  /**< Write the X-position property of a `shgui` region. */
+    SH_GUI_REGION_RAW_WRITE_Y_POSITION   = 1 << 1,                                                                  /**< Write the Y-position property of a `shgui` region. */
+    SH_GUI_REGION_RAW_WRITE_POSITION     = SH_GUI_REGION_RAW_WRITE_X_POSITION | SH_GUI_REGION_RAW_WRITE_Y_POSITION, /**< Write both X and Y positions of a `shgui` region.  */
+    SH_GUI_REGION_RAW_WRITE_X_SCALE      = 1 << 2,                                                                  /**< Write the X-scale property of a `shgui` region.    */
+    SH_GUI_REGION_RAW_WRITE_Y_SCALE      = 1 << 3,                                                                  /**< Write the Y-scale property of a `shgui` region.    */
+    SH_GUI_REGION_RAW_WRITE_SCALE        = SH_GUI_REGION_RAW_WRITE_X_SCALE | SH_GUI_REGION_RAW_WRITE_Y_SCALE,       /**< Write both X and Y scales of a `shgui` region.     */
+    SH_GUI_REGION_RAW_WRITE_COLOR        = 1 << 4,                                                                  /**< Write the color property of a `shgui` region.      */
+    SH_GUI_REGION_RAW_WRITE_EDGE_COLOR   = 1 << 5,                                                                  /**< Write the edge color property of a `shgui` region. */
+    SH_GUI_REGION_RAW_WRITE_Z_PRIORITY   = 1 << 6,                                                                  /**< Write the Z-priority property of a `shgui` region. */
     SH_GUI_REGION_RAW_WRITE_MAX_ENUM                                                                                /**< Maximum value for enumeration boundary checking. */
 } ShGuiRegionRawWriteFlags;
 
@@ -339,9 +339,9 @@ typedef enum ShGuiRegionRawWriteFlags {
 
 /**
 * @struct ShGuiRegionInfos
-* @brief Stores information about shgui regions.
+* @brief Stores information about `shgui` regions.
 *
-* The `ShGuiRegionInfos` structure is used to store information about shgui regions.
+* The `ShGuiRegionInfos` structure is used to store information about `shgui` regions.
 */
 typedef struct ShGuiRegionInfos {
     float                    region_scale_factor;                              /**< A floating-point value representing the region scale factor.                             */
@@ -354,22 +354,22 @@ typedef struct ShGuiRegionInfos {
 
 /**
 * @struct ShGuiCharRaw
-* @brief Represents raw data for a shgui character.
+* @brief Represents raw data for a `shgui` character.
 *
-* The `ShGuiCharRaw` structure is used to represent raw data for a shgui character. It includes the following properties:
+* The `ShGuiCharRaw` structure is used to represent raw data for a `shgui` character. It includes the following properties:
 */
 typedef struct ShGuiCharRaw {
     shguivec2 position;   /**< A @ref shguivec2 representing the position of the character.                                  */
     float     scale;      /**< A floating-point value indicating the scale of the character.                                 */
-    float     z_priority; /**< The priority of the char over other shgui widgets. Smaller values represent a higher priority.*/
+    float     z_priority; /**< The priority of the char over other `shgui` widgets. Smaller values represent a higher priority.*/
     shguivec4 color;      /**< A @ref shguivec4 representing the color of the character.                                     */
 } ShGuiCharRaw;
 
 /**
 * @enum ShGuiCharRawWriteFlags
-* @brief Flags for specifying raw write operations on shgui characters.
+* @brief Flags for specifying raw write operations on `shgui` characters.
 *
-* The `ShGuiCharRawWriteFlags` enumeration defines a set of flags used to specify raw write operations on shgui characters. These flags indicate which properties of a character should be updated during the write operation.
+* The `ShGuiCharRawWriteFlags` enumeration defines a set of flags used to specify raw write operations on `shgui` characters. These flags indicate which properties of a character should be updated during the write operation.
 */
 typedef enum ShGuiCharRawWriteFlags {
     SH_GUI_CHAR_RAW_WRITE_X_POSITION = 1 << 1,                                                              /**< Overwrite the X position of the character.        */
@@ -399,24 +399,41 @@ typedef enum ShGuiCharRawWriteFlags {
 
 
 /**
-* @brief Maximum number of vertices required to render a character in a shgui application.
+ * @brief Number of rows in the `shgui` character grid.
+ *
+ * This constant defines the number of rows in the `shgui` character grid.
+ * It determines the vertical size of the grid used for rendering characters in `shgui`.
+ */
+#define SH_GUI_CHAR_ROW_COUNT    7
+
+/**
+ * @brief Number of columns in the `shgui` character grid.
+ *
+ * This constant defines the number of columns in the `shgui` character grid.
+ * It determines the horizontal size of the grid used for rendering characters in `shgui`.
+ */
+#define SH_GUI_CHAR_COLUMN_COUNT 7
+
+
+/**
+* @brief Maximum number of vertices required to render a character in a `shgui` application.
 *
-* The `SH_GUI_MAX_CHAR_VERTEX_COUNT` macro defines the maximum number of vertices required to render a character in a shgui application. It is calculated as 7x7 vertices, which corresponds to a 7x7 grid for character rendering.
+* The `SH_GUI_MAX_CHAR_VERTEX_COUNT` macro defines the maximum number of vertices required to render a character in a `shgui` application. It is calculated as 7x7 vertices, which corresponds to a 7x7 grid for character rendering.
 */
-#define SH_GUI_MAX_CHAR_VERTEX_COUNT (7 * 7)
+#define SH_GUI_MAX_CHAR_VERTEX_COUNT (SH_GUI_CHAR_ROW_COUNT * SH_GUI_CHAR_COLUMN_COUNT)
 
 /**
 * @typedef ShGuiCharVertexRaw
-* @brief Type for storing raw character vertex data in a shgui application.
+* @brief Type for storing raw character vertex data in a `shgui` application.
 *
-* The `ShGuiCharVertexRaw` type is used to store raw character vertex data in a shgui application. It is a memory block of float values with a size corresponding to the maximum character vertex count.
+* The `ShGuiCharVertexRaw` type is used to store raw character vertex data in a `shgui` application. It is a memory block of float values with a size corresponding to the maximum character vertex count.
 */
 typedef float ShGuiCharVertexRaw[SH_GUI_MAX_CHAR_VERTEX_COUNT * 3];
 
 /**
-* @brief Maximum size in bytes required to store character vertex data in a shgui application.
+* @brief Maximum size in bytes required to store character vertex data in a `shgui` application.
 *
-* The `SH_GUI_MAX_CHAR_VERTEX_SIZE` macro defines the maximum size, in bytes, required to store character vertex data in a shgui application. It is calculated as the product of @ref SH_GUI_MAX_CHAR_VERTEX_COUNT, 3 components per vertex (x, y, z-priority), and 4 bytes per component.
+* The `SH_GUI_MAX_CHAR_VERTEX_SIZE` macro defines the maximum size, in bytes, required to store character vertex data in a `shgui` application. It is calculated as the product of @ref SH_GUI_MAX_CHAR_VERTEX_COUNT, 3 components per vertex (x, y, z-priority), and 4 bytes per component.
 */
 #define SH_GUI_MAX_CHAR_VERTEX_SIZE (SH_GUI_MAX_CHAR_VERTEX_COUNT * 3 * 4)
 
@@ -441,7 +458,6 @@ static const ShGuiCharVertexRaw _SH_GUI_NO_CHAR = { 0xbf800000 };
 //space, tab and newline not made, just change the offset
 
 
-
 typedef float ShGuiCharMesh[49];//7x7 matrix grid
 
 
@@ -462,12 +478,12 @@ typedef float ShGuiCharMesh[49];//7x7 matrix grid
  * @brief Structure containing information about GUI characters.
  */
 typedef struct ShGuiCharInfos {
-    float                   char_scale_factor;                                /**< The scale factor applied to all characters in the GUI.           */
-    uint32_t                char_count;                                       /**< The total count of characters in the GUI.                        */
-    ShGuiCharRaw            chars_raw[SH_GUI_MAX_CHAR_COUNT];                 /**< Memory block storing raw data for each GUI character.            */
-    ShGuiCharVertexRaw      chars_vertex_raw[SH_GUI_MAX_CHAR_COUNT];          /**< Memory block storing raw vertex data for each GUI character.     */
-    ShGuiCharRawWriteFlags  chars_raw_write_flags[SH_GUI_MAX_CHAR_COUNT];     /**< Memory block storing write flags for each GUI character.         */
-    ShGuiCharMesh           chars_template_mesh[SH_GUI_SUPPORTED_CHAR_COUNT]; /**< Memory block storing the vertex position for each character type */
+    float                   char_scale_factor;                            /**< The scale factor applied to all characters in the GUI.           */
+    uint32_t                char_count;                                   /**< The total count of characters in the GUI.                        */
+    ShGuiCharRaw            chars_raw[SH_GUI_MAX_CHAR_COUNT];             /**< Memory block storing raw data for each GUI character.            */
+    ShGuiCharVertexRaw      chars_vertex_raw[SH_GUI_MAX_CHAR_COUNT];      /**< Memory block storing raw vertex data for each GUI character.     */
+    ShGuiCharRawWriteFlags  chars_raw_write_flags[SH_GUI_MAX_CHAR_COUNT]; /**< Memory block storing write flags for each GUI character.         */
+    ShGuiCharVertexRaw      chars_font_mesh[SH_GUI_SUPPORTED_CHAR_COUNT]; /**< Memory block storing the vertex position for each character type */
 } ShGuiCharInfos;
 
 
@@ -873,76 +889,16 @@ typedef enum ShGuiWriteFlags {
 #define SH_GUI_REGION_Z_PRIORITY 0.0002f
 
 /**
-* @brief The offset for character distance in the GUI.
+* @brief Z-axis priority value for out-of-canvas `shgui` elements.
 *
-* This macro defines the offset used for character distance in the GUI.
+* This constant defines the Z-axis priority value assigned to `shgui` elements that are positioned
+* outside the visible canvas. It is used to determine the rendering order and priority for
+* elements that extend beyond the canvas boundaries along the Z-axis.
+*
+* The higher the Z-axis priority value, the more emphasis will be given to rendering these out-of-canvas elements.
+* Adjust this value to control the rendering behavior of elements positioned outside the visible canvas along the Z-axis.
 */
-#define SH_GUI_CHAR_DISTANCE_OFFSET 3.0f
-
-/**
-* @brief Calculate the X offset for a character at a given distance.
-*
-* This macro calculates the X offset for a character based on the provided
-* character distance and scale values. It is used to position characters horizontally.
-*
-* @param char_distance_offset    The character distance offset.
-* @param scale                   The scaling factor for character placement.
-*
-* @return The X offset for the character.
-*/
-#define SH_GUI_CHAR_X_OFFSET(\
-	char_distance_offset,\
-	scale\
-)\
-	(((float)char_distance_offset) / 4.0f * ((float)scale))
-
-/**
-* @brief Calculates the Y offset for a character at a given distance.
-*
-* This macro calculates the Y offset for a character based on the provided
-* character distance, line count, and scale values. It is used to position characters vertically.
-*
-* @param char_distance_offset    The character distance offset.
-* @param line_count              The number of lines.
-* @param scale                   The scaling factor for character placement.
-*
-* @return The Y offset for the character.
-*/
-#define SH_GUI_CHAR_Y_OFFSET(\
-	char_distance_offset,\
-	line_count,\
-	scale\
-)\
-	(((float)scale) * ((float)line_count))
-
-/**
-* @brief Calculates the final X offset for a character.
-*
-* This macro calculates the final X offset for a character based on the character distance,
-* scale, and character index. It is used to position characters horizontally with respect to
-* their index.
-*
-* @param char_distance_offset    The character distance offset.
-* @param scale                   The scaling factor for character placement.
-* @param char_idx                The index of the character.
-*
-* @return The final X offset for the character.
-*/
-#define SH_GUI_CHAR_FINAL_X_OFFSET(\
-	char_distance_offset,\
-	scale,\
-	char_idx\
-)\
-	((float)char_distance_offset) / 4.0f* ((float)scale)* ((float)char_idx)
-
-/**
-* @brief Calculates the final Y offset for a character.
-*
-* This macro is an alias for SH_GUI_CHAR_Y_OFFSET and calculates the Y offset for a character
-* based on the character distance, line count, and scale values.
-*/
-#define SH_GUI_CHAR_FINAL_Y_OFFSET SH_GUI_CHAR_Y_OFFSET
-
+#define SH_GUI_OUT_OF_CANVAS_Z_PRIORITY 1.0f
 
 
 
@@ -1010,12 +966,12 @@ extern uint8_t SH_GUI_CALL shGuiScaleUI(
 /**
 * @brief Creates a region in the GUI.
 *
-* @param p_gui               A pointer to a valid @ref ShGui structure.
-* @param position_zero       The position of region.
-* @param scale_zero          The scale of the region, in pixels or relative to the window dimensions, depending on the `flags` argument.
-* @param color_zero          The color of the region.
-* @param edge_color_zero     The edge color of the region.
-* @param flags               Flags for creating a region.
+* @param p_gui           A pointer to a valid @ref ShGui structure.
+* @param position_zero   The position of region.
+* @param scale_zero      The scale of the region, in pixels or relative to the window dimensions, depending on the `flags` argument.
+* @param fill_color_zero The fill color of the region.
+* @param edge_color_zero The edge color of the region.
+* @param flags           Flags for creating a region.
 *
 * @return The result of the function call, indicating success or failure.
 */
@@ -1023,8 +979,8 @@ extern uint8_t SH_GUI_CALL shGuiRegion(
     ShGui*           p_gui,
     shguivec2        position_zero,
     shguivec2        scale_zero,
-    shguivec4        color_zero,
-    shguivec4        edge_color_zero,
+    shguivec4        fill_color_zero,
+    shguivec4        edge_fill_color_zero,
     ShGuiWidgetFlags flags
 );
 
@@ -1064,11 +1020,6 @@ extern uint8_t SH_GUI_CALL shGuiOverwriteRegions(
     ShGuiRegionRawWriteFlags flags
 );
 
-
-extern uint8_t shGuiGenerateCharVertices(
-    ShGui* p_gui
-);
-
 /**
 * @brief Counts the number of lines in a string.
 *
@@ -1087,7 +1038,7 @@ extern uint8_t SH_GUI_CALL shGuiTextLineCount(
 *
 * @param p_gui                A pointer to a valid @ref ShGui structure.
 * @param position_zero        The position of the text UI in the window canvas, could be in pixels or relative to the window dimensions, depending on the `flags` argument.
-* @param color_zero           The color of the text characters.
+* @param fill_color_zero      The color of the text characters.
 * @param scale_pixels_zero    The scale of the text characters in pixels.
 * @param s_text               Source string of characters to render.
 * @param flags                Flags for rendering the text, see @ref ShGuiWidgetFlags.
@@ -1097,7 +1048,7 @@ extern uint8_t SH_GUI_CALL shGuiTextLineCount(
 extern uint8_t SH_GUI_CALL shGuiText(
     ShGui*           p_gui,
     shguivec2        position_zero,
-    shguivec4        color_zero,
+    shguivec4        fill_color_zero,
     float            scale_zero_pixels,
     char*            s_text,
     ShGuiWidgetFlags flags

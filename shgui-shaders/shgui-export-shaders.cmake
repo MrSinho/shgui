@@ -34,9 +34,9 @@ target_link_libraries(
 )
 
 if (WIN32)
-set_target_properties(shgui-export-shaders native-export PROPERTIES 
+set_target_properties(shgui-export-shaders PROPERTIES 
     ARCHIVE_OUTPUT_DIRECTORY ${SH_GUI_BINARIES_DIR}/windows
-    RUNTIME_OUTPUT_DIRECTORY ${SH_GUI_BINARIES_DIR}/linux
+    RUNTIME_OUTPUT_DIRECTORY ${SH_GUI_BINARIES_DIR}/windows
 )
 else()
 set_target_properties(shgui-export-shaders native-export PROPERTIES 

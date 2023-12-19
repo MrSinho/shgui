@@ -11,7 +11,8 @@ layout (push_constant) uniform pushConstant {
 
 
 
-#define TEXT_SCALE_FACTOR (1.0f / 10.0f)
+#define PIXEL_SCALE_FACTOR (1.0f / 8.0f)
+#define CHAR_SCALE_FACTOR  (1.0f / 4.0f)
 #define TEXT_PIXEL_COUNT  (7 * 7)
 
 struct ShGuiCharRaw {
@@ -37,10 +38,10 @@ void main() {
 
 	char_color = char_raw.color;
 
-	gl_PointSize = char_raw.scale.x * TEXT_SCALE_FACTOR;
+	gl_PointSize = char_raw.scale.x * PIXEL_SCALE_FACTOR;
 
 	gl_Position = vec4(
-		(vec2(vertex_position.xy) * char_raw.scale.x + vec2(char_raw.position.x, -char_raw.position.y) * 2.0f) / pconst.window_size, 
+		(vec2(vertex_position.x, -vertex_position.y) * char_raw.scale.x * CHAR_SCALE_FACTOR + vec2(char_raw.position.x, -char_raw.position.y) * 1.0f) / pconst.window_size, 
 		vertex_position.z + char_raw.priority, 
 		1.0f
 	);

@@ -1,0 +1,9 @@
+Versione di MSBuild L17.7.2+d6990bcfa per .NET Framework
+
+  glfw.vcxproj -> D:\home\desktop\github\shgui\build\windows\externals\glfw\src\OFF\windows\Debug\glfw3.lib
+  native-export.vcxproj -> D:\home\desktop\github\shgui\bin\Debug\native-export.lib
+  shvulkan.vcxproj -> D:\home\desktop\github\shgui\build\windows\externals\shvulkan\OFF\windows\Debug\shvulkan.lib
+  shgui.vcxproj -> D:\home\desktop\github\shgui\build\windows\OFF\windows\Debug\shgui.lib
+  shgui-app.vcxproj -> D:\home\desktop\github\shgui\build\windows\OFF\windows\Debug\shgui-app.lib
+  shgui-example.vcxproj -> D:\home\desktop\github\shgui\build\windows\OFF\windows\Debug\shgui-example.exe
+  shgui-export-shaders.vcxproj -> D:\home\desktop\github\shgui\build\windows\OFF\windows\Debug\shgui-export-shaders.exe

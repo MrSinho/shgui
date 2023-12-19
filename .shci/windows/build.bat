@@ -1,6 +1,8 @@
 > .shci/windows/build-output.txt (
-    mkdir windows
-    cd windows
-    cmake -DSH_VULKAN_BUILD_EXAMPLES=ON ..
+    mkdir build
+    mkdir build/windows
+    cd build/windows
+    
+    cmake -DSH_GUI_BUILD_EXAMPLE=ON ..
     cmake --build .
 )

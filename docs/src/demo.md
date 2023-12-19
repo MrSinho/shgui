@@ -1,20 +1,23 @@
-#ifdef __cplusplus
-extern "C" {
-#endif//__cplusplus
+## Demo with code
 
+![](https://img.shields.io/badge/Sinho_softworks-FF0080?style=for-the-badge&logo=&logoColor=white&labelColor=990042)
+[![](https://img.shields.io/badge/GitHub_repository-000000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mrsinho/shgui)
 
+![](/docs/media/shgui-demo.png)
+
+```c
 #include <shgui-app/shgui-app.h>
 
 int main(void) {
 
 	/*
-	you can also write your own Vulkan implementation, 
+	You can also write your own Vulkan implementation, 
 	then copy the required data to ShGui::ShGuiCore.
-	Same concept applies in the application loop, 
-	the shgui-app library could be used as an easy implementation and as an example
-	of shgui using vulkan
+	The same concept applies with the application loop, 
+	the shgui-app library could be used as an easy implementation 
+    or template code for vulkan.
 	*/
-	ShGuiApp* p_app =  shGuiCreateApp(800, 500, "shgui app");
+	ShGuiApp* p_app =  shGuiCreateApp(800, 500, "shgui demo");
 	ShGui*    p_gui = &p_app->gui;
 
 	while (shGuiAppRunning(p_app)) {
@@ -167,7 +170,4 @@ int main(void) {
 	return 0;
 
 }
-
-#ifdef __cplusplus
-}
-#endif//__cplusplus
+```

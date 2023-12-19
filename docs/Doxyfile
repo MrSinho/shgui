@@ -7,7 +7,7 @@ PROJECT_BRIEF          = "shgui by mrsinho"
 USE_MDFILE_AS_MAINPAGE = D:/home/desktop/github/shgui/README.md
 
 OUTPUT_DIRECTORY       = docs
-INPUT                  = D:/home/desktop/github/shgui/shgui/include D:/home/desktop/github/shgui/README.md
+INPUT                  = D:/home/desktop/github/shgui/shgui/include D:/home/desktop/github/shgui/README.md D:/home/desktop/github/shgui/docs/src/demo.md D:/home/desktop/github/shgui/.shci/linux/log.md D:/home/desktop/github/shgui/.shci/windows/log.md 
 RECURSIVE              = YES
 EXTRACT_ALL            = YES
 HAVE_DOT               = NO
@@ -17,9 +17,18 @@ GENERATE_XML           = YES
 GENERATE_LATEX         = YES
 GENERATE_TREEVIEW      = YES
 DISABLE_INDEX          = NO
-FULL_SIDEBAR           = YES
+FULL_SIDEBAR           = NO
 OPTIMIZE_OUTPUT_FOR_C  = YES
 STRIP_CODE_COMMENTS    = NO
 
-HTML_EXTRA_STYLESHEET  = D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome.css D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-sidebar-only.css
-HTML_EXTRA_FILES       = D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-interactive-toc.js D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-paragraph-link.js D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-tabs.js
+IMAGE_PATH             = D:/home/desktop/github/shgui/docs/media D:/home/desktop/github/shgui/.shci/linux D:/home/desktop/github/shgui/.shci/windows
+
+HTML_COLORSTYLE        = LIGHT
+HTML_EXTRA_STYLESHEET  = D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome.css D:/home/desktop/github/shgui/docs/custom.css
+HTML_EXTRA_FILES       = D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-interactive-toc.js D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-paragraph-link.js D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-tabs.js D:/home/desktop/github/shgui/docs/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js
+
+HTML_HEADER            = D:/home/desktop/github/shgui/docs/header.html
+
+HTML_COLORSTYLE_HUE    = 209
+HTML_COLORSTYLE_SAT    = 255
+HTML_COLORSTYLE_GAMMA  = 113

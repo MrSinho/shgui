@@ -1,0 +1,16 @@
+-- shvulkan message: found Vulkan
+-- shvulkan message: Vulkan_INCLUDE_DIR: /usr/include
+-- shvulkan message: Vulkan_LIBRARY:     /usr/lib/x86_64-linux-gnu/libvulkan.so
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Including X11 support
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /mnt/d/home/desktop/github/shgui/build/linux
+[  5%] Built target shvulkan
+[ 13%] Built target shgui
+[ 78%] Built target glfw
+[ 83%] Built target shgui-app
+[ 89%] Built target shgui-example
+[ 94%] Built target native-export
+[100%] Built target shgui-export-shaders

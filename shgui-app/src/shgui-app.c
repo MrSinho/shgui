@@ -11,6 +11,9 @@ extern "C" {
 
 
 #include <shgui-app/shgui-app.h>
+
+#include <shgui/shgui-font.h>
+
 #include <stdlib.h>
 #include <memory.h>
 
@@ -530,6 +533,10 @@ ShGuiApp* shGuiCreateApp(
 		p_gui,
 		NULL,
 		NULL
+	);
+
+	shGuiLoadFont(
+		p_gui
 	);
 
 	p_app->last_time  = glfwGetTime();

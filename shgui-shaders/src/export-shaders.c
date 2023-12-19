@@ -11,10 +11,10 @@ extern "C" {
 #define SHADER_COUNT 4
 
 static char* shader_paths[SHADER_COUNT] = {
-	"../shaders/bin/shgui-region.vert.spv",
-	"../shaders/bin/shgui-region.frag.spv",
-	"../shaders/bin/shgui-char.vert.spv",
-	"../shaders/bin/shgui-char.frag.spv"
+	"../../shgui-shaders/bin/shgui-region.vert.spv",
+	"../../shgui-shaders/bin/shgui-region.frag.spv",
+	"../../shgui-shaders/bin/shgui-char.vert.spv",
+	"../../shgui-shaders/bin/shgui-char.frag.spv"
 };
 static char* shader_names[SHADER_COUNT] = {
 	"_SH_GUI_REGION_VERT_SPV",
@@ -38,13 +38,17 @@ int main(void) {
 	};
 	nativeExportError(export_info.p_buffers == NULL, "implementation: invalid native export buffers memory", return -1);
 
+	puts("Loading files...");
+
 	for (uint32_t shader_idx = 0; shader_idx < SHADER_COUNT; shader_idx++) {
 		export_info.p_buffers[shader_idx].p_src  = (void*)shGuiExportShadersReadBinary(shader_paths[shader_idx], &export_info.p_buffers[shader_idx].size);
 		export_info.p_buffers[shader_idx].name   = shader_names[shader_idx];
 		export_info.p_buffers[shader_idx].format = NATIVE_EXPORT_FORMAT_UNSPECIFIED;
 	}
 
-	nativeExportWriteHeader(export_info, "../shaders/include/shgui/shguiShaders.h");
+	puts("Writing C header...");
+
+	nativeExportWriteHeader(export_info, "../../shgui-shaders/include/shgui-shaders/shguiShaders.h");
 
 
 	for (uint32_t shader_idx = 0; shader_idx < SHADER_COUNT; shader_idx++) {
@@ -53,7 +57,12 @@ int main(void) {
 			free(p_src);
 		}
 	}
+
+	puts("Releasing memory...");
+
 	nativeExportRelease(&export_info);
+
+	puts("Done.");
 
 	return 0;
 
