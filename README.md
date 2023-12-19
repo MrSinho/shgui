@@ -38,7 +38,7 @@ In program (missing: `shterminal`).
 cd shgui
 mkdir build
 cd build
-cmake .. #-DSH_GUI_BUILD_EXAMPLE=ON
+cmake .. -DSH_GUI_BUILD_EXAMPLE=ON
 cmake --build .
 ```
 
