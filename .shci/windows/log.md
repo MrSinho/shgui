@@ -1,7 +1,7 @@
 
 # Windows build logs
 
-![](exit_code.svg)
+![](windows-exit-code.svg)
 
 ```
 system        : Windows
@@ -13,7 +13,7 @@ max frequency : 3500.0 MHz
 cores         : 4
 ```
 
-build ran for `26.24 s` and terminated with exit code `0`
+build ran for `26.36 s` and terminated with exit code `0`
 
 ---
 
@@ -105,7 +105,7 @@ Versione di MSBuild L17.7.2+d6990bcfa per .NET Framework
 
 ---
     
-build ran for `26.24 s` and terminated with exit code `0`
+build ran for `26.36 s` and terminated with exit code `0`
 
 ---
 

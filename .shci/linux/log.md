@@ -1,7 +1,7 @@
 
 # Linux build logs
 
-![](exit_code.svg)
+![](linux-exit-code.svg)
 
 ```
 system        : Linux
@@ -13,7 +13,7 @@ max frequency : 0.0 MHz
 cores         : 4
 ```
 
-build ran for `16.51 s` and terminated with exit code `0`
+build ran for `94.37 s` and terminated with exit code `0`
 
 ---
 
@@ -31,10 +31,10 @@ PREREQUISITES > .shci/linux/prerequisites-output.txt
 ```
 
 ```bash
-Hit:1 http://ftp.debian.org/debian bullseye-backports InRelease
-Hit:2 http://deb.debian.org/debian bullseye InRelease
-Hit:3 http://deb.debian.org/debian bullseye-updates InRelease
-Hit:4 http://security.debian.org/debian-security bullseye-security InRelease
+Hit:1 http://deb.debian.org/debian bullseye InRelease
+Hit:2 http://deb.debian.org/debian bullseye-updates InRelease
+Hit:3 http://security.debian.org/debian-security bullseye-security InRelease
+Hit:4 http://ftp.debian.org/debian bullseye-backports InRelease
 Reading package lists...
 Building dependency tree...
 Reading state information...
@@ -108,7 +108,7 @@ BUILD > .shci/linux/build-output.txt
 
 ---
     
-build ran for `16.51 s` and terminated with exit code `0`
+build ran for `94.37 s` and terminated with exit code `0`
 
 ---
 
