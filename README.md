@@ -26,7 +26,7 @@ Developers can use the shgui library to quickly incorporate basic gui elements, 
 | `region` | Batch     | Fill color, edge color, absolute (pixel) position and relative position |
 | `text`   | Batch     | Pixel rendering, fill color, font included in header, absolute position |
 
-Feel free to check out the demo to get a better understanding. You're welcome to explore the demo by visiting it [here](/docs/src/demo.md).
+Feel free to check out the demo to get a better understanding. You're welcome to explore the demo by visiting the `Related pages` section.
 
 ## Input system
 
