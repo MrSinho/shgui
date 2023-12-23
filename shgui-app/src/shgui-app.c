@@ -667,7 +667,7 @@ uint8_t shGuiAppRunning(
 	return running;
 }
 
-uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
+uint8_t SH_GUI_CALL shGuiAppResizeWindow(
 	ShGuiApp* p_app
 ) {
 	shGuiError(p_app == NULL, "invalid application memory", return 0);
@@ -686,6 +686,121 @@ uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
 	VkSharingMode            swapchain_image_sharing_mode = p_app->swapchain_image_sharing_mode;
 	VkFormat                 swapchain_image_format       = p_app->swapchain_image_format;
 
+	shWaitDeviceIdle(device);
+
+	shDestroyRenderpass(device, p_app->renderpass);
+	shDestroyFramebuffers(device, swapchain_image_count, p_app->framebuffers);
+	shDestroyImageViews(device, swapchain_image_count, p_app->swapchain_image_views);
+	shDestroySwapchain(device, p_app->swapchain);
+	shDestroySurface(instance, p_app->surface);
+
+	shClearImageMemory(device, p_app->depth_image, p_app->depth_image_memory);
+	shClearImageMemory(device, p_app->input_color_image, p_app->input_color_image_memory);
+	shDestroyImageViews(device, 1, &p_app->depth_image_view);
+	shDestroyImageViews(device, 1, &p_app->input_color_image_view);
+
+	glfwCreateWindowSurface(instance, window, NULL, &p_app->surface);
+	uint8_t graphics_supported = 0;
+	shGetPhysicalDeviceSurfaceSupport(physical_device, p_app->graphics_queue_family_index, p_app->surface, &graphics_supported);//always true
+	shGetPhysicalDeviceSurfaceCapabilities(physical_device, p_app->surface, &p_app->surface_capabilities);
+	shCreateSwapchain(
+		device,
+		physical_device,
+		p_app->surface,
+		swapchain_image_format,
+		&swapchain_image_format,
+		swapchain_image_count,
+		swapchain_image_sharing_mode,
+		1,
+		&swapchain_image_count,
+		&p_app->swapchain
+	);
+	shGetSwapchainImages(device, p_app->swapchain, &swapchain_image_count, p_app->swapchain_images);
+	for (uint32_t i = 0; i < p_app->swapchain_image_count; i++) {
+		shCreateImageView(device, p_app->swapchain_images[i], VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, 1, swapchain_image_format, &p_app->swapchain_image_views[i]);
+	}
+
+	shCreateImage(
+		device, VK_IMAGE_TYPE_2D,
+		p_app->width, p_app->height, 1,
+		VK_FORMAT_D32_SFLOAT,
+		1, sample_count,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		VK_SHARING_MODE_EXCLUSIVE, &p_app->depth_image
+	);
+	shAllocateImageMemory(
+		device, physical_device, p_app->depth_image,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		&p_app->depth_image_memory
+	);
+	shBindImageMemory(
+		device, p_app->depth_image, 0, p_app->depth_image_memory
+	);
+	shCreateImageView(
+		device, p_app->depth_image, VK_IMAGE_VIEW_TYPE_2D,
+		VK_IMAGE_ASPECT_DEPTH_BIT, 1,
+		VK_FORMAT_D32_SFLOAT, &p_app->depth_image_view
+	);
+
+	shCreateImage(
+		device, VK_IMAGE_TYPE_2D,
+		p_app->width, p_app->height, 1,
+		swapchain_image_format,
+		1, sample_count,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_SHARING_MODE_EXCLUSIVE,
+		&p_app->input_color_image
+	);
+	shAllocateImageMemory(
+		device, physical_device, p_app->input_color_image,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		&p_app->input_color_image_memory
+	);
+	shBindImageMemory(
+		device, p_app->input_color_image, 0, p_app->input_color_image_memory
+	);
+	shCreateImageView(
+		device, p_app->input_color_image, VK_IMAGE_VIEW_TYPE_2D,
+		VK_IMAGE_ASPECT_COLOR_BIT, 1, swapchain_image_format,
+		&p_app->input_color_image_view
+	);
+
+	VkAttachmentDescription attachment_descriptions[SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT] = {
+		p_app->input_color_attachment, p_app->depth_attachment, p_app->resolve_attachment
+	};
+	shCreateRenderpass(device, SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT, attachment_descriptions, 1, &subpass, &p_app->renderpass);
+	for (uint32_t i = 0; i < swapchain_image_count; i++) {
+		VkImageView image_views[SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT] = {
+			p_app->input_color_image_view, p_app->depth_image_view, p_app->swapchain_image_views[i]
+		};
+		shCreateFramebuffer(device, p_app->renderpass, SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT, image_views, p_app->width, p_app->height, 1, &p_app->framebuffers[i]);
+	}
+
+	shResetSemaphores(device, 1, &p_app->current_image_acquired_semaphore);
+	shResetSemaphores(device, 1, &p_app->current_graphics_queue_finished_semaphore);
+
+	return 1;
+}
+
+uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
+	ShGuiApp* p_app
+) {
+	shGuiError(p_app == NULL, "invalid application memory", return 0);
+
+	GLFWwindow* window = p_app->window;
+
+	VkInstance               instance                     = p_app->instance;
+	VkDevice                 device                       = p_app->device;
+	VkPhysicalDevice         physical_device              = p_app->physical_device;
+														  	                  
+	uint32_t                 sample_count                 = p_app->sample_count;				    
+	uint32_t                 swapchain_image_count        = p_app->swapchain_image_count;
+					         							  
+	VkSharingMode            swapchain_image_sharing_mode = p_app->swapchain_image_sharing_mode;
+	VkFormat                 swapchain_image_format       = p_app->swapchain_image_format;
+
 	uint32_t width  = p_app->width;
 	uint32_t height = p_app->height;
 
@@ -693,126 +808,35 @@ uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
 
 	int _width = 0;
 	int _height = 0;
+
 	glfwGetWindowSize(window, &_width, &_height);
 
-	if (_width != 0 && _height != 0) {//otherwise it's minimized
-		if (_width != width || _height != height) {//window is resized
-
-			shGuiResizeInterface(p_gui, width, height, _width, _height);
-
-			p_app->width  = _width;
-			p_app->height = _height;
-
-			shWaitDeviceIdle(device);
-
-			shDestroyRenderpass(device, p_app->renderpass);
-			shDestroyFramebuffers(device, swapchain_image_count, p_app->framebuffers);
-			shDestroyImageViews(device, swapchain_image_count, p_app->swapchain_image_views);
-			shDestroySwapchain(device, p_app->swapchain);
-			shDestroySurface(instance, p_app->surface);
-
-			shClearImageMemory(device, p_app->depth_image, p_app->depth_image_memory);
-			shClearImageMemory(device, p_app->input_color_image, p_app->input_color_image_memory);
-			shDestroyImageViews(device, 1, &p_app->depth_image_view);
-			shDestroyImageViews(device, 1, &p_app->input_color_image_view);
-
-			glfwCreateWindowSurface(instance, window, NULL, &p_app->surface);
-			uint8_t graphics_supported = 0;
-			shGetPhysicalDeviceSurfaceSupport(physical_device, p_app->graphics_queue_family_index, p_app->surface, &graphics_supported);//always true
-			shGetPhysicalDeviceSurfaceCapabilities(physical_device, p_app->surface, &p_app->surface_capabilities);
-			shCreateSwapchain(
-				device,
-				physical_device,
-				p_app->surface,
-				swapchain_image_format,
-				&swapchain_image_format,
-				swapchain_image_count,
-				swapchain_image_sharing_mode,
-				1,
-				&swapchain_image_count,
-				&p_app->swapchain
-			);
-			shGetSwapchainImages(device, p_app->swapchain, &swapchain_image_count, p_app->swapchain_images);
-			for (uint32_t i = 0; i < p_app->swapchain_image_count; i++) {
-				shCreateImageView(device, p_app->swapchain_images[i], VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, 1, swapchain_image_format, &p_app->swapchain_image_views[i]);
-			}
-
-			shCreateImage(
-				device, VK_IMAGE_TYPE_2D,
-				p_app->width, p_app->height, 1,
-				VK_FORMAT_D32_SFLOAT, 
-				1, sample_count,
-				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-				VK_SHARING_MODE_EXCLUSIVE, &p_app->depth_image
-			);
-			shAllocateImageMemory(
-				device, physical_device, p_app->depth_image,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				&p_app->depth_image_memory
-			);
-			shBindImageMemory(
-				device, p_app->depth_image, 0, p_app->depth_image_memory
-			);
-			shCreateImageView(
-				device, p_app->depth_image, VK_IMAGE_VIEW_TYPE_2D,
-				VK_IMAGE_ASPECT_DEPTH_BIT, 1,
-				VK_FORMAT_D32_SFLOAT, &p_app->depth_image_view
-			);
-
-			shCreateImage(
-				device, VK_IMAGE_TYPE_2D,
-				p_app->width, p_app->height, 1,
-				swapchain_image_format, 
-				1, sample_count, 
-				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-				VK_SHARING_MODE_EXCLUSIVE,
-				&p_app->input_color_image
-			);
-			shAllocateImageMemory(
-				device, physical_device, p_app->input_color_image,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				&p_app->input_color_image_memory
-			);
-			shBindImageMemory(
-				device, p_app->input_color_image, 0, p_app->input_color_image_memory
-			);
-			shCreateImageView(
-				device, p_app->input_color_image, VK_IMAGE_VIEW_TYPE_2D,
-				VK_IMAGE_ASPECT_COLOR_BIT, 1, swapchain_image_format,
-				&p_app->input_color_image_view
-			);
-
-			VkAttachmentDescription attachment_descriptions[SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT] = {
-				p_app->input_color_attachment, p_app->depth_attachment, p_app->resolve_attachment
-			};
-			shCreateRenderpass(device, SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT, attachment_descriptions, 1, &subpass, &p_app->renderpass);
-			for (uint32_t i = 0; i < swapchain_image_count; i++) {
-				VkImageView image_views[SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT] = {
-					p_app->input_color_image_view, p_app->depth_image_view, p_app->swapchain_image_views[i] 
-				};
-				shCreateFramebuffer(device, p_app->renderpass, SH_GUI_APP_RENDERPASS_ATTACHMENT_COUNT, image_views, _width, _height, 1, &p_app->framebuffers[i]);
-			}
-
-			shResetSemaphores(device, 1, &p_app->current_image_acquired_semaphore);
-			shResetSemaphores(device, 1, &p_app->current_graphics_queue_finished_semaphore);
-
-			shGuiDestroyPipelines(p_gui);
-			shGuiSetSurface(p_gui, p_app->surface);
-			shGuiSetRenderpass(p_gui, p_app->renderpass);
-			shGuiBuildRegionPipeline(
-				p_gui,
-				NULL,
-				NULL
-			);
-			shGuiBuildCharPipeline(
-				p_gui,
-				NULL,
-				NULL
-			);
-		}
+	if (_width == 0 || _height == 0 || (_width == p_app->width && _height == p_app->height)) {
+		p_app->width = _width;
+		p_app->height = _height;
+		return 1;
 	}
+	
+	shGuiResizeInterface(p_gui, width, height, _width, _height);
+	
+	p_app->width  = _width;
+	p_app->height = _height;
+	
+	shGuiAppResizeWindow(p_app);
+	
+	shGuiDestroyPipelines(p_gui);
+	shGuiSetSurface(p_gui, p_app->surface);
+	shGuiSetRenderpass(p_gui, p_app->renderpass);
+	shGuiBuildRegionPipeline(
+		p_gui,
+		NULL,
+		NULL
+	);
+	shGuiBuildCharPipeline(
+		p_gui,
+		NULL,
+		NULL
+	);
 
 	return 1;
 }
@@ -832,6 +856,11 @@ uint8_t SH_GUI_CALL shGuiAppUpdate(
 
 	shGuiUpdateInputs(p_gui);
 	shGuiSubmitInputs(p_gui);
+
+	if (p_app->width == 0 || p_app->height == 0) {
+		shGuiResetWidgetCount(p_gui);
+		return 1;
+	}
 
 	uint8_t swapchain_suboptimal = 0;
 	shAcquireSwapchainImage(
@@ -879,8 +908,8 @@ uint8_t SH_GUI_CALL shGuiAppUpdate(
 		p_app->renderpass,//renderpass
 		0,//render_offset_x
 		0,//render_offset_y
-		p_app->surface_capabilities.currentExtent.width,//render_size_x
-		p_app->surface_capabilities.currentExtent.height,//render_size_y
+		p_app->width,//render_size_x
+		p_app->height,//render_size_y
 		2,//only attachments with VK_ATTACHMENT_LOAD_OP_CLEAR
 		clear_values,//p_clear_values
 		p_app->framebuffers[p_app->swapchain_image_idx]//framebuffer
@@ -916,6 +945,8 @@ uint8_t SH_GUI_CALL shGuiAppUpdate(
 	);
 
 	p_app->swapchain_image_idx = (p_app->swapchain_image_idx + 1) % p_app->swapchain_image_count;
+
+	shGuiResetWidgetCount(p_gui);
 
 	return 1;
 }
