@@ -801,6 +801,17 @@ extern uint8_t SH_GUI_CALL shGuiReleaseMemory(
 );
 
 /**
+* @brief Resets the count of regions and chars to zero.
+*
+* @param p_gui A pointer to a valid @ref ShGui structure.
+*
+* @return A result code indicating the success or failure of the function call.
+*/
+extern uint8_t shGuiResetWidgetCount(
+    ShGui* p_gui
+);
+
+/**
 * @brief Renders the GUI using the provided command buffer and swapchain image index.
 *
 * @param p_gui                  A pointer to a valid @ref ShGui structure.
