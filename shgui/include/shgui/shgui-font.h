@@ -110,9 +110,9 @@ extern uint8_t shGuiGenerateCharVertices(
 );
 
 /**
-* @brief Load font data for the ShGui library.
+* @brief Load font data for the `shgui` library.
 * 
-* This function loads font data for the ShGui library, initializing necessary resources.
+* This function loads font data for the `shgui` library, initializing necessary resources.
 * 
 * @param p_gui Pointer to the ShGui structure to be initialized with font data.
 * 
