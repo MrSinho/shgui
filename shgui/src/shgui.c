@@ -786,6 +786,17 @@ uint8_t shGuiReleaseMemory(
 	return 1;
 }
 
+uint8_t shGuiResetWidgetCount(
+	ShGui* p_gui
+) {
+	shGuiError(p_gui == NULL, "invalid gui memory", return 0);
+
+	p_gui->region_infos.region_count = 0;
+	p_gui->char_infos.char_count     = 0;
+
+	return 1;
+}
+
 uint8_t shGuiRender(
 	ShGui*          p_gui,
 	VkCommandBuffer cmd_buffer,
@@ -895,9 +906,6 @@ uint8_t shGuiRender(
 		p_gui->char_infos.char_count * SH_GUI_MAX_CHAR_VERTEX_COUNT, 0,
 		1, 0
 	);
-
-	p_gui->region_infos.region_count = 0;
-	p_gui->char_infos.char_count     = 0;
 
 	shGuiError(r == 0, "failed rendering gui", return 0);
 
