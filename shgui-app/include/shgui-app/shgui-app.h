@@ -124,6 +124,10 @@ extern uint8_t SH_GUI_CALL shGuiAppCheckWindowSize(
 	ShGuiApp* p_app
 );
 
+extern uint8_t SH_GUI_CALL shGuiAppResizeWindow(
+	ShGuiApp* p_app
+);
+
 extern uint8_t SH_GUI_CALL shGuiAppUpdate(
 	ShGuiApp* p_app
 );
