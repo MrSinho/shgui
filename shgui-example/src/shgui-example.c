@@ -21,6 +21,7 @@ int main(void) {
 
 		shGuiAppCheckWindowSize(p_app);
 
+#if 1
 		shGuiText(
 			p_gui,
 			SH_GUI_VEC2_ZERO,
@@ -157,6 +158,8 @@ int main(void) {
 			",.!?:;/\\_-|&\n%$#@\'\"+-*=<>\n()[]^`",
 			SH_GUI_CENTER_WIDTH
 		);
+#endif//0
+
 
 		shGuiAppUpdate(p_app);
 	}
