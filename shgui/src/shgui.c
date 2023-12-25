@@ -1207,16 +1207,15 @@ uint8_t shGuiText(
 		blank_v_space = p_char_raw->scale / 2.5f; //blank vertical space between characters
 
 		//- line_idx to get rid of the \n character x offset
-		x_offset      = (float)(!new_line) * (float)(line_char_idx - line_idx) * (3.0f * blank_h_space + p_char_raw->scale);
-		y_offset      =             -1.0f  * (float)(line_idx                ) * (3.0f * blank_v_space + p_char_raw->scale);
+		x_offset      = (float)(!new_line) * (float)(line_char_idx) * (3.0f * blank_h_space + p_char_raw->scale);
+		y_offset      =             -1.0f  * (float)(line_idx     ) * (3.0f * blank_v_space + p_char_raw->scale);
 
 		if (new_line) {
 			new_line           = 0;
 			current_line_chars = 0;
 		}
-		else {
-			current_line_chars++;
-		}
+
+		current_line_chars++;
 
 		if (current_line_chars > max_chars_in_line) {
 			max_chars_in_line = current_line_chars;
@@ -1233,242 +1232,311 @@ uint8_t shGuiText(
 		case 'a':
 		case 'A':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_A]);
+			line_char_idx++;
 			break;
 		case 'B':
 		case 'b':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_B]);
+			line_char_idx++;
 			break;
 		case 'C':
 		case 'c':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_C]);
+			line_char_idx++;
 			break;
 		case 'D':
 		case 'd':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_D]);
+			line_char_idx++;
 			break;
 		case 'E':
 		case 'e':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_E]);
+			line_char_idx++;
 			break;
 		case 'F':
 		case 'f':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_F]);
+			line_char_idx++;
 			break;
 		case 'G':
 		case 'g':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_G]);
+			line_char_idx++;
 			break;
 		case 'H':
 		case 'h':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_H]);
+			line_char_idx++;
 			break;
 		case 'I':
 		case 'i':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_I]);
+			line_char_idx++;
 			break;
 		case 'J':
 		case 'j':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_J]);
+			line_char_idx++;
 			break;
 		case 'K':
 		case 'k':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_K]);
+			line_char_idx++;
 			break;
 		case 'L':
 		case 'l':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_L]);
+			line_char_idx++;
 			break;
 		case 'M':
 		case 'm':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_M]);
+			line_char_idx++;
 			break;
 		case 'N':
 		case 'n':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_N]);
+			line_char_idx++;
 			break;
 		case 'O':
 		case 'o':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_O]);
+			line_char_idx++;
 			break;
 		case 'P':
 		case 'p':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_P]);
+			line_char_idx++;
 			break;
 		case 'Q':
 		case 'q':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_Q]);
+			line_char_idx++;
 			break;
 		case 'R':
 		case 'r':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_R]);
+			line_char_idx++;
 			break;
 		case 'S':
 		case 's':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_S]);
+			line_char_idx++;
 			break;
 		case 'T':
 		case 't':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_T]);
+			line_char_idx++;
 			break;
 		case 'U':
 		case 'u':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_U]);
+			line_char_idx++;
 			break;
 		case 'V':
 		case 'v':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_V]);
+			line_char_idx++;
 			break;
 		case 'W':
 		case 'w':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_W]);
+			line_char_idx++;
 			break;
 		case 'X':
 		case 'x':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_X]);
+			line_char_idx++;
 			break;
 		case 'Y':
 		case 'y':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_Y]);
+			line_char_idx++;
 			break;
 		case 'Z':
 		case 'z':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_Z]);
+			line_char_idx++;
 			break;
 		case '0':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_0]);
+			line_char_idx++;
 			break;
 		case '1':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_1]);
+			line_char_idx++;
 			break;
 		case '2':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_2]);
+			line_char_idx++;
 			break;
 		case '3':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_3]);
+			line_char_idx++;
 			break;
 		case '4':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_4]);
+			line_char_idx++;
 			break;
 		case '5':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_5]);
+			line_char_idx++;
 			break;
 		case '6':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_6]);
+			line_char_idx++;
 			break;
 		case '7':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_7]);
+			line_char_idx++;
 			break;
 		case '8':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_8]);
+			line_char_idx++;
 			break;
 		case '9':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_9]);
+			line_char_idx++;
 			break;
 		case ' ':
 			p_char_raw->z_priority = SH_GUI_OUT_OF_CANVAS_Z_PRIORITY;
+			line_char_idx++;
 			break;
 		case '\t':
 			//manage tab
 			p_char_raw->z_priority = SH_GUI_OUT_OF_CANVAS_Z_PRIORITY;
+			line_char_idx++;
 			break;
 		case '.':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_PERIOD]);
+			line_char_idx++;
 			break;
 		case ',':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_COMMA]);
+			line_char_idx++;
 			break;
 		case '!':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_EXCLAMATION]);
+			line_char_idx++;
 			break;
 		case '?':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_QUESTION]);
+			line_char_idx++;
 			break;
 		case ':':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_COLON]);
+			line_char_idx++;
 			break;
 		case ';':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_SEMICOLON]);
+			line_char_idx++;
 			break;
 		case '/':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_FORWARD_SLASH]);
+			line_char_idx++;
 			break;
 		case '\\':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_BACKSLASH]);
+			line_char_idx++;
 			break;
 		case '_':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_UNDERSCORE]);
+			line_char_idx++;
 			break;
 		case '-':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_HYPHEN]);
+			line_char_idx++;
 			break;
 		case '|':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_VERTICAL_BAR]);
+			line_char_idx++;
 			break;
 		case '&':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_AMPERSAND]);
+			line_char_idx++;
 			break;
 		case '%':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_PERCENT]);
+			line_char_idx++;
 			break;
 		case '$':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_DOLLAR]);
+			line_char_idx++;
 			break;
 		case '#':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_HASH]);
+			line_char_idx++;
 			break;
 		case '@':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_AT]);
+			line_char_idx++;
 			break;
 		case '\'':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_SINGLE_QUOTE]);
+			line_char_idx++;
 			break;
 		case '"':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_DOUBLE_QUOTE]);
+			line_char_idx++;
 			break;
 		case '+':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_PLUS]);
+			line_char_idx++;
 			break;
 		//case '-':
 		//	SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_MINUS]);
-		//	break;
+		//	line_char_idx++;
+			break;
 		case '*':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_ASTERISK]);
+			line_char_idx++;
 			break;
 		case '=':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_EQUALS]);
+			line_char_idx++;
 			break;
 		case '<':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_LESS_THAN]);
+			line_char_idx++;
 			break;
 		case '>':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_GREATER_THAN]);
+			line_char_idx++;
 			break;
 		case '(':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_LEFT_PAREN]);
-				break;
+			line_char_idx++;
+			break;
 		case ')':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_RIGHT_PAREN]);
-				break;
+			line_char_idx++;
+			break;
 		case '[':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_LEFT_BRACKET]);
-				break;
+			line_char_idx++;
+			break;
 		case ']':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_RIGHT_BRACKET]);
-				break;
+			line_char_idx++;
+			break;
 		case '^':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_TILDE]);
-				break;
+			line_char_idx++;
+			break;
 		case '`':
 			SH_GUI_LOAD_CHAR_VERTICES(p_char_vertex_raw, p_gui->char_infos.chars_font_mesh[SH_GUI_CHAR_INDEX_GRAVE_ACCENT]);
+			line_char_idx++;
 			break;
 		case '\n':
 			new_line = 1;
 			line_idx++;
-			line_char_idx = 0;
 			p_char_raw->z_priority = SH_GUI_OUT_OF_CANVAS_Z_PRIORITY;
+			line_char_idx = 0;
 			break;
 		default:
 			p_char_raw->z_priority = SH_GUI_OUT_OF_CANVAS_Z_PRIORITY;
+			line_char_idx++;
 			break;
 		}
 
@@ -1480,7 +1548,6 @@ uint8_t shGuiText(
 		y_occupied = y_offset + p_char_raw->scale + y_occupied_correction_sum;
 
 		p_gui->char_infos.char_count++;
-		line_char_idx++;	
 	}
 
 	for (uint32_t char_idx = 0; char_idx < strlen(s_text); char_idx++) {
