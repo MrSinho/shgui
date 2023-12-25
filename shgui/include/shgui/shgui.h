@@ -192,39 +192,20 @@ typedef struct shguivec4 {
 
 
 
-
 /**
-* @var _SH_GUI_VEC2_ZERO
 * @brief Zero-initialized 2D vector constant.
 */
-static const shguivec2 _SH_GUI_VEC2_ZERO = SH_GUI_STRUCTURE_ZERO;
+#define SH_GUI_VEC2_ZERO (shguivec2)SH_GUI_STRUCTURE_ZERO
 
 /**
-* @var _SH_GUI_VEC3_ZERO
 * @brief Zero-initialized 3D vector constant.
 */
-static const shguivec3 _SH_GUI_VEC3_ZERO = SH_GUI_STRUCTURE_ZERO;
+#define SH_GUI_VEC3_ZERO (shguivec3)SH_GUI_STRUCTURE_ZERO
 
 /**
-* @var _SH_GUI_VEC4_ZERO
 * @brief Zero-initialized 4D vector constant.
 */
-static const shguivec4 _SH_GUI_VEC4_ZERO = SH_GUI_STRUCTURE_ZERO;
-
-/**
-* @brief Alias for `_SH_GUI_VEC2_ZERO`.
-*/
-#define SH_GUI_VEC2_ZERO _SH_GUI_VEC2_ZERO
-
-/**
-* @brief Alias for `_SH_GUI_VEC3_ZERO`.
-*/
-#define SH_GUI_VEC3_ZERO _SH_GUI_VEC3_ZERO
-
-/**
-* @brief Alias for `_SH_GUI_VEC4_ZERO`.
-*/
-#define SH_GUI_VEC4_ZERO _SH_GUI_VEC4_ZERO
+#define SH_GUI_VEC4_ZERO (shguivec4)SH_GUI_STRUCTURE_ZERO
 
 /**
 * @brief Copy a 2D vector from source to destination.
