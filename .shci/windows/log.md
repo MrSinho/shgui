@@ -13,7 +13,7 @@ max frequency : 3500.0 MHz
 cores         : 4
 ```
 
-build ran for `26.36 s` and terminated with exit code `0`
+build ran for `40.49 s` and terminated with exit code `0`
 
 ---
 
@@ -26,16 +26,6 @@ build ran for `26.36 s` and terminated with exit code `0`
 
 ```bash
 Chocolatey v2.0.0
-2 validations performed. 1 success(es), 1 warning(s), and 0 error(s).
-
-Validation Warnings:
- - A pending system reboot request has been detected, however, this is
-   being ignored due to the current Chocolatey configuration.  If you
-   want to halt when this occurs, then either set the global feature
-   using:
-     choco feature enable -name=exitOnRebootDetected
-   or pass the option --exit-when-reboot-detected.
-
 Chocolatey detected you are not running from an elevated command shell
  (cmd/powershell).
 
@@ -93,19 +83,19 @@ Warnings:
 ```bash
 Versione di MSBuild L17.7.2+d6990bcfa per .NET Framework
 
-  glfw.vcxproj -> D:\home\desktop\github\shgui\build\windows\externals\glfw\src\OFF\windows\Debug\glfw3.lib
+  glfw.vcxproj -> D:\home\desktop\github\shgui\build\windows\externals\glfw\src\LMAO\windows\Debug\glfw3.lib
   native-export.vcxproj -> D:\home\desktop\github\shgui\bin\Debug\native-export.lib
-  shvulkan.vcxproj -> D:\home\desktop\github\shgui\build\windows\externals\shvulkan\OFF\windows\Debug\shvulkan.lib
-  shgui.vcxproj -> D:\home\desktop\github\shgui\build\windows\OFF\windows\Debug\shgui.lib
-  shgui-app.vcxproj -> D:\home\desktop\github\shgui\build\windows\OFF\windows\Debug\shgui-app.lib
-  shgui-example.vcxproj -> D:\home\desktop\github\shgui\build\windows\OFF\windows\Debug\shgui-example.exe
-  shgui-export-shaders.vcxproj -> D:\home\desktop\github\shgui\build\windows\OFF\windows\Debug\shgui-export-shaders.exe
+  shvulkan.vcxproj -> D:\home\desktop\github\shgui\build\windows\externals\shvulkan\LMAO\windows\Debug\shvulkan.lib
+  shgui.vcxproj -> D:\home\desktop\github\shgui\build\windows\LMAO\windows\Debug\shgui.lib
+  shgui-app.vcxproj -> D:\home\desktop\github\shgui\build\windows\LMAO\windows\Debug\shgui-app.lib
+  shgui-example.vcxproj -> D:\home\desktop\github\shgui\build\windows\LMAO\windows\Debug\shgui-example.exe
+  shgui-export-shaders.vcxproj -> D:\home\desktop\github\shgui\build\windows\LMAO\windows\Debug\shgui-export-shaders.exe
 
 ```
 
 ---
     
-build ran for `26.36 s` and terminated with exit code `0`
+build ran for `40.49 s` and terminated with exit code `0`
 
 ---
 

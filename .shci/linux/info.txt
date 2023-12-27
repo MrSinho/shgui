@@ -1,5 +1,3 @@
-repo_dir=./
-
 prerequisites=.shci/linux/prerequisites.sh
 prerequisites_output=.shci/linux/prerequisites-output.txt
 

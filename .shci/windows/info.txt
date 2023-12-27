@@ -1,5 +1,3 @@
-repo_dir=./
-
 prerequisites=.shci/windows/prerequisites.bat
 prerequisites_output=.shci/windows/prerequisites-output.txt
 
