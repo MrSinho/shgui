@@ -1,6 +1,6 @@
 PROJECT_NAME           = "shgui"
 PROJECT_BRIEF          = simple and lightweight UI and console system for Vulkan applications written completely in C
-PROJECT_NUMBER         = v1.0.0
+PROJECT_NUMBER         = pre-release
 PROJECT_LOGO           = 
 
 PROJECT_BRIEF          = "shgui by mrsinho"
