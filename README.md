@@ -30,8 +30,9 @@ Feel free to check out the demo to get a better understanding. You're welcome to
 
 ## To do
 
-* UI text and regions in 3d, custom function shGuiTextInSpace (update shgui)
-* Input system for custom in-app terminal
+ * UI text and regions in 3d, custom function shGuiTextInSpace (update shgui)
+ * Input system for custom in-app terminal
+ * Cheat sheet page
 
 ## Build from source
 
