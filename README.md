@@ -28,9 +28,10 @@ Developers can use the shgui library to quickly incorporate basic gui elements, 
 
 Feel free to check out the demo to get a better understanding. You're welcome to explore the demo by visiting the `Related pages` section.
 
-## Input system
+## To do
 
-In program (missing: `shterminal`).
+* UI text and regions in 3d, custom function shGuiTextInSpace (update shgui)
+* Input system for custom in-app terminal
 
 ## Build from source
 
